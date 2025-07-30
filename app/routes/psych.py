@@ -1,53 +1,111 @@
 from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message, InputFile
-from app.repositories import psych_repo
+from aiogram.types import Message, CallbackQuery
+from aiogram.filters import Command
+from typing import Optional
+import logging
 from app.keyboards.main_menu import menu
+from app.db.user import User
+from app.repositories import psych_repo
+from app.db.enums import Status
+from sqlalchemy import select
+from app.db.session import AsyncSessionLocal
 from app.i18n import t
 
 router = Router()
+logger = logging.getLogger(__name__)
 
-# список открытых обращений
-@router.callback_query(F.data == "psy_inbox")
-async def inbox(call: CallbackQuery, lang: str):
-    reqs = await psych_repo.psy_list()
-    if not reqs:
-        await call.message.edit_text(t("psych.requests_empty", lang),
-                                     reply_markup=menu("psych", lang))
+# helper: get current user role
+async def get_user_role(tg_id: int) -> Optional[str]:
+    async with AsyncSessionLocal() as s:
+        user = await s.scalar(select(User).where(User.tg_id == tg_id))
+        return user.role if user else None
+
+# ─────────── Входящие обращения ───────────
+@router.callback_query(F.data == "psych_inbox")
+async def view_inbox(call: CallbackQuery):
+    try:
+        user_role = await get_user_role(call.from_user.id)
+        if user_role not in ["psych", "super"]:
+            await call.answer("Эта функция доступна только психологу", show_alert=True)
+            return
+            
+        requests = await psych_repo.list_open()
+        if not requests:
+            txt = "📥 <b>Входящие обращения</b>\n\nНет новых обращений"
+        else:
+            txt = "📥 <b>Входящие обращения</b>\n\n" + "\n".join(
+                f"📝 <b>#{r.id}</b> — {r.text[:100]}{'...' if len(r.text) > 100 else ''}\n"
+                f"👤 От: {r.from_id}\n"
+                f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
+                for r in requests
+            )
+        await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
         await call.answer()
-        return
-    lines = [f"• #{r.id} — голосовое" if r.content_id else f"• #{r.id} — текст"
-             for r in reqs]
-    txt = "📥 <b>Новые обращения</b>\n\n" + "\n".join(lines) + \
-          "\n\nВведите <code>/take id</code> чтобы открыть."
-    await call.message.edit_text(txt, reply_markup=menu("psych", lang))
-    await call.answer()
+    except Exception as e:
+        logger.error(f"Ошибка при получении входящих обращений: {e}")
+        await call.answer("Произошла ошибка", show_alert=True)
 
-# команда /take
-@router.message(F.text.startswith("/take"))
-async def take(msg: Message):
-    parts = msg.text.split()
-    if len(parts) != 2 or not parts[1].isdigit():
-        await msg.answer("Формат: /take 3")
-        return
-    req_id = int(parts[1])
-    reqs = await psych_repo.psy_list()
-    req = next((r for r in reqs if r.id == req_id), None)
-    if not req:
-        await msg.answer("⛔️ Нет открытого обращения с таким номером.")
-        return
-    if req.content_id:
-        # голосовое
-        await msg.answer_voice(req.content_id, caption=f"Обращение #{req.id}")
-    if req.text:
-        await msg.answer(f"#{req.id} — {req.text}")
-    await msg.answer("Чтобы отметить обращение решённым — /done id")
+@router.callback_query(lambda c: c.data.startswith("psych_mark_done_"))
+async def mark_request_done(call: CallbackQuery):
+    try:
+        user_role = await get_user_role(call.from_user.id)
+        if user_role not in ["psych", "super"]:
+            await call.answer("Эта функция доступна только психологу", show_alert=True)
+            return
+            
+        request_id = int(call.data.split("_")[-1])
+        
+        success = await psych_repo.mark_done(request_id)
+        if success:
+            await call.answer("Обращение отмечено как обработанное", show_alert=True)
+            # Обновляем список обращений
+            requests = await psych_repo.list_open()
+            if not requests:
+                txt = "📥 <b>Входящие обращения</b>\n\nНет новых обращений"
+            else:
+                txt = "📥 <b>Входящие обращения</b>\n\n" + "\n".join(
+                    f"📝 <b>#{r.id}</b> — {r.text[:100]}{'...' if len(r.text) > 100 else ''}\n"
+                    f"👤 От: {r.from_id}\n"
+                    f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
+                    for r in requests
+                )
+            await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
+        else:
+            await call.answer("Ошибка при обработке обращения", show_alert=True)
+    except Exception as e:
+        logger.error(f"Ошибка при отметке обращения как обработанного: {e}")
+        await call.answer("Произошла ошибка", show_alert=True)
 
-# команда /done
-@router.message(F.text.startswith("/done"))
-async def done(msg: Message, lang: str):
-    parts = msg.text.split()
-    if len(parts) != 2 or not parts[1].isdigit():
-        await msg.answer("Формат: /done 3")
-        return
-    await psych_repo.mark_done(int(parts[1]))
-    await msg.answer("✅ Помечено как решённое!") 
+# ─────────── Статистика ───────────
+@router.callback_query(F.data == "psych_stats")
+async def view_stats(call: CallbackQuery):
+    try:
+        user_role = await get_user_role(call.from_user.id)
+        if user_role not in ["psych", "super"]:
+            await call.answer("Эта функция доступна только психологу", show_alert=True)
+            return
+            
+        # Получаем статистику обращений
+        all_requests = await psych_repo.list_all()
+        open_requests = [r for r in all_requests if r.status == Status.open]
+        done_requests = [r for r in all_requests if r.status == Status.done]
+        
+        stats_text = (
+            "📊 <b>Статистика обращений</b>\n\n"
+            f"📥 Всего обращений: {len(all_requests)}\n"
+            f"🟡 Новых: {len(open_requests)}\n"
+            f"🟢 Обработанных: {len(done_requests)}\n"
+            f"📈 Процент обработки: {len(done_requests)/len(all_requests)*100:.1f}%"
+            if all_requests else
+            "📊 <b>Статистика обращений</b>\n\n"
+            "📥 Всего обращений: 0\n"
+            "🟡 Новых: 0\n"
+            "🟢 Обработанных: 0\n"
+            "📈 Процент обработки: 0%"
+        )
+        
+        await call.message.edit_text(stats_text, reply_markup=menu("psych", "ru"))
+        await call.answer()
+    except Exception as e:
+        logger.error(f"Ошибка при получении статистики: {e}")
+        await call.answer("Произошла ошибка", show_alert=True) 
