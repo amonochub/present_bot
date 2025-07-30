@@ -1,13 +1,13 @@
 """Update notes table structure
 
 Revision ID: 001
-Revises: 
+Revises:
 Create Date: 2024-01-01 00:00:00.000000
 
 """
-from alembic import op
 import sqlalchemy as sa
 
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '001'
@@ -19,7 +19,7 @@ depends_on = None
 def upgrade() -> None:
     # Drop existing table if it exists
     op.drop_table('notes', if_exists=True)
-    
+
     # Create new notes table with correct structure
     op.create_table('notes',
         sa.Column('id', sa.Integer(), nullable=False),
@@ -36,4 +36,4 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.drop_index(op.f('ix_notes_id'), table_name='notes')
-    op.drop_table('notes') 
+    op.drop_table('notes')

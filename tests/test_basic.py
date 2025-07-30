@@ -1,12 +1,10 @@
 import pytest
-import asyncio
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
-from app.db.user import User
 from app.db.note import Note
-from app.db.ticket import Ticket
 from app.db.task import Task
+from app.db.ticket import Ticket
+from app.db.user import User
 from app.roles import ROLES
 
 
@@ -28,9 +26,9 @@ def test_user_model():
         first_name="Тест",
         last_name="Пользователь",
         role="teacher",
-        is_active=True
+        is_active=True,
     )
-    
+
     # Проверяем, что пользователь создан
     assert user.tg_id == 123456789
     assert user.role == "teacher"
@@ -40,12 +38,8 @@ def test_user_model():
 def test_note_model():
     """Тест модели заметки"""
     # Создаем заметку
-    note = Note(
-        student_name="Иванов",
-        text="Содержание тестовой заметки",
-        teacher_id=1
-    )
-    
+    note = Note(student_name="Иванов", text="Содержание тестовой заметки", teacher_id=1)
+
     # Проверяем, что заметка создана
     assert note.student_name == "Иванов"
     assert note.teacher_id == 1
@@ -54,11 +48,8 @@ def test_note_model():
 def test_ticket_model():
     """Тест модели тикета"""
     # Создаем тикет
-    ticket = Ticket(
-        title="Тестовый тикет",
-        author_id=1
-    )
-    
+    ticket = Ticket(title="Тестовый тикет", author_id=1)
+
     # Проверяем, что тикет создан
     assert ticket.title == "Тестовый тикет"
     assert ticket.author_id == 1
@@ -71,9 +62,9 @@ def test_task_model():
         title="Тестовая задача",
         description="Описание тестовой задачи",
         author_id=1,
-        status="active"
+        status="active",
     )
-    
+
     # Проверяем, что задача создана
     assert task.title == "Тестовая задача"
     assert task.author_id == 1
@@ -106,17 +97,20 @@ def test_role_names():
 def test_tour_text_mapping():
     """Тест текстового описания ролей для тура"""
     from app.handlers.tour import _tour_text
-    
+
     # Проверяем, что для каждой роли есть описание
     tour_roles = ["teacher", "admin", "director", "student", "parent", "psych"]
-    
+
     for role in tour_roles:
         text = _tour_text(role)
         assert text is not None
         assert len(text) > 0
         assert "<b>" in text  # Проверяем наличие HTML-разметки
-        assert role in text.lower() or any(word in text.lower() for word in ["учитель", "админ", "директор", "ученик", "родитель", "психолог"])
+        assert role in text.lower() or any(
+            word in text.lower()
+            for word in ["учитель", "админ", "директор", "ученик", "родитель", "психолог"]
+        )
 
 
 if __name__ == "__main__":
-    pytest.main([__file__]) 
+    pytest.main([__file__])

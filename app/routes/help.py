@@ -1,13 +1,15 @@
 """
 Хэндлер для команды /help
 """
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.types import Message
-from app.i18n import t
-from app.db.user import User
 from sqlalchemy import select
+
 from app.db.session import AsyncSessionLocal
+from app.db.user import User
+from app.i18n import t
 
 router = Router()
 
@@ -24,4 +26,4 @@ async def help_cmd(msg: Message, lang: str):
     """Показать справку в зависимости от роли пользователя"""
     role = await role_of(msg.from_user.id)
     txt = t("common.help_header", lang) + "\n\n" + t(f"help.{role}", lang)
-    await msg.answer(txt) 
+    await msg.answer(txt)

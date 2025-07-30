@@ -1,26 +1,32 @@
-from aiogram import Router, F
-from aiogram.types import CallbackQuery, Message, InputFile
-from app.repositories import psych_repo
-from app.keyboards.main_menu import menu
+from aiogram import F, Router
+from aiogram.types import CallbackQuery, Message
+
 from app.i18n import t
+from app.keyboards.main_menu import menu
+from app.repositories import psych_repo
 
 router = Router()
+
 
 # список открытых обращений
 @router.callback_query(F.data == "psy_inbox")
 async def inbox(call: CallbackQuery, lang: str):
     reqs = await psych_repo.psy_list()
     if not reqs:
-        await call.message.edit_text(t("psych.requests_empty", lang),
-                                     reply_markup=menu("psych", lang))
+        await call.message.edit_text(
+            t("psych.requests_empty", lang), reply_markup=menu("psych", lang)
+        )
         await call.answer()
         return
-    lines = [f"• #{r.id} — голосовое" if r.content_id else f"• #{r.id} — текст"
-             for r in reqs]
-    txt = "📥 <b>Новые обращения</b>\n\n" + "\n".join(lines) + \
-          "\n\nВведите <code>/take id</code> чтобы открыть."
+    lines = [f"• #{r.id} — голосовое" if r.content_id else f"• #{r.id} — текст" for r in reqs]
+    txt = (
+        "📥 <b>Новые обращения</b>\n\n"
+        + "\n".join(lines)
+        + "\n\nВведите <code>/take id</code> чтобы открыть."
+    )
     await call.message.edit_text(txt, reply_markup=menu("psych", lang))
     await call.answer()
+
 
 # команда /take
 @router.message(F.text.startswith("/take"))
@@ -42,6 +48,7 @@ async def take(msg: Message):
         await msg.answer(f"#{req.id} — {req.text}")
     await msg.answer("Чтобы отметить обращение решённым — /done id")
 
+
 # команда /done
 @router.message(F.text.startswith("/done"))
 async def done(msg: Message, lang: str):
@@ -50,4 +57,4 @@ async def done(msg: Message, lang: str):
         await msg.answer("Формат: /done 3")
         return
     await psych_repo.mark_done(int(parts[1]))
-    await msg.answer("✅ Помечено как решённое!") 
+    await msg.answer("✅ Помечено как решённое!")

@@ -1,13 +1,14 @@
-from .teacher import router as teacher
 from .admin import router as admin
 from .director import router as director
-from .parent import router as parent
-from .student import router as student
-from .psych import router as psych
 from .help import router as help_router
+from .intro import router as intro
+from .parent import router as parent
+from .psych import router as psych
+from .student import router as student
+from .teacher import router as teacher
 from .theme import router as theme
 from .tour import router as tour
-from .intro import router as intro
+
 
 def include_all(dp):
     """Include all routers in the dispatcher"""
@@ -22,7 +23,17 @@ def include_all(dp):
     dp.include_router(theme)
     dp.include_router(tour)
 
+
 __all__ = [
-    'intro', 'teacher', 'admin', 'director', 'parent', 'student', 
-    'psych', 'help_router', 'theme', 'tour', 'include_all'
-] 
+    "intro",
+    "teacher",
+    "admin",
+    "director",
+    "parent",
+    "student",
+    "psych",
+    "help_router",
+    "theme",
+    "tour",
+    "include_all",
+]

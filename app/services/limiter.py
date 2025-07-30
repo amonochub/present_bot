@@ -1,13 +1,16 @@
 import aioredis
-import time
 from pydantic import BaseModel
+
 from app.config import settings
+
 
 class LimitResult(BaseModel):
     allowed: bool
     retry_after: int | None = None
 
+
 redis = aioredis.from_url(settings.REDIS_DSN, decode_responses=True)
+
 
 async def hit(key: str, limit: int, window: int) -> LimitResult:
     """Проверяет rate limit для ключа"""
@@ -17,4 +20,4 @@ async def hit(key: str, limit: int, window: int) -> LimitResult:
         await redis.expire(key, window)
     if val > limit:
         return LimitResult(allowed=False, retry_after=max(ttl, 0))
-    return LimitResult(allowed=True) 
+    return LimitResult(allowed=True)
