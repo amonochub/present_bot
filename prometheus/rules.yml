@@ -1,0 +1,47 @@
+groups:
+- name: schoolbot.alerts
+  rules:
+  - alert: HighErrorRate
+    expr: increase(bot_errors_total[5m]) > 3
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Ошибка бота: >3 за 5 мин"
+      description: "Проверьте логи docker-compose logs bot"
+
+  - alert: TooManyOpenTickets
+    expr: bot_tickets_open > 10
+    for: 10m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Скопилось открытых заявок"
+      description: "Open IT tickets count > 10"
+
+  - alert: BotDown
+    expr: up{job="schoolbot"} == 0
+    for: 30s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Бот недоступен"
+      description: "SchoolBot не отвечает на health check"
+
+  - alert: HighLatency
+    expr: histogram_quantile(0.95, rate(bot_latency_seconds_bucket[5m])) > 2
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Высокая латентность бота"
+      description: "95-й перцентиль времени ответа > 2 секунд"
+
+  - alert: TooManyOverdueTasks
+    expr: kpi_tasks_overdue > 3
+    for: 10m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Просроченных поручений > 3"
+      description: "Проверить вкладку ⏱ Поручения в боте" 

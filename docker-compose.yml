@@ -1,0 +1,134 @@
+version: '3.9'
+
+services:
+  bot:
+    build: .
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - ADMIN_IDS=${ADMIN_IDS}
+      - SENTRY_DSN=${SENTRY_DSN}
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+    ports:
+      - "8080:8080"  # Health check endpoint
+    volumes:
+      - ./app:/app/app
+      - ./scripts:/app/scripts
+      - ./migrations:/app/migrations
+      - ./alembic.ini:/app/alembic.ini
+
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-schoolbot}
+      - POSTGRES_USER=${POSTGRES_USER:-schoolbot}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-schoolbot}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  # GlitchTip - лёгкий мониторинг ошибок
+  glitchtip:
+    image: glitchtip/glitchtip:3.5.0
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      SECRET_KEY: "CHANGE_ME_32_random_chars_here_12345"
+      # Postgres
+      DATABASE_URL: postgresql://${POSTGRES_USER:-schoolbot}:${POSTGRES_PASSWORD:-schoolbot}@postgres:5432/${POSTGRES_DB:-schoolbot}
+      # Redis
+      REDIS_URL: redis://redis:6379/1
+      # Адрес инстанса (для ссылок в письмах)
+      GLITCHTIP_URL_PREFIX: http://glitchtip:8000
+      # Отключаем GC для экономии RAM
+      MEM_GC_DISABLED: "true"
+    ports:
+      - "9000:8000"          # внешнее WEB-GUI
+    volumes:
+      - glitchtip_data:/var/lib/glitchtip   # вложения
+    restart: unless-stopped
+
+  # Prometheus - сбор метрик
+  prometheus:
+    image: prom/prometheus:v2.48.1
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    restart: unless-stopped
+
+  # Grafana - дашборды
+  grafana:
+    image: grafana/grafana-oss:10.4.2
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  # Alertmanager - уведомления
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+      - alertmanager_data:/alertmanager
+    restart: unless-stopped
+
+  # Maintenance - автоматическое обслуживание
+  maintenance:
+    image: alpine:3.20
+    env_file: .env
+    volumes:
+      - ./scripts:/scripts:ro
+      - backups:/backups
+      - /var/lib/docker/containers:/var/lib/docker/containers:rw
+      - glitchtip_data:/var/lib/glitchtip:rw
+    entrypoint: |
+      /bin/sh -c "chmod +x /scripts/maintenance.sh && \
+                  echo '30 3 * * * /scripts/maintenance.sh' | crontab - && \
+                  crond -f -L /var/log/cron.log"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  glitchtip_data:
+  prometheus_data:
+  grafana_data:
+  alertmanager_data:
+  backups:
+
+networks:
+  default:
+    name: schoolbot_network 

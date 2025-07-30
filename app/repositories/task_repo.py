@@ -1,0 +1,44 @@
+from sqlalchemy import select, update
+from app.db.session import AsyncSessionLocal
+from app.db.task import Task, TaskStatus
+from app.db.enums import Status
+from datetime import date
+from typing import List, Optional
+
+async def list_open() -> List[Task]:
+    """Получить список открытых поручений"""
+    async with AsyncSessionLocal() as s:
+        result = await s.execute(
+            select(Task).where(Task.status == TaskStatus.PENDING)
+        )
+        return result.scalars().all()
+
+async def set_status(task_id: int, status: Status) -> bool:
+    """Изменить статус поручения"""
+    try:
+        async with AsyncSessionLocal() as s:
+            # Конвертируем Status в TaskStatus
+            task_status_map = {
+                Status.open: TaskStatus.PENDING,
+                Status.in_progress: TaskStatus.IN_PROGRESS,
+                Status.done: TaskStatus.COMPLETED
+            }
+            await s.execute(
+                update(Task).where(Task.id == task_id)
+                .values(status=task_status_map[status])
+            )
+            await s.commit()
+            return True
+    except Exception:
+        return False
+
+async def get_overdue_count() -> int:
+    """Получить количество просроченных поручений"""
+    async with AsyncSessionLocal() as s:
+        result = await s.scalar(
+            select(Task).where(
+                Task.status == TaskStatus.PENDING,
+                Task.deadline < date.today()
+            )
+        )
+        return result or 0 

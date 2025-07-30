@@ -1,0 +1,38 @@
+{
+  "title": "Поручения директора",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Всего поручений",
+      "targets": [
+        { "expr": "kpi_tasks_total", "legendFormat": "" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" } },
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Выполнено",
+      "targets": [
+        { "expr": "kpi_tasks_done", "legendFormat": "" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none" } },
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 }
+    },
+    {
+      "type": "stat",
+      "title": "Просрочено",
+      "targets": [
+        { "expr": "kpi_tasks_overdue", "legendFormat": "" }
+      ],
+      "fieldConfig": { "defaults": { "unit": "none", "color": { "mode": "thresholds" },
+        "thresholds": { "mode": "absolute", "steps": [
+          { "color": "green",  "value": null },
+          { "color": "red",    "value": 1 }
+        ]}} },
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 }
+    }
+  ],
+  "schemaVersion": 37,
+  "version": 1
+} 

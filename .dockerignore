@@ -1,0 +1,9 @@
+.git
+tests
+backups
+*.md
+__pycache__
+*.pyc
+migrations/versions/*.pyc
+venv
+.env 
