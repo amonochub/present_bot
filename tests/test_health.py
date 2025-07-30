@@ -1,6 +1,6 @@
-import requests
 import os
-import pytest
+
+import requests
 
 
 def test_healthz():
@@ -16,4 +16,4 @@ def test_metrics():
     url = f"http://localhost:{os.getenv('PORT_HEALTH', '8080')}/metrics"
     r = requests.get(url, timeout=2)
     assert r.status_code == 200
-    assert "text/plain" in r.headers.get("content-type", "") 
+    assert "text/plain" in r.headers.get("content-type", "")

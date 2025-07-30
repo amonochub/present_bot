@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-import typer
 import asyncio
 import subprocess
-import os
+
+import typer
+
 from alembic.config import main as alembic_main
-from app.db.session import engine
-from app.db.base import Base
 from app.bot import seed_demo
+from app.db.base import Base
+from app.db.session import engine
 
 cli = typer.Typer(help="Утилита админа SchoolBot")
 
@@ -37,9 +38,9 @@ def backup():
 def shell():
     """Запустить Python shell с подключением к БД"""
     import code
+
     from app.db.session import engine
-    from app.db.base import Base
-    
+
     async def _shell():
         async with engine.begin() as conn:
             # Создаем локальные переменные для shell
@@ -49,7 +50,7 @@ def shell():
                 'Base': Base,
             }
             # Импортируем модели
-            from app.db import user, ticket, note, media_request, psych_request, broadcast
+            from app.db import broadcast, media_request, note, psych_request, ticket, user
             locals_dict.update({
                 'User': user.User,
                 'Ticket': ticket.Ticket,
@@ -59,8 +60,8 @@ def shell():
                 'Broadcast': broadcast.Broadcast,
             })
             code.interact(local=locals_dict)
-    
+
     asyncio.run(_shell())
 
 if __name__ == "__main__":
-    cli() 
+    cli()

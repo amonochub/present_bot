@@ -1,24 +1,18 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker
+from collections.abc import AsyncGenerator
+
 from sqlalchemy import text
-from typing import AsyncGenerator
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 
 # Создание асинхронного движка
 engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=False,
-    pool_pre_ping=True,
-    pool_recycle=300
+    settings.DATABASE_URL, echo=False, pool_pre_ping=True, pool_recycle=300
 )
 
 # Создание фабрики сессий
-AsyncSessionLocal = sessionmaker(
-    engine,
-    class_=AsyncSession,
-    expire_on_commit=False
-)
+AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
@@ -30,6 +24,5 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 async def get_session_with_rls(user_id: int, role: str) -> AsyncGenerator[AsyncSession, None]:
     """Получение сессии с установкой параметров для RLS"""
     async with AsyncSessionLocal() as sess:
-        await sess.execute(text("SET app.user_id=:uid, app.role=:r"),
-                           {"uid": user_id, "r": role})
-        yield sess 
+        await sess.execute(text("SET app.user_id=:uid, app.role=:r"), {"uid": user_id, "r": role})
+        yield sess

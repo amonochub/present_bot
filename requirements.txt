@@ -7,7 +7,7 @@ python-dotenv>=1.0.0
 pydantic>=2.7.2
 pytest>=8.2.0
 pytest-asyncio>=0.21.0
-pytest-aiogram>=1.3.0
+pytest-aiogram>=0.1.0
 bcrypt>=4.0.0
 mypy==1.10.0
 types-python-dateutil==2.8.14

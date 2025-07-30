@@ -5,6 +5,7 @@
 
 import asyncio
 import sys
+
 from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -17,23 +18,23 @@ async def init_demo_user():
     """Создание демо-пользователя"""
     # Создаем движок
     engine = create_async_engine(DATABASE_URL)
-    
+
     # Создаем таблицы
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    
+
     # Создаем сессию
     async_session = sessionmaker(
         engine, class_=asyncio.AsyncSession, expire_on_commit=False
     )
-    
+
     async with async_session() as session:
         # Проверяем, существует ли уже демо-пользователь
         result = await session.execute(
             "SELECT id FROM users WHERE login = 'demo01'"
         )
         existing_user = result.fetchone()
-        
+
         if existing_user:
             print("✅ Демо-пользователь уже существует")
             # Сбрасываем состояние для повторного использования
@@ -59,14 +60,14 @@ async def init_demo_user():
             print("✅ Демо-пользователь создан")
             print("📋 Логин: demo01")
             print("🔑 Пароль: demo")
-    
+
     await engine.dispose()
 
 
 async def main():
     """Основная функция"""
     print("🔄 Инициализация демо-пользователя...")
-    
+
     try:
         await init_demo_user()
         print("✅ Инициализация завершена успешно!")
@@ -76,4 +77,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main()) 
+    asyncio.run(main())

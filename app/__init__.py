@@ -1,1 +1,1 @@
-# SchoolBot Application Package 
+# SchoolBot Application Package
