@@ -14,7 +14,7 @@ jobs:
       postgres:
         image: postgres:15
         env:
-          POSTGRES_PASSWORD: schoolbot
+          POSTGRES_PASSWORD: schoolbot123
           POSTGRES_USER: schoolbot
           POSTGRES_DB: schoolbot
         options: >-
@@ -35,6 +35,29 @@ jobs:
         ports:
           - 6379:6379
 
+    env:
+      # Telegram Bot (тестовый токен)
+      TELEGRAM_TOKEN: "1234567890:TEST_TOKEN_FOR_CI_CD_PURPOSES_ONLY"
+      
+      # Database
+      DB_NAME: schoolbot
+      DB_USER: schoolbot
+      DB_PASS: schoolbot123
+      DB_HOST: localhost
+      DB_PORT: 5432
+      
+      # Redis
+      REDIS_DSN: redis://localhost:6379/0
+      
+      # Environment
+      ENV: test
+      
+      # Admin IDs (тестовые)
+      ADMIN_IDS: "123456789,987654321"
+      
+      # App settings
+      KEEP_DAYS: 14
+
     steps:
     - uses: actions/checkout@v3
     
@@ -48,11 +71,28 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
+    - name: Wait for services
+      run: |
+        echo "Waiting for PostgreSQL..."
+        timeout 30s bash -c 'until pg_isready -h localhost -p 5432; do sleep 1; done'
+        echo "Waiting for Redis..."
+        timeout 30s bash -c 'until redis-cli -h localhost ping; do sleep 1; done'
+    
+    - name: Run database migrations
+      run: |
+        python manage.py migrate
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
+    
     - name: Lint with ruff
       run: ruff check .
     
     - name: Run tests
-      run: pytest -q
+      run: pytest -q --tb=short
+      env:
+        DB_HOST: localhost
+        DB_PORT: 5432
     
     - name: Build Docker image
       run: docker build -t school-bot . 
