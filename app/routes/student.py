@@ -44,7 +44,7 @@ async def view_tasks(call: CallbackQuery) -> None:
             if len(tasks) > 5:
                 txt += f"\n... и еще {len(tasks) - 5} заданий"
 
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("student", "ru"))
         await call.answer()
     except Exception as e:
@@ -61,7 +61,7 @@ async def ask_help(call: CallbackQuery, lang: str) -> None:
             await call.answer("Эта функция доступна только ученикам", show_alert=True)
             return
 
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(
                 "💬 <b>Обращение к психологу</b>\n\n"
                 "Напишите ваш вопрос или проблему, и психолог ответит вам.\n"

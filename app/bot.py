@@ -206,21 +206,21 @@ async def seed_demo(conn: Any) -> None:
         bind=engine,
         class_=AsyncSession,
         expire_on_commit=False,
-    )
+    )  # type: ignore
 
     async with async_session() as session:
         session.add_all(notes + tickets + media + psych + tasks + broadcasts)
         await session.commit()
 
 
-async def get_user(tg_id: int) -> Optional[User]:
+async def get_user(tg_id: int) -> Any:
     """Получить пользователя по Telegram ID"""
     async with AsyncSessionLocal() as session:
         result = await session.execute(select(User).where(User.tg_id == tg_id))
         return result.scalar_one_or_none()
 
 
-async def authenticate(tg_id: int, login: str, pwd: str) -> Optional[User]:
+async def authenticate(tg_id: int, login: str, pwd: str) -> Any:
     """Аутентификация пользователя"""
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -240,8 +240,8 @@ async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
     user = await get_user(m.from_user.id)
     if user:
         await m.answer(
-            f"Вы уже авторизованы как <b>{ROLES[user.role]}</b>",
-            reply_markup=menu(user.role, lang, user.theme),
+            f"Вы уже авторизованы как <b>{ROLES[str(user.role)]}</b>",
+            reply_markup=menu(str(user.role), lang, str(user.theme)),
         )
     else:
         # Предлагаем онбординг для новых пользователей
@@ -288,7 +288,7 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
             nonce = await issue_nonce(dp.storage, m.chat.id, m.from_user.id)
             await m.answer(
                 t("common.auth_success", lang),
-                reply_markup=menu(user.role, lang, user.theme, nonce),
+                reply_markup=menu(str(user.role), lang, str(user.theme), nonce),
             )
         else:
             await m.answer(t("common.bad_credentials", lang))

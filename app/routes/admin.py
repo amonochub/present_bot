@@ -48,7 +48,7 @@ async def view_tickets(call: CallbackQuery) -> None:
             txt = "📋 <b>Заявки техподдержки</b>\n\nНет активных заявок"
         else:
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
     except Exception as e:
@@ -64,6 +64,9 @@ async def change_status(call: CallbackQuery) -> None:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
+        if call.data is None:
+            await call.answer("Ошибка данных", show_alert=True)
+            return
         ticket_id = int(call.data.split("_")[-1])
         status = Status.done if call.data.startswith("mark_done") else Status.in_progress
 
@@ -73,7 +76,7 @@ async def change_status(call: CallbackQuery) -> None:
             # Обновляем список заявок
             tickets = await ticket_repo.list_all()
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
-            if call.message is not None:
+            if call.message is not None and hasattr(call.message, 'edit_text'):
                 await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
@@ -99,7 +102,7 @@ async def view_media(call: CallbackQuery) -> None:
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
                 f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests
             )
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
     except Exception as e:
@@ -108,13 +111,16 @@ async def view_media(call: CallbackQuery) -> None:
 
 
 @router.callback_query(lambda c: c.data.startswith(("media_done", "media_prog")))
-async def change_media_status(call: CallbackQuery):
+async def change_media_status(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["admin", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
+        if call.data is None:
+            await call.answer("Ошибка данных", show_alert=True)
+            return
         req_id = int(call.data.split("_")[-1])
         status = Status.done if call.data.startswith("media_done") else Status.in_progress
 
@@ -127,7 +133,8 @@ async def change_media_status(call: CallbackQuery):
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
                 f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests
             )
-            await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
+            if call.message is not None and hasattr(call.message, 'edit_text'):
+                await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
     except Exception as e:
@@ -137,7 +144,7 @@ async def change_media_status(call: CallbackQuery):
 
 # ─────────── Рассылка ───────────
 @router.callback_query(F.data == "admin_broadcast")
-async def start_broadcast(call: CallbackQuery, state):
+async def start_broadcast(call: CallbackQuery, state: Any) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["admin", "super"]:
@@ -145,10 +152,11 @@ async def start_broadcast(call: CallbackQuery, state):
             return
 
         await state.set_state(BroadcastFSM.waiting_text)
-        await call.message.edit_text(
-            "📢 <b>Массовая рассылка</b>\n\n"
-            "Введите текст сообщения для рассылки всем пользователям:"
-        )
+        if call.message is not None and hasattr(call.message, 'edit_text'):
+            await call.message.edit_text(
+                "📢 <b>Массовая рассылка</b>\n\n"
+                "Введите текст сообщения для рассылки всем пользователям:"
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале рассылки: {e}")
@@ -156,7 +164,7 @@ async def start_broadcast(call: CallbackQuery, state):
 
 
 @router.message(BroadcastFSM.waiting_text, F.text)
-async def send_broadcast(msg: Message, state):
+async def send_broadcast(msg: Message, state: Any) -> None:
     try:
         user_role = await get_user_role(msg.from_user.id)
         if user_role not in ["admin", "super"]:
@@ -164,6 +172,9 @@ async def send_broadcast(msg: Message, state):
             await state.clear()
             return
 
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите текст рассылки.")
+            return
         text = msg.text.strip()
         if len(text) > 4000:
             await msg.answer("Текст рассылки слишком длинный (максимум 4000 символов)")

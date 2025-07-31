@@ -41,7 +41,7 @@ async def view_inbox(call: CallbackQuery) -> None:
                 f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                 for r in requests
             )
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
         await call.answer()
     except Exception as e:
@@ -57,6 +57,9 @@ async def mark_request_done(call: CallbackQuery) -> None:
             await call.answer("Эта функция доступна только психологу", show_alert=True)
             return
 
+        if call.data is None:
+            await call.answer("Ошибка данных", show_alert=True)
+            return
         request_id = int(call.data.split("_")[-1])
 
         success = await psych_repo.mark_done(request_id)
@@ -73,7 +76,7 @@ async def mark_request_done(call: CallbackQuery) -> None:
                     f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                     for r in requests
                 )
-            if call.message is not None:
+            if call.message is not None and hasattr(call.message, 'edit_text'):
                 await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
         else:
             await call.answer("Ошибка при обработке обращения", show_alert=True)
@@ -110,7 +113,7 @@ async def view_stats(call: CallbackQuery) -> None:
             "📈 Процент обработки: 0%"
         )
 
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(stats_text, reply_markup=menu("psych", "ru"))
         await call.answer()
     except Exception as e:

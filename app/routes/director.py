@@ -80,7 +80,7 @@ async def view_tasks(call: CallbackQuery) -> None:
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks
             )
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
         await call.answer()
     except Exception as e:
@@ -97,7 +97,7 @@ async def start_add_task(call: CallbackQuery, state: Any) -> None:
             return
 
         await state.set_state(AddTask.waiting_title)
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text("📋 <b>Добавление задачи</b>\n\n" "Введите название задачи:")
         await call.answer()
     except Exception as e:
@@ -106,8 +106,11 @@ async def start_add_task(call: CallbackQuery, state: Any) -> None:
 
 
 @router.message(AddTask.waiting_title, F.text)
-async def task_title(msg: Message, state):
+async def task_title(msg: Message, state: Any) -> None:
     try:
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите название задачи.")
+            return
         title = msg.text.strip()
         if len(title) > 200:
             await msg.answer("Название задачи слишком длинное (максимум 200 символов)")
@@ -127,8 +130,11 @@ async def task_title(msg: Message, state):
 
 
 @router.message(AddTask.waiting_description, F.text)
-async def task_description(msg: Message, state):
+async def task_description(msg: Message, state: Any) -> None:
     try:
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите описание задачи.")
+            return
         description = msg.text.strip()
         if len(description) > 1000:
             await msg.answer("Описание задачи слишком длинное (максимум 1000 символов)")
@@ -148,8 +154,11 @@ async def task_description(msg: Message, state):
 
 
 @router.message(AddTask.waiting_deadline, F.text)
-async def task_deadline(msg: Message, state):
+async def task_deadline(msg: Message, state: Any) -> None:
     try:
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите дедлайн.")
+            return
         deadline_text = msg.text.strip()
 
         if deadline_text.lower() == "нет":

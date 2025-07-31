@@ -62,7 +62,7 @@ async def request_certificate(call: CallbackQuery) -> None:
             await call.answer("Эта функция доступна только родителям", show_alert=True)
             return
 
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(
                 "📄 <b>Запрос справки</b>\n\n" "Выберите тип справки:",
                 reply_markup=menu("parent", "ru"),
@@ -89,7 +89,7 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
             date="2024-12-19",
         )
 
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'answer_document'):
             await call.message.answer_document(
             document=pdf_data,
             caption="📄 Справка о посещаемости\n\n"
@@ -103,7 +103,7 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
 
 
 @router.callback_query(F.data == "cert_progress")
-async def generate_progress_cert(call: CallbackQuery):
+async def generate_progress_cert(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
@@ -118,12 +118,13 @@ async def generate_progress_cert(call: CallbackQuery):
             date="2024-12-19",
         )
 
-        await call.message.answer_document(
-            document=pdf_data,
-            caption="📄 Справка об успеваемости\n\n"
-            "Справка сгенерирована автоматически.\n"
-            "Для получения официальной справки обратитесь в секретариат.",
-        )
+        if call.message is not None and hasattr(call.message, 'answer_document'):
+            await call.message.answer_document(
+                document=pdf_data,
+                caption="📄 Справка об успеваемости\n\n"
+                "Справка сгенерирована автоматически.\n"
+                "Для получения официальной справки обратитесь в секретариат.",
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при генерации справки об успеваемости: {e}")
@@ -131,7 +132,7 @@ async def generate_progress_cert(call: CallbackQuery):
 
 
 @router.callback_query(F.data == "cert_behavior")
-async def generate_behavior_cert(call: CallbackQuery):
+async def generate_behavior_cert(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
@@ -146,12 +147,13 @@ async def generate_behavior_cert(call: CallbackQuery):
             date="2024-12-19",
         )
 
-        await call.message.answer_document(
-            document=pdf_data,
-            caption="📄 Справка о поведении\n\n"
-            "Справка сгенерирована автоматически.\n"
-            "Для получения официальной справки обратитесь в секретариат.",
-        )
+        if call.message is not None and hasattr(call.message, 'answer_document'):
+            await call.message.answer_document(
+                document=pdf_data,
+                caption="📄 Справка о поведении\n\n"
+                "Справка сгенерирована автоматически.\n"
+                "Для получения официальной справки обратитесь в секретариат.",
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при генерации справки о поведении: {e}")

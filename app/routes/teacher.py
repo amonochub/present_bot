@@ -141,8 +141,11 @@ async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
 
 
 @router.message(AddTicket.waiting_title, F.text)
-async def ticket_title(msg: Message, state, lang: str):
+async def ticket_title(msg: Message, state: Any, lang: str) -> None:
     try:
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите описание заявки.")
+            return
         title = msg.text.strip()
         if len(title) > 200:
             await msg.answer("Описание заявки слишком длинное (максимум 200 символов)")
@@ -162,12 +165,12 @@ async def ticket_title(msg: Message, state, lang: str):
 
 
 @router.message(AddTicket.waiting_file, lambda m: m.document or m.photo or m.text)
-async def ticket_file(msg: Message, state, lang: str):
+async def ticket_file(msg: Message, state: Any, lang: str) -> None:
     try:
         data = await state.get_data()
         file_id = None
 
-        if msg.text and msg.text.strip().lower() == "пропустить":
+        if msg.text is not None and msg.text.strip().lower() == "пропустить":
             file_id = None
         elif msg.photo:
             file_id = msg.photo[-1].file_id
@@ -183,7 +186,8 @@ async def ticket_file(msg: Message, state, lang: str):
             await state.clear()
             return
 
-        ticket = await ticket_repo.create_ticket(user.id, data["title"], file_id)
+        if user.id is not None:
+            ticket = await ticket_repo.create_ticket(user.id, data["title"], file_id)
         await state.clear()
         await msg.answer(
             t("teacher.ticket_created", lang).format(ticket_id=ticket.id),
@@ -197,7 +201,7 @@ async def ticket_file(msg: Message, state, lang: str):
 
 # ─────────── Медиа-заявки ───────────
 @router.callback_query(F.data == "teacher_media")
-async def media_start(call: CallbackQuery, state, lang: str):
+async def media_start(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["teacher", "super"]:
@@ -205,7 +209,8 @@ async def media_start(call: CallbackQuery, state, lang: str):
             return
 
         await state.set_state(MediaFSM.waiting_date)
-        await call.message.edit_text("Введите дату мероприятия (например, 25.12.2024):")
+        if call.message is not None:
+            await call.message.edit_text("Введите дату мероприятия (например, 25.12.2024):")
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале создания медиа-заявки: {e}")
@@ -213,8 +218,11 @@ async def media_start(call: CallbackQuery, state, lang: str):
 
 
 @router.message(MediaFSM.waiting_date, F.text)
-async def media_date(msg: Message, state):
+async def media_date(msg: Message, state: Any) -> None:
     try:
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите дату мероприятия.")
+            return
         date_str = msg.text.strip()
         # Простая валидация даты
         try:
@@ -233,7 +241,7 @@ async def media_date(msg: Message, state):
 
 
 @router.message(MediaFSM.waiting_file, lambda m: m.photo or m.document)
-async def media_file(msg: Message, state):
+async def media_file(msg: Message, state: Any) -> None:
     try:
         file_id = None
         if msg.photo:
