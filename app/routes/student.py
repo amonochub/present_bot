@@ -106,7 +106,8 @@ async def receive_help(msg: Message, lang: str) -> None:
             return
 
         # Создаем обращение к психологу
-        await psych_repo.create(msg.from_user.id, text, None)
+        if msg.from_user is not None:
+            await psych_repo.create(msg.from_user.id, text, None)
 
         await msg.answer(
             "✅ Ваше обращение отправлено психологу!\n\n"

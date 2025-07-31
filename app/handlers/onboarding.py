@@ -329,8 +329,8 @@ async def back_to_role_selection(callback: CallbackQuery, state: FSMContext, lan
 @router.callback_query(F.data == "start_carousel")
 async def handle_start_carousel(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Запуск карусели ролей"""
-    if callback.message is not None:
-        await send_role_carousel(callback.message, 0, lang)
+    if callback.message is not None and hasattr(callback.message, 'answer'):
+        await send_role_carousel(callback.message, 0, lang)  # type: ignore
     await callback.answer()
 
 
@@ -342,8 +342,8 @@ async def handle_carousel_navigation(callback: CallbackQuery, state: FSMContext,
             await callback.answer("Ошибка данных", show_alert=True)
             return
         index = int(callback.data.split("_", 1)[1])
-        if callback.message is not None:
-            await send_role_carousel(callback.message, index, lang)
+        if callback.message is not None and hasattr(callback.message, 'answer'):
+            await send_role_carousel(callback.message, index, lang)  # type: ignore
         await callback.answer()
     except (ValueError, IndexError):
         await callback.answer("Ошибка навигации", show_alert=True)

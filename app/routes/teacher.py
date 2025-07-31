@@ -113,7 +113,7 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
             await msg.answer("Текст заметки не может быть пустым")
             return
 
-        if user.id is not None:
+        if user is not None and user.id is not None:
             await note_repo.create_note(user.id, student, text)
         await state.clear()
         await msg.answer(t("teacher.note_added", lang), reply_markup=menu("teacher", lang))
@@ -187,7 +187,7 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
             await state.clear()
             return
 
-        if user.id is not None:
+        if user is not None and user.id is not None:
             ticket = await ticket_repo.create_ticket(user.id, data["title"], file_id)
         await state.clear()
         await msg.answer(
@@ -277,7 +277,7 @@ async def media_finish(msg: Message, state: Any, lang: str) -> None:
             await msg.answer("Комментарий слишком длинный (максимум 500 символов)")
             return
 
-        if user.id is not None:
+        if user is not None and user.id is not None:
             await media_repo.create(user.id, data["date"], comment, data["file_id"])
         await state.clear()
         await msg.answer("✅ Медиа-заявка создана!", reply_markup=menu("teacher", lang))
