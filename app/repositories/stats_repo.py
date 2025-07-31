@@ -19,20 +19,20 @@ async def kpi_summary() -> Dict[str, Any]:
             # заявки IT
             tickets_total = await s.scalar(select(func.count()).select_from(Ticket))
             tickets_done = await s.scalar(
-                select(func.count()).select_from(Ticket).where(Ticket.status == "done")  # type: ignore
+                select(func.count()).select_from(Ticket).where(Ticket.status == "done")
             )
 
             # поручения директора
             tasks_total = await s.scalar(select(func.count()).select_from(Task))
             tasks_done = await s.scalar(
-                select(func.count()).select_from(Task).where(Task.status == TaskStatus.COMPLETED)  # type: ignore
+                select(func.count()).select_from(Task).where(Task.status == TaskStatus.COMPLETED)
             )
 
             # просроченные поручения
             overdue = await s.scalar(
                 select(func.count())
                 .select_from(Task)
-                .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())  # type: ignore
+                .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
             )
 
         return dict(

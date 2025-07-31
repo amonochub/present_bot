@@ -17,7 +17,7 @@ async def list_open() -> List[PsychRequest]:
     async with AsyncSessionLocal() as s:
         rows = await s.scalars(
             select(PsychRequest)
-            .where(PsychRequest.status == Status.open)  # type: ignore
+            .where(PsychRequest.status == Status.open)
             .order_by(PsychRequest.created_at)
         )
         return list(rows)

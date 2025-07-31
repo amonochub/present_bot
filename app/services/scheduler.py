@@ -11,7 +11,7 @@ from app.middlewares.metrics import TASKS_COMPLETED, TASKS_OVERDUE, TASKS_TOTAL
 logger = logging.getLogger(__name__)
 
 
-async def kpi_loop():
+async def kpi_loop() -> None:
     """Фоновая корутина для обновления KPI метрик каждые 60 секунд"""
     while True:
         try:
@@ -23,14 +23,14 @@ async def kpi_loop():
                 done = await s.scalar(
                     select(func.count())
                     .select_from(Task)
-                    .where(Task.status == TaskStatus.COMPLETED)  # type: ignore
+                    .where(Task.status == TaskStatus.COMPLETED)
                 )
 
                 # Просрочено поручений
                 overdue = await s.scalar(
                     select(func.count())
                     .select_from(Task)
-                    .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())  # type: ignore
+                    .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
                 )
 
             # Обновляем метрики Prometheus

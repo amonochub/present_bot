@@ -54,7 +54,7 @@ async def start_tour(msg: Message, state: Any, lang: str) -> None:
 @router.callback_query(lambda c: c.data == "tour_next")
 async def next_cb(call: CallbackQuery, state: Any, lang: str) -> None:
     if call.message is not None and hasattr(call.message, 'edit_text'):
-        await next_step(call.message, state, lang)
+        await next_step(call.message, state, lang)  # type: ignore
     await call.answer()
 
 

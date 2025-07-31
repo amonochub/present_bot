@@ -27,7 +27,7 @@ async def toggle_theme(uid: int) -> str:
             return "light"  # дефолт для неавторизованных
 
         new = "dark" if user.theme == "light" else "light"
-        if user.id is not None:
+        if user is not None and user.id is not None:
             await s.execute(update(User).where(User.id == user.id).values(theme=new))
         await s.commit()
         return new
@@ -54,6 +54,6 @@ async def cb_theme(call: CallbackQuery, lang: str) -> None:
     new = await toggle_theme(call.from_user.id)
     user = await get_user(call.from_user.id)
 
-    if user and call.message is not None:
-        await call.message.edit_reply_markup(menu(user.role, lang, theme=new))
+    if user and call.message is not None and hasattr(call.message, 'edit_reply_markup'):
+        await call.message.edit_reply_markup(menu(user.role, lang, theme=new))  # type: ignore
     await call.answer(t("common.theme_switched", lang))

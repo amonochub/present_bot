@@ -29,6 +29,9 @@ async def get_user_role(tg_id: int) -> Optional[str]:
 @router.message(Command("help"))
 async def help_command(msg: Message, lang: str) -> None:
     try:
+        if msg.from_user is None:
+            await msg.answer("Ошибка: пользователь не найден.")
+            return
         user_role = await get_user_role(msg.from_user.id)
         if not user_role:
             await msg.answer("Пожалуйста, сначала войдите в систему.")
@@ -189,7 +192,7 @@ async def help_button(call: CallbackQuery, lang: str) -> None:
         help_text = get_help_text(user_role, lang)
         faq_text = get_faq_text(lang)
         full_text = help_text + "\n\n" + faq_text
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(full_text, reply_markup=menu(user_role, lang))
         await call.answer()
     except Exception as e:

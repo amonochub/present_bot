@@ -44,7 +44,7 @@ class NotificationService:
         async with AsyncSessionLocal() as session:
             # Получаем уведомление
             result = await session.execute(
-                select(Notification).where(Notification.id == notification_id)  # type: ignore
+                select(Notification).where(Notification.id == notification_id)
             )
             notification = result.scalar_one_or_none()
 
@@ -52,7 +52,7 @@ class NotificationService:
                 return False
 
             # Получаем пользователя
-            result = await session.execute(select(User).where(User.id == notification.user_id))  # type: ignore
+            result = await session.execute(select(User).where(User.id == notification.user_id))
             user = result.scalar_one_or_none()
 
             if not user or not user.notifications_enabled:
@@ -83,7 +83,7 @@ class NotificationService:
         """Отмечает уведомление как прочитанное"""
         async with AsyncSessionLocal() as session:
             result = await session.execute(
-                select(Notification).where(Notification.id == notification_id)  # type: ignore
+                select(Notification).where(Notification.id == notification_id)
             )
             notification = result.scalar_one_or_none()
 

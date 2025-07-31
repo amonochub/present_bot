@@ -26,7 +26,8 @@ class UnknownCommandMiddleware(BaseMiddleware):
             return await handler(event, data)
         except Exception:
             lang = data.get("lang", "ru")
-            await event.answer(t("common.error_generic", lang))
+            if hasattr(event, 'answer'):
+                await event.answer(t("common.error_generic", lang))
             log.exception("Unhandled exception in handler")
             return
 
@@ -55,7 +56,8 @@ class FallbackMiddleware(BaseMiddleware):
             if command not in known_commands:
                 # Неизвестная команда
                 lang = data.get("lang", "ru")
-                await event.answer(t("common.unknown_cmd", lang))
+                if hasattr(event, 'answer'):
+                    await event.answer(t("common.unknown_cmd", lang))
                 return
 
         return await handler(event, data)

@@ -43,7 +43,7 @@ class Notification(Base, TimestampMixin):
     read_at = Column(DateTime, nullable=True)  # Когда было прочитано
 
     # Дополнительные данные (JSON)
-    metadata = Column(String, nullable=True)  # Дополнительные данные
+    metadata = Column(String, nullable=True)  # type: ignore # Дополнительные данные
 
     # Связи
     user = relationship("User", back_populates="notifications")

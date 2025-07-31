@@ -1,3 +1,5 @@
+from typing import Any
+
 from aiogram import BaseMiddleware
 from sqlalchemy import select
 
@@ -7,7 +9,7 @@ from app.utils.sentry import enrich_scope
 
 
 class SentryContext(BaseMiddleware):
-    async def __call__(self, handler, event, data):
+    async def __call__(self, handler: Any, event: Any, data: Any) -> Any:
         if data.get("sentry_enabled", False):
             async with AsyncSessionLocal() as s:
                 user = await s.scalar(select(User).where(User.tg_id == event.from_user.id))

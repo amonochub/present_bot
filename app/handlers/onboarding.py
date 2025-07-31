@@ -216,6 +216,9 @@ async def send_role_carousel(message: Message, current_index: int, lang: str) ->
 @router.callback_query(F.data.startswith("role_"))
 async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка выбора роли"""
+    if callback.data is None:
+        await callback.answer("Ошибка данных", show_alert=True)
+        return
     role = callback.data.split("_", 1)[1]
 
     if role not in ROLES:
@@ -240,13 +243,14 @@ async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang
             "✅ **Подтвердите выбор роли**"
         )
 
-        if callback.message is not None:
+        if callback.message is not None and hasattr(callback.message, 'answer_photo'):
             await callback.message.answer_photo(photo=photo, caption=caption, parse_mode="Markdown")
 
             # Обновляем клавиатуру для подтверждения
             from app.keyboards.onboarding import get_confirmation_keyboard
 
-            await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
+            if hasattr(callback.message, 'edit_reply_markup'):
+                await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
 
     except Exception:
         # Если изображение не найдено, отправляем только текст
@@ -256,12 +260,13 @@ async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang
             "✅ **Подтвердите выбор роли**"
         )
 
-        if callback.message is not None:
+        if callback.message is not None and hasattr(callback.message, 'answer'):
             await callback.message.answer(caption, parse_mode="Markdown")
 
             from app.keyboards.onboarding import get_confirmation_keyboard
 
-            await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
+            if hasattr(callback.message, 'edit_reply_markup'):
+                await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
 
     await callback.answer()
 
@@ -269,6 +274,9 @@ async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang
 @router.callback_query(F.data.startswith("confirm_role_"))
 async def handle_role_confirmation(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Подтверждение выбора роли"""
+    if callback.data is None:
+        await callback.answer("Ошибка данных", show_alert=True)
+        return
     role = callback.data.split("_", 2)[2]
 
     if role not in ROLES:
@@ -295,7 +303,7 @@ async def handle_role_confirmation(callback: CallbackQuery, state: FSMContext, l
         "• Пройти тур по возможностям через /tour"
     )
 
-    if callback.message is not None:
+    if callback.message is not None and hasattr(callback.message, 'answer'):
         await callback.message.answer(success_text, parse_mode="Markdown")
 
     # Очищаем состояние
@@ -308,7 +316,7 @@ async def back_to_role_selection(callback: CallbackQuery, state: FSMContext, lan
     """Возврат к выбору роли"""
     await state.set_state(OnboardingStates.selecting_role)
 
-    if callback.message is not None:
+    if callback.message is not None and hasattr(callback.message, 'edit_text'):
         await callback.message.edit_text(
             "🎓 **Выберите вашу роль:**\n\n"
             "Каждая роль предоставляет уникальные возможности для эффективной работы в школе.",
