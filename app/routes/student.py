@@ -77,6 +77,9 @@ async def ask_help(call: CallbackQuery, lang: str) -> None:
 @router.message(F.content_type.in_({"voice", "text"}))
 async def receive_help(msg: Message, lang: str) -> None:
     try:
+        if msg.from_user is None:
+            await msg.answer("Ошибка: пользователь не найден.")
+            return
         user_role = await get_user_role(msg.from_user.id)
         if user_role not in ["student", "super"]:
             await msg.answer("Эта функция доступна только ученикам")

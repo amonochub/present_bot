@@ -44,11 +44,14 @@ async def me(tg_id: int) -> Any:
 async def teacher_notes(call: CallbackQuery, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
-        notes = await note_repo.list_notes(user.id)
+        if user.id is not None:
+            notes = await note_repo.list_notes(user.id)
+        else:
+            notes = []
         if not notes:
             txt = t("teacher.notes_empty", lang)
         else:
@@ -68,7 +71,7 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
 async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -86,7 +89,7 @@ async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
 async def save_note(msg: Message, state: Any, lang: str) -> None:
     try:
         user = await me(msg.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
@@ -128,7 +131,7 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
 async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -182,7 +185,7 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
             return
 
         user = await me(msg.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
@@ -205,7 +208,7 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
 async def media_start(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -264,7 +267,7 @@ async def media_finish(msg: Message, state: Any, lang: str) -> None:
     try:
         data = await state.get_data()
         user = await me(msg.from_user.id)
-        if not user or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return

@@ -41,7 +41,7 @@ async def cmd_theme(msg: Message, lang: str) -> None:
     new = await toggle_theme(msg.from_user.id)
     user = await get_user(msg.from_user.id)
 
-    if user:
+    if user is not None and hasattr(user, 'role'):
         await msg.answer(
             t("common.theme_switched", lang),
             reply_markup=menu(user.role, lang, theme=new),
@@ -56,6 +56,6 @@ async def cb_theme(call: CallbackQuery, lang: str) -> None:
     new = await toggle_theme(call.from_user.id)
     user = await get_user(call.from_user.id)
 
-    if user and call.message is not None and hasattr(call.message, 'edit_reply_markup'):
+    if user is not None and hasattr(user, 'role') and call.message is not None and hasattr(call.message, 'edit_reply_markup'):
         await call.message.edit_reply_markup(menu(user.role, lang, theme=new))  # type: ignore
     await call.answer(t("common.theme_switched", lang))
