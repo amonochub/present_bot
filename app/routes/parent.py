@@ -9,7 +9,7 @@ from app.db.session import AsyncSessionLocal
 from app.db.user import User
 from app.keyboards.main_menu import menu
 from app.repositories import task_repo
-from app.services.pdf_factory import generate_certificate
+from app.services.pdf_factory import make_certificate
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -82,11 +82,9 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
             return
 
         # Генерируем справку о посещаемости
-        pdf_data = await generate_certificate(
-            cert_type="attendance",
-            student_name="Иванов Иван",
-            parent_name=call.from_user.full_name,
-            date="2024-12-19",
+        pdf_data = make_certificate(
+            cert_type="school",
+            child_name="Иванов Иван",
         )
 
         if call.message is not None and hasattr(call.message, 'answer_document'):
@@ -111,11 +109,9 @@ async def generate_progress_cert(call: CallbackQuery) -> None:
             return
 
         # Генерируем справку об успеваемости
-        pdf_data = await generate_certificate(
-            cert_type="progress",
-            student_name="Иванов Иван",
-            parent_name=call.from_user.full_name,
-            date="2024-12-19",
+        pdf_data = make_certificate(
+            cert_type="school",
+            child_name="Иванов Иван",
         )
 
         if call.message is not None and hasattr(call.message, 'answer_document'):
@@ -140,11 +136,9 @@ async def generate_behavior_cert(call: CallbackQuery) -> None:
             return
 
         # Генерируем справку о поведении
-        pdf_data = await generate_certificate(
-            cert_type="behavior",
-            student_name="Иванов Иван",
-            parent_name=call.from_user.full_name,
-            date="2024-12-19",
+        pdf_data = make_certificate(
+            cert_type="family",
+            child_name="Иванов Иван",
         )
 
         if call.message is not None and hasattr(call.message, 'answer_document'):
