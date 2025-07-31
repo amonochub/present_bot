@@ -92,7 +92,7 @@ python3 -m black app/
    # app/db/base.py
    from sqlalchemy.ext.declarative import declarative_base
    Base = declarative_base()
-   
+
    # В моделях
    class User(Base):
        __tablename__ = "users"
@@ -110,7 +110,7 @@ python3 -m black app/
    ```python
    # Вместо
    message.edit_text(...)
-   
+
    # Использовать
    if message is not None:
        await message.edit_text(...)
@@ -212,10 +212,10 @@ python3 -m black app/
    # .github/workflows/ci.yml
    - name: Type check
      run: python -m mypy app/
-   
+
    - name: Lint
      run: python -m ruff check app/
-   
+
    - name: Format check
      run: python -m black --check app/
    ```
@@ -232,4 +232,4 @@ python3 -m black app/
 
 **Общая оценка качества**: 6/10
 **Приоритет исправлений**: Высокий
-**Время на исправления**: 5-7 дней 
+**Время на исправления**: 5-7 дней

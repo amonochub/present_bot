@@ -164,4 +164,4 @@ async with AsyncSessionLocal() as s:
 async with AsyncSessionLocal() as s:
     notes = await s.execute(select(Note))
     print(f"Notes: {len(notes.fetchall())}")
-``` 
+```

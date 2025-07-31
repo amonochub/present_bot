@@ -1,12 +1,7 @@
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
-from aiogram.types import (
-    CallbackQuery,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    Message,
-)
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from sqlalchemy import select
 
 from app.db.session import AsyncSessionLocal
@@ -25,9 +20,7 @@ class TourFSM(StatesGroup):
 async def set_role(tg_id: int, role: str):
     async with AsyncSessionLocal() as s:
         await s.execute(
-            select(User)
-            .where(User.tg_id == tg_id)
-            .execution_options(populate_existing=True)
+            select(User).where(User.tg_id == tg_id).execution_options(populate_existing=True)
         )
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
         user.role = role
@@ -65,9 +58,7 @@ async def next_cb(call: CallbackQuery, state, lang: str):
 @router.callback_query(lambda c: c.data == "back_to_main")
 async def back_to_main_cb(call: CallbackQuery, state, lang: str):
     await state.clear()
-    await call.message.edit_text(
-        "🏠 Вы вернулись в демо-меню", reply_markup=menu("super", lang)
-    )
+    await call.message.edit_text("🏠 Вы вернулись в демо-меню", reply_markup=menu("super", lang))
     await call.answer()
 
 
@@ -77,9 +68,7 @@ async def next_step(msg: Message, state, lang: str):
 
     if idx >= len(TOUR_ROLES):
         await state.clear()
-        await msg.answer(
-            "🚀 Тур завершён! Вы снова в демо-меню.", reply_markup=menu("super", lang)
-        )
+        await msg.answer("🚀 Тур завершён! Вы снова в демо-меню.", reply_markup=menu("super", lang))
         return
 
     role = TOUR_ROLES[idx]
@@ -94,8 +83,6 @@ async def next_step(msg: Message, state, lang: str):
             get_back_btn(),  # позволяет выйти в любой момент
         ]
     )
-    await msg.answer(
-        "Переключайтесь по меню или нажмите «Дальше» →", reply_markup=next_btn
-    )
+    await msg.answer("Переключайтесь по меню или нажмите «Дальше» →", reply_markup=next_btn)
 
     await state.update_data(idx=idx + 1)

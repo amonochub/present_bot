@@ -24,11 +24,11 @@ fi
 # Функция для проверки доступности ресурсов
 check_resources() {
     echo "🔍 Проверка ресурсов..."
-    
+
     # Проверяем доступную память
     available_memory=$(free -m | awk 'NR==2{printf "%.0f", $7}')
     required_memory=$((INSTANCES * 512))  # 512MB на экземпляр
-    
+
     if [[ $available_memory -lt $required_memory ]]; then
         echo "⚠️ Внимание: Недостаточно памяти"
         echo "Доступно: ${available_memory}MB"
@@ -39,7 +39,7 @@ check_resources() {
             exit 1
         fi
     fi
-    
+
     # Проверяем CPU
     cpu_cores=$(nproc)
     if [[ $INSTANCES -gt $cpu_cores ]]; then
@@ -52,7 +52,7 @@ check_resources() {
 # Функция для создания конфигурации масштабирования
 create_scale_config() {
     echo "⚙️ Создание конфигурации масштабирования..."
-    
+
     # Создаем docker-compose.override.yml для масштабирования
     cat > docker-compose.override.yml << EOF
 version: '3.9'
@@ -107,28 +107,28 @@ http {
         least_conn;
         server bot:8080 max_fails=3 fail_timeout=30s;
     }
-    
+
     server {
         listen 80;
-        
+
         location / {
             proxy_pass http://bot_backend;
             proxy_set_header Host \$host;
             proxy_set_header X-Real-IP \$remote_addr;
             proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto \$scheme;
-            
+
             # Health check
             proxy_connect_timeout 5s;
             proxy_send_timeout 10s;
             proxy_read_timeout 10s;
         }
-        
+
         location /healthz {
             proxy_pass http://bot_backend;
             access_log off;
         }
-        
+
         location /metrics {
             proxy_pass http://bot_backend;
             access_log off;
@@ -141,17 +141,17 @@ EOF
 # Функция для применения масштабирования
 apply_scaling() {
     echo "🔄 Применение масштабирования..."
-    
+
     # Останавливаем текущие сервисы
     docker-compose down
-    
+
     # Применяем новую конфигурацию
     docker-compose up -d
-    
+
     # Ждем запуска всех экземпляров
     echo "⏳ Ожидание запуска всех экземпляров..."
     sleep 30
-    
+
     # Проверяем статус
     docker-compose ps
 }
@@ -159,17 +159,17 @@ apply_scaling() {
 # Функция для проверки масштабирования
 verify_scaling() {
     echo "✅ Проверка масштабирования..."
-    
+
     # Проверяем количество запущенных контейнеров
     running_instances=$(docker-compose ps bot | grep -c "Up")
-    
+
     if [[ $running_instances -eq $INSTANCES ]]; then
         echo "✅ Запущено $running_instances экземпляров из $INSTANCES"
     else
         echo "❌ Запущено $running_instances экземпляров, ожидалось $INSTANCES"
         return 1
     fi
-    
+
     # Проверяем health check
     if curl -f http://localhost/healthz > /dev/null 2>&1; then
         echo "✅ Load balancer работает"
@@ -177,7 +177,7 @@ verify_scaling() {
         echo "❌ Load balancer недоступен"
         return 1
     fi
-    
+
     # Проверяем метрики
     if curl -f http://localhost/metrics > /dev/null 2>&1; then
         echo "✅ Метрики доступны"
@@ -190,10 +190,10 @@ verify_scaling() {
 # Функция для мониторинга производительности
 monitor_performance() {
     echo "📊 Мониторинг производительности..."
-    
+
     echo "Использование ресурсов:"
     docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}\t{{.NetIO}}"
-    
+
     echo ""
     echo "Логи последних запросов:"
     docker-compose logs --tail=10 bot
@@ -208,13 +208,13 @@ main() {
     echo "4. Проверка работоспособности"
     echo "5. Мониторинг производительности"
     echo ""
-    
+
     check_resources
     create_scale_config
     apply_scaling
     verify_scaling
     monitor_performance
-    
+
     echo "🎉 Масштабирование завершено успешно!"
     echo ""
     echo "📊 Доступные эндпоинты:"
@@ -225,4 +225,4 @@ main() {
 }
 
 # Запуск основного процесса
-main "$@" 
+main "$@"

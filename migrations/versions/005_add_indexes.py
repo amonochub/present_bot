@@ -5,11 +5,12 @@ Revises: 004
 Create Date: 2024-01-01 00:00:00.000000
 
 """
+
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = '005'
-down_revision = '004'
+revision = "005"
+down_revision = "004"
 branch_labels = None
 depends_on = None
 
@@ -21,4 +22,4 @@ def upgrade():
 
 def downgrade():
     op.drop_index("ix_tickets_status")
-    op.drop_index("ix_tasks_deadline") 
+    op.drop_index("ix_tasks_deadline")

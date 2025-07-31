@@ -28,9 +28,7 @@ async def list_all() -> List[Ticket]:
 async def set_status(tkt_id: int, status: Status) -> bool:
     try:
         async with AsyncSessionLocal() as s:
-            await s.execute(
-                update(Ticket).where(Ticket.id == tkt_id).values(status=status)
-            )
+            await s.execute(update(Ticket).where(Ticket.id == tkt_id).values(status=status))
             await s.commit()
             # Если заявка закрыта, уменьшаем счетчик
             if status == Status.done:

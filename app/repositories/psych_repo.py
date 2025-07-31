@@ -26,8 +26,6 @@ async def list_open() -> List[PsychRequest]:
 async def mark_done(req_id: int) -> None:
     async with AsyncSessionLocal() as s:
         await s.execute(
-            update(PsychRequest)
-            .where(PsychRequest.id == req_id)
-            .values(status=Status.done)
+            update(PsychRequest).where(PsychRequest.id == req_id).values(status=Status.done)
         )
         await s.commit()

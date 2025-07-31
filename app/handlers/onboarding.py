@@ -125,20 +125,12 @@ async def send_role_carousel(message: Message, current_index: int, lang: str) ->
 
         # Кнопка выбора роли
         keyboard_buttons.append(
-            [
-                InlineKeyboardButton(
-                    text=f"✅ Выбрать {ROLES[role]}", callback_data=f"role_{role}"
-                )
-            ]
+            [InlineKeyboardButton(text=f"✅ Выбрать {ROLES[role]}", callback_data=f"role_{role}")]
         )
 
         # Кнопка выхода из карусели
         keyboard_buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="🔙 К списку ролей", callback_data="back_to_roles"
-                )
-            ]
+            [InlineKeyboardButton(text="🔙 К списку ролей", callback_data="back_to_roles")]
         )
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
@@ -178,20 +170,12 @@ async def send_role_carousel(message: Message, current_index: int, lang: str) ->
 
         # Кнопка выбора роли
         keyboard_buttons.append(
-            [
-                InlineKeyboardButton(
-                    text=f"✅ Выбрать {ROLES[role]}", callback_data=f"role_{role}"
-                )
-            ]
+            [InlineKeyboardButton(text=f"✅ Выбрать {ROLES[role]}", callback_data=f"role_{role}")]
         )
 
         # Кнопка выхода из карусели
         keyboard_buttons.append(
-            [
-                InlineKeyboardButton(
-                    text="🔙 К списку ролей", callback_data="back_to_roles"
-                )
-            ]
+            [InlineKeyboardButton(text="🔙 К списку ролей", callback_data="back_to_roles")]
         )
 
         keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
@@ -200,9 +184,7 @@ async def send_role_carousel(message: Message, current_index: int, lang: str) ->
 
 
 @router.callback_query(F.data.startswith("role_"))
-async def handle_role_selection(
-    callback: CallbackQuery, state: FSMContext, lang: str
-) -> None:
+async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка выбора роли"""
     role = callback.data.split("_", 1)[1]
 
@@ -229,16 +211,12 @@ async def handle_role_selection(
         )
 
         if callback.message is not None:
-            await callback.message.answer_photo(
-                photo=photo, caption=caption, parse_mode="Markdown"
-            )
+            await callback.message.answer_photo(photo=photo, caption=caption, parse_mode="Markdown")
 
             # Обновляем клавиатуру для подтверждения
             from app.keyboards.onboarding import get_confirmation_keyboard
 
-            await callback.message.edit_reply_markup(
-                reply_markup=get_confirmation_keyboard(role)
-            )
+            await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
 
     except Exception:
         # Если изображение не найдено, отправляем только текст
@@ -253,17 +231,13 @@ async def handle_role_selection(
 
             from app.keyboards.onboarding import get_confirmation_keyboard
 
-            await callback.message.edit_reply_markup(
-                reply_markup=get_confirmation_keyboard(role)
-            )
+            await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
 
     await callback.answer()
 
 
 @router.callback_query(F.data.startswith("confirm_role_"))
-async def handle_role_confirmation(
-    callback: CallbackQuery, state: FSMContext, lang: str
-) -> None:
+async def handle_role_confirmation(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Подтверждение выбора роли"""
     role = callback.data.split("_", 2)[2]
 
@@ -300,9 +274,7 @@ async def handle_role_confirmation(
 
 
 @router.callback_query(F.data == "back_to_roles")
-async def back_to_role_selection(
-    callback: CallbackQuery, state: FSMContext, lang: str
-) -> None:
+async def back_to_role_selection(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Возврат к выбору роли"""
     await state.set_state(OnboardingStates.selecting_role)
 
@@ -317,9 +289,7 @@ async def back_to_role_selection(
 
 
 @router.callback_query(F.data == "start_carousel")
-async def handle_start_carousel(
-    callback: CallbackQuery, state: FSMContext, lang: str
-) -> None:
+async def handle_start_carousel(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Запуск карусели ролей"""
     if callback.message is not None:
         await send_role_carousel(callback.message, 0, lang)
@@ -327,9 +297,7 @@ async def handle_start_carousel(
 
 
 @router.callback_query(F.data.startswith("carousel_"))
-async def handle_carousel_navigation(
-    callback: CallbackQuery, state: FSMContext, lang: str
-) -> None:
+async def handle_carousel_navigation(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка навигации по карусели"""
     try:
         index = int(callback.data.split("_", 1)[1])
@@ -362,9 +330,7 @@ async def show_role_info(callback: CallbackQuery, state: FSMContext, lang: str) 
         )
 
         if callback.message is not None:
-            await callback.message.answer_photo(
-                photo=photo, caption=caption, parse_mode="Markdown"
-            )
+            await callback.message.answer_photo(photo=photo, caption=caption, parse_mode="Markdown")
 
             # Кнопка для выбора этой роли
             from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup

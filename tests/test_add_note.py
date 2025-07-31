@@ -1,7 +1,5 @@
-import pytest
-import asyncio
-from app.db.user import User
 from app.db.note import Note
+from app.db.user import User
 
 
 def test_add_note_functionality():
@@ -13,20 +11,16 @@ def test_add_note_functionality():
         first_name="Демо",
         last_name="Учитель",
         role="teacher",
-        is_active=True
+        is_active=True,
     )
-    
+
     # Проверяем, что учитель создан
     assert teacher.tg_id == 1001
     assert teacher.role == "teacher"
-    
+
     # Создаем заметку
-    note = Note(
-        student_name="Петров",
-        text="Петров отлично справился с заданием",
-        teacher_id=1
-    )
-    
+    note = Note(student_name="Петров", text="Петров отлично справился с заданием", teacher_id=1)
+
     # Проверяем, что заметка создана
     assert note.student_name == "Петров"
     assert note.teacher_id == 1
@@ -35,12 +29,8 @@ def test_add_note_functionality():
 def test_note_validation():
     """Тест валидации заметки"""
     # Проверяем, что заметка создается с обязательными полями
-    note = Note(
-        student_name="Иванов",
-        text="Содержание заметки",
-        teacher_id=1
-    )
-    
+    note = Note(student_name="Иванов", text="Содержание заметки", teacher_id=1)
+
     assert note.student_name == "Иванов"
     assert note.text == "Содержание заметки"
-    assert note.teacher_id == 1 
+    assert note.teacher_id == 1

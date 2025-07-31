@@ -32,12 +32,12 @@ async def kpi_loop():
         total = await s.scalar(select(func.count()).select_from(Task))
         done = await s.scalar(select(func.count()).select_from(Task).where(Task.status == TaskStatus.COMPLETED))
         overdue = await s.scalar(select(func.count()).select_from(Task).where(Task.status == TaskStatus.PENDING, Task.deadline < date.today()))
-        
+
         # Обновление метрик
         TASKS_TOTAL.set(total or 0)
         TASKS_COMPLETED.set(done or 0)
         TASKS_OVERDUE.set(overdue or 0)
-        
+
         await asyncio.sleep(60)
 ```
 
@@ -49,10 +49,10 @@ async def kpi_loop():
 # app/bot.py
 async def main():
     # ... инициализация ...
-    
+
     # Запуск KPI планировщика
     asyncio.create_task(kpi_loop())
-    
+
     # Запуск бота
     await dp.start_polling(bot)
 ```
@@ -62,7 +62,7 @@ async def main():
 ### Панели
 
 1. **Всего поручений** - общее количество активных поручений
-2. **Выполнено** - количество завершенных поручений  
+2. **Выполнено** - количество завершенных поручений
 3. **Просрочено** - количество поручений с истекшим дедлайном
 
 ### Цветовая индикация
@@ -123,7 +123,7 @@ async def main():
 
 1. **Создание просроченного поручения**:
    ```sql
-   INSERT INTO tasks (title, deadline, status) 
+   INSERT INTO tasks (title, deadline, status)
    VALUES ('Тест', '2024-01-01', 'PENDING');
    ```
 
@@ -145,7 +145,7 @@ async def main():
 # Всего поручений
 kpi_tasks_total
 
-# Выполнено поручений  
+# Выполнено поручений
 kpi_tasks_done
 
 # Просрочено поручений
@@ -224,4 +224,4 @@ async def toggle_task(call: CallbackQuery):
 - ✅ **Тестирование** через команду /kpi_test
 - ✅ **Мониторинг** через Prometheus queries
 
-**KPI поручений директора полностью автоматизирован!** 📊 
+**KPI поручений директора полностью автоматизирован!** 📊

@@ -8,4 +8,4 @@ handlers:
     formatter: json
 root:
   level: INFO
-  handlers: [console] 
+  handlers: [console]

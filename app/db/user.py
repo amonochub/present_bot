@@ -44,9 +44,7 @@ class User(Base, TimestampMixin):
         "Task", foreign_keys="Task.author_id", back_populates="author"
     )
     broadcasts: "list[Broadcast]" = relationship("Broadcast", back_populates="author")
-    notifications: "list[Notification]" = relationship(
-        "Notification", back_populates="user"
-    )
+    notifications: "list[Notification]" = relationship("Notification", back_populates="user")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, tg_id={self.tg_id}, role={self.role})>"

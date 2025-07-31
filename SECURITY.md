@@ -113,7 +113,7 @@ class Settings(BaseSettings):
         if not v or ':' not in v:
             raise ValueError('Invalid Telegram token format')
         return v
-    
+
     @validator('DB_PASS')
     def validate_db_password(cls, v):
         if len(v) < 8:
@@ -200,4 +200,4 @@ pytest tests/test_security.py -v
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [Telegram Bot API Security](https://core.telegram.org/bots/api#security-considerations)
-- [SQLAlchemy Security](https://docs.sqlalchemy.org/en/14/security.html) 
+- [SQLAlchemy Security](https://docs.sqlalchemy.org/en/14/security.html)

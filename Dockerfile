@@ -18,4 +18,4 @@ COPY . /app
 
 # entrypoint применит alembic
 ENTRYPOINT ["/app/scripts/run_migrations.sh"]
-CMD ["python", "-m", "app.bot"] 
+CMD ["python", "-m", "app.bot"]

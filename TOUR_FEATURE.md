@@ -84,4 +84,4 @@ Each role has a descriptive text explaining their main functionality:
 - Add tour progress indicator (e.g., "Step 2 of 6")
 - Add role-specific demo actions
 - Add tour completion statistics
-- Add multi-language support for tour descriptions 
+- Add multi-language support for tour descriptions

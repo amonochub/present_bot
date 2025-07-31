@@ -64,9 +64,7 @@ async def change_status(call: CallbackQuery):
             return
 
         ticket_id = int(call.data.split("_")[-1])
-        status = (
-            Status.done if call.data.startswith("mark_done") else Status.in_progress
-        )
+        status = Status.done if call.data.startswith("mark_done") else Status.in_progress
 
         success = await ticket_repo.set_status(ticket_id, status)
         if success:
@@ -115,9 +113,7 @@ async def change_media_status(call: CallbackQuery):
             return
 
         req_id = int(call.data.split("_")[-1])
-        status = (
-            Status.done if call.data.startswith("media_done") else Status.in_progress
-        )
+        status = Status.done if call.data.startswith("media_done") else Status.in_progress
 
         success = await media_repo.set_status(req_id, status)
         if success:

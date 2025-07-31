@@ -40,9 +40,7 @@ class AuditMiddleware(BaseMiddleware):
         try:
             if hasattr(event, "from_user") and event.from_user:
                 async with AsyncSessionLocal() as s:
-                    user = await s.scalar(
-                        select(User).where(User.tg_id == event.from_user.id)
-                    )
+                    user = await s.scalar(select(User).where(User.tg_id == event.from_user.id))
                     if user:
                         return {
                             "user_id": user.id,
@@ -64,9 +62,7 @@ class AuditMiddleware(BaseMiddleware):
             logger.error(f"Ошибка при получении информации о пользователе: {e}")
             return {"error": str(e)}
 
-    async def _log_action(
-        self, event: TelegramObject, user_info: dict[str, Any]
-    ) -> None:
+    async def _log_action(self, event: TelegramObject, user_info: dict[str, Any]) -> None:
         """Логировать действие пользователя"""
         try:
             action_type = self._get_action_type(event)

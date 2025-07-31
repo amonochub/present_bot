@@ -10,7 +10,5 @@ class Ticket(Base):
     author_id = Column(Integer, ForeignKey("users.id"))
     title = Column(String)  # краткое описание
     file_id = Column(String, nullable=True)  # фото/док
-    status = Column(
-        Enum(Status), default=Status.open, nullable=False
-    )  # open / in_progress / done
+    status = Column(Enum(Status), default=Status.open, nullable=False)  # open / in_progress / done
     created_at = Column(DateTime, server_default=func.now())

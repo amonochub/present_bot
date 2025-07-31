@@ -105,7 +105,7 @@ class AuditMiddleware(BaseMiddleware):
     async def _log_action(self, event: TelegramObject, user_info: dict[str, Any]) -> None:
         action_type = self._get_action_type(event)
         action_data = self._get_action_data(event)
-        
+
         log_message = (
             f"AUDIT: User {user_info.get('role', 'unknown')} "
             f"performed {action_type}: {action_data}"
@@ -242,4 +242,4 @@ mypy app/ --ignore-missing-imports
 
 Все критические проблемы безопасности были успешно исправлены. Проект теперь соответствует современным стандартам безопасности и готов к продакшн развертыванию.
 
-**Общая оценка безопасности:** 9/10 ⭐⭐⭐⭐⭐ 
+**Общая оценка безопасности:** 9/10 ⭐⭐⭐⭐⭐

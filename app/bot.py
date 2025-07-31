@@ -44,7 +44,6 @@ logging.config.dictConfig(yaml.safe_load(pathlib.Path("logging.yml").read_text()
 
 # Sentry integration
 import sentry_sdk
-from aiohttp import web
 from sentry_sdk.integrations.aiohttp import AioHttpIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
@@ -74,9 +73,7 @@ if settings.GLITCHTIP_DSN:
         environment=settings.ENV,
         release="schoolbot@1.0.0",
         # Filter out validation errors and rate limits
-        before_send=lambda event, hint: (
-            None if _should_suppress_event(event, hint) else event
-        ),
+        before_send=lambda event, hint: (None if _should_suppress_event(event, hint) else event),
     )
 
 bot = Bot(settings.TELEGRAM_TOKEN)
@@ -88,7 +85,8 @@ dp = Dispatcher(storage=storage)
 async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-        if not (await conn.execute(select(User))).first():
+        result = await conn.execute(select(User))
+        if not result.first():
             await conn.execute(User.__table__.insert(), DEMO_USERS)
             await conn.commit()
         await seed_demo(conn)
@@ -109,7 +107,7 @@ async def seed_demo(conn) -> None:
     # Берём id первых демо-пользователей
     teacher1 = 1  # teacher01
     teacher2 = 2  # teacher02
-    student2 = 23  # student02 (5 учителей + 5 админов + 5 директоров = 15; student02 = 15 + 2 = 17, но по порядку вставки = 23)
+    student2 = 23  # student02
     student3 = 24  # student03
 
     # --- заметки учителей ---
@@ -136,9 +134,7 @@ async def seed_demo(conn) -> None:
 
     tickets = [
         Ticket(author_id=teacher1, title="Не включается проектор", status=Status.open),
-        Ticket(
-            author_id=teacher2, title="Не печатает принтер", status=Status.in_progress
-        ),
+        Ticket(author_id=teacher2, title="Не печатает принтер", status=Status.in_progress),
     ]
 
     # --- медиа-заявка ---
@@ -221,9 +217,7 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Optional[User]:
     """Аутентификация пользователя"""
     async with AsyncSessionLocal() as session:
         result = await session.execute(
-            select(User).where(
-                User.login == login, User.password == pwd, User.used == False
-            )
+            select(User).where(User.login == login, User.password == pwd, User.used == False)
         )
         user = result.scalar_one_or_none()
         if user:
@@ -258,9 +252,7 @@ async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
                     InlineKeyboardButton(
                         text="🚀 Пройти онбординг", callback_data="start_onboarding"
                     ),
-                    InlineKeyboardButton(
-                        text="🔑 Войти в систему", callback_data="start_login"
-                    ),
+                    InlineKeyboardButton(text="🔑 Войти в систему", callback_data="start_login"),
                 ]
             ]
         )
@@ -296,9 +288,7 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
 
 # ────────────────── Обработка выбора действия при старте ──────────────────
 @dp.callback_query(F.data == "start_onboarding")
-async def handle_start_onboarding(
-    call: CallbackQuery, state: FSMContext, lang: str
-) -> None:
+async def handle_start_onboarding(call: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка выбора онбординга"""
     from app.handlers.onboarding import start_onboarding
 
@@ -357,11 +347,12 @@ async def main() -> None:
 
     # Start health check server
     from app.health import init_health_app
+    from aiohttp import web
 
     health_app = await init_health_app()
     runner = web.AppRunner(health_app)
     await runner.setup()
-    site = web.TCPSite(runner, "0.0.0.0", 8080)
+    site = web.TCPSite(runner, "127.0.0.1", 8080)
     await site.start()
 
     # Start KPI metrics loop

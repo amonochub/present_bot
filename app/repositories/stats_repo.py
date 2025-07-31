@@ -25,9 +25,7 @@ async def kpi_summary() -> Dict[str, Any]:
             # поручения директора
             tasks_total = await s.scalar(select(func.count()).select_from(Task))
             tasks_done = await s.scalar(
-                select(func.count())
-                .select_from(Task)
-                .where(Task.status == TaskStatus.COMPLETED)
+                select(func.count()).select_from(Task).where(Task.status == TaskStatus.COMPLETED)
             )
 
             # просроченные поручения

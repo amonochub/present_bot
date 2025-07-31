@@ -28,11 +28,7 @@ def get_role_selection_keyboard() -> InlineKeyboardMarkup:
     keyboard.append(row3)
 
     # Четвертый ряд: Карусель всех ролей
-    row4 = [
-        InlineKeyboardButton(
-            text="🖼 Просмотреть все роли", callback_data="start_carousel"
-        )
-    ]
+    row4 = [InlineKeyboardButton(text="🖼 Просмотреть все роли", callback_data="start_carousel")]
     keyboard.append(row4)
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -49,9 +45,7 @@ def get_confirmation_keyboard(role: str) -> InlineKeyboardMarkup:
     keyboard.append([confirm_button])
 
     # Кнопка возврата к выбору
-    back_button = InlineKeyboardButton(
-        text="🔄 Выбрать другую роль", callback_data="back_to_roles"
-    )
+    back_button = InlineKeyboardButton(text="🔄 Выбрать другую роль", callback_data="back_to_roles")
     keyboard.append([back_button])
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -74,15 +68,11 @@ def get_role_info_keyboard() -> InlineKeyboardMarkup:
     # Размещаем кнопки по 2 в ряд
     for i in range(0, len(roles_info), 2):
         row = []
-        row.append(
-            InlineKeyboardButton(text=roles_info[i][0], callback_data=roles_info[i][1])
-        )
+        row.append(InlineKeyboardButton(text=roles_info[i][0], callback_data=roles_info[i][1]))
 
         if i + 1 < len(roles_info):
             row.append(
-                InlineKeyboardButton(
-                    text=roles_info[i + 1][0], callback_data=roles_info[i + 1][1]
-                )
+                InlineKeyboardButton(text=roles_info[i + 1][0], callback_data=roles_info[i + 1][1])
             )
 
         keyboard.append(row)

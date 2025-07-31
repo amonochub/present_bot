@@ -50,14 +50,14 @@ check_env_variable() {
 # Функция для проверки секретов в коде
 check_secrets_in_code() {
     echo "🔐 Проверка секретов в коде..."
-    
+
     # Проверяем наличие токенов в коде
     if grep -r "BOT_TOKEN\|TELEGRAM_TOKEN" app/ --exclude-dir=__pycache__ 2>/dev/null | grep -v "env\|config"; then
         print_status "ERROR" "Найдены токены в коде"
     else
         print_status "OK" "Токены не найдены в коде"
     fi
-    
+
     # Проверяем наличие паролей в коде
     if grep -r "password\|secret" app/ --exclude-dir=__pycache__ 2>/dev/null | grep -v "env\|config\|hash"; then
         print_status "ERROR" "Найдены пароли в коде"
@@ -69,19 +69,19 @@ check_secrets_in_code() {
 # Функция для проверки .gitignore
 check_gitignore() {
     echo "📁 Проверка .gitignore..."
-    
+
     if grep -q "\.env" .gitignore; then
         print_status "OK" ".env в .gitignore"
     else
         print_status "ERROR" ".env не в .gitignore"
     fi
-    
+
     if grep -q "__pycache__" .gitignore; then
         print_status "OK" "__pycache__ в .gitignore"
     else
         print_status "WARNING" "__pycache__ не в .gitignore"
     fi
-    
+
     if grep -q "venv" .gitignore; then
         print_status "OK" "venv в .gitignore"
     else
@@ -92,13 +92,13 @@ check_gitignore() {
 # Функция для проверки конфигурации
 check_configuration() {
     echo "⚙️ Проверка конфигурации..."
-    
+
     # Проверяем переменные окружения
     check_env_variable "TELEGRAM_TOKEN" "TELEGRAM_TOKEN"
     check_env_variable "POSTGRES_PASSWORD" "POSTGRES_PASSWORD"
     check_env_variable "POSTGRES_DB" "POSTGRES_DB"
     check_env_variable "POSTGRES_USER" "POSTGRES_USER"
-    
+
     # Проверяем опциональные переменные
     check_env_variable "GLITCHTIP_DSN" "GLITCHTIP_DSN (опционально)"
     check_env_variable "TELEGRAM_BOT_TOKEN" "TELEGRAM_BOT_TOKEN (опционально)"
@@ -108,7 +108,7 @@ check_configuration() {
 # Функция для проверки миграций
 check_migrations() {
     echo "🗄️ Проверка миграций..."
-    
+
     if [[ -d "alembic/versions" ]]; then
         local migration_count=$(ls alembic/versions/*.py 2>/dev/null | wc -l)
         if [[ $migration_count -gt 0 ]]; then
@@ -119,7 +119,7 @@ check_migrations() {
     else
         print_status "ERROR" "Папка миграций не найдена"
     fi
-    
+
     if [[ -f "alembic.ini" ]]; then
         print_status "OK" "alembic.ini найден"
     else
@@ -130,7 +130,7 @@ check_migrations() {
 # Функция для проверки тестов
 check_tests() {
     echo "🧪 Проверка тестов..."
-    
+
     if [[ -d "tests" ]]; then
         local test_count=$(find tests -name "test_*.py" | wc -l)
         if [[ $test_count -gt 0 ]]; then
@@ -141,7 +141,7 @@ check_tests() {
     else
         print_status "ERROR" "Папка tests не найдена"
     fi
-    
+
     # Проверяем наличие основных тестов
     check_file_exists "tests/test_security.py" "Тесты безопасности"
     check_file_exists "tests/test_basic.py" "Базовые тесты"
@@ -150,7 +150,7 @@ check_tests() {
 # Функция для проверки документации
 check_documentation() {
     echo "📚 Проверка документации..."
-    
+
     check_file_exists "README.md" "README.md"
     check_file_exists "LICENSE" "LICENSE"
     check_file_exists "CHANGELOG.md" "CHANGELOG.md"
@@ -162,7 +162,7 @@ check_documentation() {
 # Функция для проверки мониторинга
 check_monitoring() {
     echo "📊 Проверка мониторинга..."
-    
+
     check_file_exists "docker-compose.yml" "docker-compose.yml"
     check_file_exists "prometheus/prometheus.yml" "Конфигурация Prometheus"
     check_file_exists "prometheus/rules.yml" "Правила алертов"
@@ -173,13 +173,13 @@ check_monitoring() {
 # Функция для проверки скриптов
 check_scripts() {
     echo "🛠️ Проверка скриптов..."
-    
+
     check_file_exists "scripts/deploy.sh" "Скрипт деплоя"
     check_file_exists "scripts/backup.sh" "Скрипт бэкапа"
     check_file_exists "scripts/restore.sh" "Скрипт восстановления"
     check_file_exists "scripts/init_monitoring.sh" "Скрипт инициализации мониторинга"
     check_file_exists "scripts/scale.sh" "Скрипт масштабирования"
-    
+
     # Проверяем исполняемость скриптов
     if [[ -x "scripts/deploy.sh" ]]; then
         print_status "OK" "Скрипт deploy.sh исполняемый"
@@ -191,7 +191,7 @@ check_scripts() {
 # Функция для проверки демо-данных
 check_demo_data() {
     echo "🎭 Проверка демо-данных..."
-    
+
     if grep -r "teacher\|student\|admin" scripts/init_demo.py 2>/dev/null; then
         print_status "WARNING" "Демо-аккаунты с простыми паролями"
         echo "   Рекомендация: Измените пароли демо-аккаунтов перед продакшеном"
@@ -203,14 +203,14 @@ check_demo_data() {
 # Функция для проверки производительности
 check_performance() {
     echo "⚡ Проверка производительности..."
-    
+
     # Проверяем наличие health check
     if grep -r "health" app/health.py 2>/dev/null; then
         print_status "OK" "Health check реализован"
     else
         print_status "WARNING" "Health check не найден"
     fi
-    
+
     # Проверяем наличие метрик
     if grep -r "prometheus" app/middlewares/metrics.py 2>/dev/null; then
         print_status "OK" "Метрики Prometheus настроены"
@@ -222,21 +222,21 @@ check_performance() {
 # Функция для проверки безопасности
 check_security() {
     echo "🔒 Проверка безопасности..."
-    
+
     # Проверяем CSRF защиту
     if grep -r "csrf" app/utils/csrf.py 2>/dev/null; then
         print_status "OK" "CSRF защита реализована"
     else
         print_status "WARNING" "CSRF защита не найдена"
     fi
-    
+
     # Проверяем rate limiting
     if grep -r "rate.*limit" app/middlewares/ 2>/dev/null; then
         print_status "OK" "Rate limiting настроен"
     else
         print_status "WARNING" "Rate limiting не найден"
     fi
-    
+
     # Проверяем валидацию ввода
     if grep -r "pydantic\|validation" app/ 2>/dev/null; then
         print_status "OK" "Валидация ввода настроена"
@@ -250,37 +250,37 @@ final_assessment() {
     echo ""
     echo "📋 Финальная оценка готовности к продакшену:"
     echo ""
-    
+
     local total_checks=0
     local passed_checks=0
     local warnings=0
     local errors=0
-    
+
     # Подсчитываем результаты (упрощенная версия)
     if [[ -f ".env" ]]; then ((passed_checks++)); else ((errors++)); fi
     ((total_checks++))
-    
+
     if [[ -f "docker-compose.yml" ]]; then ((passed_checks++)); else ((errors++)); fi
     ((total_checks++))
-    
+
     if [[ -d "tests" ]]; then ((passed_checks++)); else ((warnings++)); fi
     ((total_checks++))
-    
+
     if [[ -f "LICENSE" ]]; then ((passed_checks++)); else ((warnings++)); fi
     ((total_checks++))
-    
+
     if [[ -f "README.md" ]]; then ((passed_checks++)); else ((warnings++)); fi
     ((total_checks++))
-    
+
     local success_rate=$((passed_checks * 100 / total_checks))
-    
+
     echo "📊 Результаты:"
     echo "   Всего проверок: $total_checks"
     echo "   Успешно: $passed_checks"
     echo "   Предупреждения: $warnings"
     echo "   Ошибки: $errors"
     echo "   Процент готовности: $success_rate%"
-    
+
     if [[ $success_rate -ge 90 ]]; then
         print_status "OK" "Проект готов к продакшену! 🎉"
     elif [[ $success_rate -ge 70 ]]; then
@@ -325,7 +325,7 @@ show_recommendations() {
 main() {
     echo "🔍 Начинаем проверку готовности к продакшену..."
     echo ""
-    
+
     check_secrets_in_code
     check_gitignore
     check_configuration
@@ -337,10 +337,10 @@ main() {
     check_demo_data
     check_performance
     check_security
-    
+
     final_assessment
     show_recommendations
-    
+
     echo ""
     echo "🎯 Следующие шаги:"
     echo "1. Исправьте все найденные ошибки"
@@ -351,4 +351,4 @@ main() {
 }
 
 # Запуск основного процесса
-main "$@" 
+main "$@"

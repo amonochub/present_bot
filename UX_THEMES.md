@@ -123,7 +123,7 @@ EMOJI = {
 ```python
 def menu(role: str, lang="ru", theme="light", nonce="") -> InlineKeyboardMarkup:
     e = EMOJI[theme]  # Получаем эмодзи для темы
-    
+
     if role == "teacher":
         kb = [
             [InlineKeyboardButton(
@@ -241,7 +241,7 @@ def downgrade() -> None:
 
 3. **Добавить в БД**:
    ```sql
-   ALTER TABLE users ADD CONSTRAINT check_theme 
+   ALTER TABLE users ADD CONSTRAINT check_theme
    CHECK (theme IN ('light', 'dark', 'neon'));
    ```
 
@@ -256,4 +256,4 @@ def downgrade() -> None:
 - ✅ **Интеграция** - работает во всех частях бота
 - ✅ **Расширяемость** - легко добавить новые темы
 
-**UX система тем полностью реализована!** 🌗 
+**UX система тем полностью реализована!** 🌗

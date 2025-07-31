@@ -1,7 +1,6 @@
 import importlib.resources
-from typing import Any, Dict
-
 import tomllib
+from typing import Any, Dict
 
 _cache: Dict[str, Dict[str, Any]] = {}
 
@@ -12,9 +11,7 @@ def load_lang(lang: str) -> Dict[str, Any]:
         return _cache[lang]
 
     try:
-        data = (
-            importlib.resources.files(__package__).joinpath(f"{lang}.toml").read_bytes()
-        )
+        data = importlib.resources.files(__package__).joinpath(f"{lang}.toml").read_bytes()
         _cache[lang] = tomllib.loads(data.decode())
         return _cache[lang]
     except (FileNotFoundError, tomllib.TOMLDecodeError):

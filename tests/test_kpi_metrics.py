@@ -1,8 +1,7 @@
-import pytest
-import asyncio
-from app.db.task import Task, TaskStatus, TaskPriority
-from app.db.user import User
 from datetime import date, timedelta
+
+from app.db.task import Task, TaskPriority, TaskStatus
+from app.db.user import User
 
 
 def test_task_status_enum():
@@ -30,9 +29,9 @@ def test_task_model():
         status=TaskStatus.PENDING,
         priority=TaskPriority.MEDIUM,
         deadline=date.today() + timedelta(days=1),
-        author_id=1
+        author_id=1,
     )
-    
+
     # Проверяем, что задача создана
     assert task.title == "Тестовая задача"
     assert task.status == TaskStatus.PENDING
@@ -49,10 +48,10 @@ def test_user_model():
         first_name="Тест",
         last_name="Пользователь",
         role="teacher",
-        is_active=True
+        is_active=True,
     )
-    
+
     # Проверяем, что пользователь создан
     assert user.tg_id == 123456789
     assert user.role == "teacher"
-    assert user.is_active is True 
+    assert user.is_active is True

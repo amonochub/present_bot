@@ -52,9 +52,7 @@ class NotificationService:
                 return False
 
             # Получаем пользователя
-            result = await session.execute(
-                select(User).where(User.id == notification.user_id)
-            )
+            result = await session.execute(select(User).where(User.id == notification.user_id))
             user = result.scalar_one_or_none()
 
             if not user or not user.notifications_enabled:

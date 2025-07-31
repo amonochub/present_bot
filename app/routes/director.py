@@ -96,9 +96,7 @@ async def start_add_task(call: CallbackQuery, state):
             return
 
         await state.set_state(AddTask.waiting_title)
-        await call.message.edit_text(
-            "📋 <b>Добавление задачи</b>\n\n" "Введите название задачи:"
-        )
+        await call.message.edit_text("📋 <b>Добавление задачи</b>\n\n" "Введите название задачи:")
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале добавления задачи: {e}")
@@ -160,9 +158,7 @@ async def task_deadline(msg: Message, state):
 
                 deadline = datetime.strptime(deadline_text, "%d.%m.%Y").date()
             except ValueError:
-                await msg.answer(
-                    "Пожалуйста, введите дату в формате ДД.ММ.ГГГГ или напишите «Нет»"
-                )
+                await msg.answer("Пожалуйста, введите дату в формате ДД.ММ.ГГГГ или напишите «Нет»")
                 return
 
         data = await state.get_data()
@@ -196,9 +192,7 @@ async def change_task_status(call: CallbackQuery):
             return
 
         task_id = int(call.data.split("_")[-1])
-        status = (
-            Status.done if call.data.startswith("task_done") else Status.in_progress
-        )
+        status = Status.done if call.data.startswith("task_done") else Status.in_progress
 
         success = await task_repo.set_status(task_id, status)
         if success:

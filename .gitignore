@@ -168,4 +168,4 @@ logs/
 temp/
 uploads/
 .env.local
-.env.production 
+.env.production

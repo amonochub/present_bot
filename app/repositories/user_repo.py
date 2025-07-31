@@ -14,9 +14,7 @@ async def teacher_ids() -> List[int]:
     try:
         async with AsyncSessionLocal() as s:
             rows = await s.scalars(
-                select(User.tg_id).where(
-                    User.role == "teacher", User.tg_id.is_not(None)
-                )
+                select(User.tg_id).where(User.role == "teacher", User.tg_id.is_not(None))
             )
             return list(rows)
     except Exception as e:

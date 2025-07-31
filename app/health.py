@@ -59,6 +59,4 @@ async def init_health_app():
 
 async def metrics(request):
     """Prometheus metrics endpoint"""
-    return web.Response(
-        body=generate_latest(), content_type="text/plain; version=0.0.4"
-    )
+    return web.Response(body=generate_latest(), content_type="text/plain; version=0.0.4")

@@ -212,4 +212,4 @@ glitchtip:
 
 - [Sentry Documentation](https://docs.sentry.io/)
 - [Self-Hosted Sentry](https://develop.sentry.dev/self-hosted/)
-- [Python SDK](https://docs.sentry.io/platforms/python/) 
+- [Python SDK](https://docs.sentry.io/platforms/python/)

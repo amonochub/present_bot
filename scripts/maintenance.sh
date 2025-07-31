@@ -14,4 +14,4 @@ find /var/lib/glitchtip -type f -size +50M -mtime +$KEEP_DAYS -delete 2>/dev/nul
 LOGF=/var/lib/docker/containers
 find "$LOGF" -type f -name "*-json.log" -size +100M -print -exec truncate -s 0 {} \;
 
-echo "[maintenance] Готово $(date)" 
+echo "[maintenance] Готово $(date)"

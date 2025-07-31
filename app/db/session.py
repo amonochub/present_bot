@@ -21,12 +21,8 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 
-async def get_session_with_rls(
-    user_id: int, role: str
-) -> AsyncGenerator[AsyncSession, None]:
+async def get_session_with_rls(user_id: int, role: str) -> AsyncGenerator[AsyncSession, None]:
     """Получение сессии с установкой параметров для RLS"""
     async with AsyncSessionLocal() as sess:
-        await sess.execute(
-            text("SET app.user_id=:uid, app.role=:r"), {"uid": user_id, "r": role}
-        )
+        await sess.execute(text("SET app.user_id=:uid, app.role=:r"), {"uid": user_id, "r": role})
         yield sess

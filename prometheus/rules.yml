@@ -44,4 +44,4 @@ groups:
       severity: critical
     annotations:
       summary: "Просроченных поручений > 3"
-      description: "Проверить вкладку ⏱ Поручения в боте" 
+      description: "Проверить вкладку ⏱ Поручения в боте"

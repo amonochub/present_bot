@@ -1,12 +1,11 @@
-import pytest
-from app.handlers.intro import INTRO_SLIDES, send_intro_slide
 from app.db.user import User
+from app.handlers.intro import INTRO_SLIDES
 
 
 def test_intro_slides_structure():
     """Тест структуры слайдов онбординга"""
     assert len(INTRO_SLIDES) == 6
-    
+
     for slide in INTRO_SLIDES:
         assert "title" in slide
         assert "text" in slide
@@ -20,7 +19,7 @@ def test_intro_slides_content():
     """Тест содержания слайдов онбординга"""
     # Проверяем, что все роли представлены
     roles = ["Учитель", "Администрация", "Директор", "Ученик", "Родитель", "Психолог"]
-    
+
     for i, slide in enumerate(INTRO_SLIDES):
         assert any(role in slide["title"] for role in roles)
         assert len(slide["text"]) > 10  # Текст должен быть информативным
@@ -36,11 +35,11 @@ def test_user_model_with_intro():
         first_name="Тест",
         last_name="Пользователь",
         role="student",
-        seen_intro=False
+        seen_intro=False,
     )
-    
+
     assert user.seen_intro is False
-    
+
     # Создаем пользователя с пройденным онбордингом
     user_with_intro = User(
         tg_id=987654321,
@@ -48,9 +47,9 @@ def test_user_model_with_intro():
         first_name="Тест2",
         last_name="Пользователь2",
         role="teacher",
-        seen_intro=True
+        seen_intro=True,
     )
-    
+
     assert user_with_intro.seen_intro is True
 
 
@@ -68,6 +67,6 @@ def test_intro_slides_unique():
     """Тест уникальности слайдов онбординга"""
     titles = [slide["title"] for slide in INTRO_SLIDES]
     assert len(titles) == len(set(titles))  # Все заголовки уникальны
-    
+
     icons = [slide["icon"] for slide in INTRO_SLIDES]
-    assert len(icons) == len(set(icons))  # Все иконки уникальны 
+    assert len(icons) == len(set(icons))  # Все иконки уникальны

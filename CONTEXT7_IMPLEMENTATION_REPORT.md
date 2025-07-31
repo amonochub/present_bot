@@ -131,4 +131,4 @@ from aiogram.types import CallbackQuery, FSInputFile, Message
 
 ---
 
-*Отчет создан автоматически на основе анализа Context7* 
+*Отчет создан автоматически на основе анализа Context7*

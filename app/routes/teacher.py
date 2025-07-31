@@ -110,9 +110,7 @@ async def save_note(msg: Message, state, lang: str):
 
         await note_repo.create_note(user.id, student, text)
         await state.clear()
-        await msg.answer(
-            t("teacher.note_added", lang), reply_markup=menu("teacher", lang)
-        )
+        await msg.answer(t("teacher.note_added", lang), reply_markup=menu("teacher", lang))
     except Exception as e:
         logger.error(f"Ошибка при сохранении заметки: {e}")
         await msg.answer(t("common.error_generic", lang))
@@ -150,9 +148,7 @@ async def ticket_title(msg: Message, state, lang: str):
 
         await state.update_data(title=title)
         await state.set_state(AddTicket.waiting_file)
-        await msg.answer(
-            "Прикрепите фото/файл (опционально) или напишите «Пропустить»:"
-        )
+        await msg.answer("Прикрепите фото/файл (опционально) или напишите «Пропустить»:")
     except Exception as e:
         logger.error(f"Ошибка при обработке описания заявки: {e}")
         await msg.answer(t("common.error_generic", lang))

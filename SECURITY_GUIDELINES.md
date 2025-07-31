@@ -241,4 +241,4 @@ docker-compose logs -f bot
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
 - [Telegram Bot API Security](https://core.telegram.org/bots/api#security-considerations)
 - [Python Security Best Practices](https://python-security.readthedocs.io/)
-- [Docker Security](https://docs.docker.com/engine/security/) 
+- [Docker Security](https://docs.docker.com/engine/security/)

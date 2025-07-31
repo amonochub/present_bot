@@ -68,9 +68,7 @@ class Settings(BaseSettings):
         # Parse ADMIN_IDS from comma-separated string
         if self.ADMIN_IDS:
             self._admin_ids_list = [
-                int(id.strip())
-                for id in self.ADMIN_IDS.split(",")
-                if id.strip().isdigit()
+                int(id.strip()) for id in self.ADMIN_IDS.split(",") if id.strip().isdigit()
             ]
         else:
             self._admin_ids_list = []

@@ -1,16 +1,10 @@
 from logging.config import fileConfig
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
-from alembic import context
-import asyncio
 
+from sqlalchemy import engine_from_config, pool
+
+from alembic import context
 from app.config import config
 from app.db.base import Base
-from app.db.user import User
-from app.db.note import Note
-from app.db.ticket import Ticket
-from app.db.media_request import MediaRequest
-from app.db.task import Task
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -69,7 +63,7 @@ def run_migrations_online() -> None:
     """
     configuration = config_file.get_section(config_file.config_ini_section)
     configuration["sqlalchemy.url"] = get_url()
-    
+
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -77,9 +71,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
@@ -88,4 +80,4 @@ def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    run_migrations_online() 
+    run_migrations_online()
