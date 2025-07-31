@@ -184,6 +184,9 @@ def get_faq_text(lang: str) -> str:
 @router.callback_query(F.data == "help")
 async def help_button(call: CallbackQuery, lang: str) -> None:
     try:
+        if call.from_user is None:
+            await call.answer("Ошибка: пользователь не найден.", show_alert=True)
+            return
         user_role = await get_user_role(call.from_user.id)
         if not user_role:
             await call.answer("Пожалуйста, сначала войдите в систему.", show_alert=True)
@@ -205,6 +208,9 @@ async def help_button(call: CallbackQuery, lang: str) -> None:
 async def teacher_notes_command(msg: Message, lang: str) -> None:
     """Команда /notes для учителей"""
     try:
+        if msg.from_user is None:
+            await msg.answer("Ошибка: пользователь не найден.")
+            return
         user = await get_user_role(msg.from_user.id)
         if not user or user not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
@@ -223,6 +229,9 @@ async def teacher_notes_command(msg: Message, lang: str) -> None:
 async def teacher_addnote_command(msg: Message, lang: str) -> None:
     """Команда /addnote для учителей"""
     try:
+        if msg.from_user is None:
+            await msg.answer("Ошибка: пользователь не найден.")
+            return
         user = await get_user_role(msg.from_user.id)
         if not user or user not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
@@ -251,6 +260,9 @@ async def teacher_addnote_command(msg: Message, lang: str) -> None:
 async def teacher_ticket_command(msg: Message, lang: str) -> None:
     """Команда /ticket для учителей"""
     try:
+        if msg.from_user is None:
+            await msg.answer("Ошибка: пользователь не найден.")
+            return
         user = await get_user_role(msg.from_user.id)
         if not user or user not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")

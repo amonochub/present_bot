@@ -29,6 +29,8 @@ async def toggle_theme(uid: int) -> str:
         new = "dark" if user.theme == "light" else "light"
         if user is not None and user.id is not None:
             await s.execute(update(User).where(User.id == user.id).values(theme=new))
+        else:
+            return
         await s.commit()
         return new
 

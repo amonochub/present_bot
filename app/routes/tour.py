@@ -86,7 +86,7 @@ async def next_step(msg: Message, state: Any, lang: str) -> None:
     next_btn = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton("➡️ Дальше", callback_data="tour_next")],
-            [get_back_btn()],  # позволяет выйти в любой момент
+            [InlineKeyboardButton(text="◀️ Главное меню", callback_data="back_to_main")],  # позволяет выйти в любой момент
         ]
     )
     await msg.answer("Переключайтесь по меню или нажмите «Дальше» →", reply_markup=next_btn)

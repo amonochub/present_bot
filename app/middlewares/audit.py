@@ -88,16 +88,16 @@ class AuditMiddleware(BaseMiddleware):
     def _get_action_type(self, event: TelegramObject) -> str:
         """Определить тип действия"""
         if isinstance(event, Message):
-            if event.text and event.text.startswith("/"):
+            if event.text is not None and event.text.startswith("/"):
                 return "command"
-            elif event.text:
+            elif event.text is not None:
                 return "message"
             elif event.photo or event.document or event.voice:
                 return "file_upload"
         elif isinstance(event, CallbackQuery):
-            if event.data and event.data.startswith("switch_"):
+            if event.data is not None and event.data.startswith("switch_"):
                 return "role_change"
-            elif event.data and (event.data.startswith("admin_") or event.data.startswith("teacher_")):
+            elif event.data is not None and (event.data.startswith("admin_") or event.data.startswith("teacher_")):
                 return "menu_access"
             else:
                 return "button_click"
@@ -107,11 +107,11 @@ class AuditMiddleware(BaseMiddleware):
     def _get_action_data(self, event: TelegramObject) -> str:
         """Получить данные действия"""
         if isinstance(event, Message):
-            if event.text:
+            if event.text is not None:
                 # Ограничиваем длину для безопасности
                 return event.text[:100] + ("..." if len(event.text) > 100 else "")
         elif isinstance(event, CallbackQuery):
-            if event.data:
+            if event.data is not None:
                 return event.data[:50] + ("..." if len(event.data) > 50 else "")
 
         return "no_data"
