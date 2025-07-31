@@ -18,4 +18,7 @@ class Note(Base, TimestampMixin):
     teacher = relationship("User", back_populates="notes")
 
     def __repr__(self):
-        return f"<Note(id={self.id}, student_name='{self.student_name}', teacher_id={self.teacher_id})>"
+        return (
+            f"<Note(id={self.id}, student_name='{self.student_name}', "
+            f"teacher_id={self.teacher_id})>"
+        )

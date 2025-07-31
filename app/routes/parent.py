@@ -38,7 +38,8 @@ async def view_child_tasks(call: CallbackQuery):
             txt = "📚 <b>Задания ребенка</b>\n\n" + "\n".join(
                 f"📝 <b>{t.title}</b>\n"
                 f"📄 {t.description}\n"
-                f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}\n"
+                f"⏰ Дедлайн: "
+                f"{t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}\n"
                 for t in tasks[:3]  # Показываем только первые 3 задания
             )
             if len(tasks) > 3:

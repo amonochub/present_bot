@@ -7,12 +7,15 @@ from datetime import date, timedelta
 from typing import Optional
 
 import redis.asyncio as redis
+import sentry_sdk
 import yaml
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import CallbackQuery, Message
+from sentry_sdk.integrations.aiohttp import AioHttpIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from sqlalchemy import select, update
 
 from app.config import settings
@@ -43,9 +46,6 @@ from app.utils.csrf import issue_nonce
 logging.config.dictConfig(yaml.safe_load(pathlib.Path("logging.yml").read_text()))
 
 # Sentry integration
-import sentry_sdk
-from sentry_sdk.integrations.aiohttp import AioHttpIntegration
-from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 
 
 def _should_suppress_event(event, hint):
@@ -189,7 +189,10 @@ async def seed_demo(conn) -> None:
         Broadcast(
             author_id=6,  # admin01
             title="Собрание учителей",
-            message="Уважаемые коллеги! Напоминаем о собрании учителей сегодня в 15:00 в актовом зале. Повестка: подготовка к родительским собраниям.",
+            message=(
+                "Уважаемые коллеги! Напоминаем о собрании учителей сегодня в 15:00 "
+                "в актовом зале. Повестка: подготовка к родительским собраниям."
+            ),
             target_role="teacher",
             status="delivered",
         ),
@@ -217,7 +220,7 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Optional[User]:
     """Аутентификация пользователя"""
     async with AsyncSessionLocal() as session:
         result = await session.execute(
-            select(User).where(User.login == login, User.password == pwd, User.used == False)
+            select(User).where(User.login == login, User.password == pwd, User.used.is_(False))
         )
         user = result.scalar_one_or_none()
         if user:
@@ -346,8 +349,9 @@ async def main() -> None:
     await init_db()
 
     # Start health check server
-    from app.health import init_health_app
     from aiohttp import web
+
+    from app.health import init_health_app
 
     health_app = await init_health_app()
     runner = web.AppRunner(health_app)
