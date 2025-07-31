@@ -183,7 +183,7 @@ async def task_deadline(msg: Message, state: Any) -> None:
             title=data["title"],
             description=data["description"],
             deadline=deadline,
-            author_id=user.id,  # type: ignore
+            author_id=user.id,
         )
 
         await state.clear()

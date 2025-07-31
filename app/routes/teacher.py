@@ -48,7 +48,7 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
-        if user.id is not None:
+        if user is not None and user.id is not None:
             notes = await note_repo.list_notes(user.id)
         else:
             notes = []

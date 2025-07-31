@@ -8,7 +8,7 @@ from app.db.session import AsyncSessionLocal
 from app.db.task import Task, TaskStatus
 
 
-async def create_task(title: str, description: str, deadline: date, author_id: int) -> Task:
+async def create_task(title: str, description: str, deadline: date | None, author_id: int) -> Task:
     """Создать новую задачу"""
     async with AsyncSessionLocal() as s:
         task = Task(

@@ -274,6 +274,9 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
     data = await state.get_data()
 
     if current_state == "await_login":
+        if m.text is None:
+            await m.answer("Пожалуйста, введите логин.")
+            return
         data["login"] = m.text.strip()
         await state.set_state("await_pwd")
         await state.set_data(data)
@@ -288,7 +291,7 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
             nonce = await issue_nonce(dp.storage, m.chat.id, m.from_user.id)
             await m.answer(
                 t("common.auth_success", lang),
-                reply_markup=menu(str(user.role), lang, str(user.theme), nonce),
+                reply_markup=menu(str(user.role), lang, str(user.theme), nonce),  # type: ignore
             )
         else:
             await m.answer(t("common.bad_credentials", lang))
@@ -310,7 +313,8 @@ async def handle_start_onboarding(call: CallbackQuery, state: FSMContext, lang: 
 async def handle_start_login(call: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка выбора входа в систему"""
     await state.set_state("await_login")
-    await call.message.edit_text(t("common.start_welcome", lang))
+    if call.message is not None and hasattr(call.message, 'edit_text'):
+        await call.message.edit_text(t("common.start_welcome", lang))
     await call.answer()
 
 
@@ -328,12 +332,14 @@ async def demo_switch(call: CallbackQuery, lang: str) -> None:
         return
 
     async with AsyncSessionLocal() as s:
-        await s.execute(update(User).where(User.id == user.id).values(role=role_target))
-        await s.commit()
-    await call.message.edit_text(
-        f"🚀 Вы переключились в режим «{ROLES[role_target]}»",
-        reply_markup=menu(role_target, lang, user.theme),
-    )
+        if user is not None and user.id is not None:  # type: ignore
+            await s.execute(update(User).where(User.id == user.id).values(role=role_target))
+            await s.commit()
+    if call.message is not None and hasattr(call.message, 'edit_text'):
+        await call.message.edit_text(
+            f"🚀 Вы переключились в режим «{ROLES[role_target]}»",
+            reply_markup=menu(role_target, lang, user.theme),
+        )
     await call.answer()
 
 
