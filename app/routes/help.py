@@ -1,25 +1,29 @@
 """
 Хэндлер для команды /help
 """
-from aiogram import Router, F
-from aiogram.types import Message, CallbackQuery
-from aiogram.filters import Command
-from typing import Optional
+
 import logging
-from app.keyboards.main_menu import menu
-from app.db.user import User
+from typing import Optional
+
+from aiogram import F, Router
+from aiogram.filters import Command
+from aiogram.types import CallbackQuery, Message
 from sqlalchemy import select
+
 from app.db.session import AsyncSessionLocal
-from app.i18n import t
+from app.db.user import User
+from app.keyboards.main_menu import menu
 
 router = Router()
 logger = logging.getLogger(__name__)
+
 
 # helper: get current user role
 async def get_user_role(tg_id: int) -> Optional[str]:
     async with AsyncSessionLocal() as s:
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
         return user.role if user else None
+
 
 # ─────────── Команда /help ───────────
 @router.message(Command("help"))
@@ -29,7 +33,7 @@ async def help_command(msg: Message, lang: str):
         if not user_role:
             await msg.answer("Пожалуйста, сначала войдите в систему.")
             return
-            
+
         help_text = get_help_text(user_role, lang)
         faq_text = get_faq_text(lang)
         full_text = help_text + "\n\n" + faq_text
@@ -38,9 +42,10 @@ async def help_command(msg: Message, lang: str):
         logger.error(f"Ошибка при показе справки: {e}")
         await msg.answer("Произошла ошибка при загрузке справки")
 
+
 def get_help_text(role: str, lang: str) -> str:
     """Возвращает текст справки в зависимости от роли пользователя"""
-    
+
     if role == "teacher":
         return (
             "👩‍🏫 <b>Справка для учителя</b>\n\n"
@@ -60,7 +65,7 @@ def get_help_text(role: str, lang: str) -> str:
             "• <code>/addnote Имя Текст</code> — добавить заметку\n"
             "• <code>/ticket Описание</code> — создать IT-заявку"
         )
-    
+
     elif role == "student":
         return (
             "👨‍🎓 <b>Справка для ученика</b>\n\n"
@@ -75,7 +80,7 @@ def get_help_text(role: str, lang: str) -> str:
             "• <code>/tasks</code> — показать задания\n"
             "• <code>/psych Помощь</code> — обратиться к психологу"
         )
-    
+
     elif role == "parent":
         return (
             "👪 <b>Справка для родителя</b>\n\n"
@@ -90,7 +95,7 @@ def get_help_text(role: str, lang: str) -> str:
             "• <code>/child_tasks</code> — задания ребенка\n"
             "• <code>/certificate Тип</code> — получить справку"
         )
-    
+
     elif role == "psych":
         return (
             "🧑‍⚕️ <b>Справка для психолога</b>\n\n"
@@ -105,7 +110,7 @@ def get_help_text(role: str, lang: str) -> str:
             "• <code>/incoming</code> — новые обращения\n"
             "• <code>/stats</code> — статистика"
         )
-    
+
     elif role == "admin":
         return (
             "🏛 <b>Справка для администратора</b>\n\n"
@@ -121,7 +126,7 @@ def get_help_text(role: str, lang: str) -> str:
             "• <code>/tickets</code> — все заявки\n"
             "• <code>/broadcast Текст</code> — рассылка"
         )
-    
+
     elif role == "director":
         return (
             "📊 <b>Справка для директора</b>\n\n"
@@ -137,7 +142,7 @@ def get_help_text(role: str, lang: str) -> str:
             "• Статистика заявок и их выполнения\n"
             "• Количество задач и просроченных"
         )
-    
+
     else:
         return (
             "❓ <b>Общая справка</b>\n\n"
@@ -149,6 +154,7 @@ def get_help_text(role: str, lang: str) -> str:
             "🔧 <b>Поддержка:</b>\n"
             "При возникновении проблем обратитесь к администратору системы."
         )
+
 
 def get_faq_text(lang: str) -> str:
     """Возвращает FAQ для всех пользователей"""
@@ -169,6 +175,7 @@ def get_faq_text(lang: str) -> str:
         "Телефон: +7 (XXX) XXX-XX-XX"
     )
 
+
 # ─────────── Кнопка справки ───────────
 @router.callback_query(F.data == "help")
 async def help_button(call: CallbackQuery, lang: str):
@@ -177,7 +184,7 @@ async def help_button(call: CallbackQuery, lang: str):
         if not user_role:
             await call.answer("Пожалуйста, сначала войдите в систему.", show_alert=True)
             return
-            
+
         help_text = get_help_text(user_role, lang)
         faq_text = get_faq_text(lang)
         full_text = help_text + "\n\n" + faq_text
@@ -186,6 +193,7 @@ async def help_button(call: CallbackQuery, lang: str):
     except Exception as e:
         logger.error(f"Ошибка при показе справки: {e}")
         await call.answer("Произошла ошибка при загрузке справки", show_alert=True)
+
 
 # ─────────── Команды для учителей ───────────
 @router.message(Command("notes"))
@@ -196,12 +204,15 @@ async def teacher_notes_command(msg: Message, lang: str):
         if not user or user not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             return
-            
+
         # Здесь должна быть логика получения заметок
-        await msg.answer("📝 <b>Мои заметки</b>\n\nИспользуйте кнопку «📝 Заметки» в меню для просмотра.")
+        await msg.answer(
+            "📝 <b>Мои заметки</b>\n\nИспользуйте кнопку «📝 Заметки» в меню для просмотра."
+        )
     except Exception as e:
         logger.error(f"Ошибка при выполнении команды /notes: {e}")
         await msg.answer("Произошла ошибка при получении заметок")
+
 
 @router.message(Command("addnote"))
 async def teacher_addnote_command(msg: Message, lang: str):
@@ -211,18 +222,21 @@ async def teacher_addnote_command(msg: Message, lang: str):
         if not user or user not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             return
-            
+
         # Парсим команду: /addnote Имя Текст
         text = msg.text.replace("/addnote", "").strip()
         if not text:
             await msg.answer("Использование: /addnote Имя_ученика Текст_заметки")
             return
-            
+
         # Здесь должна быть логика добавления заметки
-        await msg.answer("✅ Заметка добавлена!\n\nИспользуйте кнопку «➕ Добавить заметку» для удобного добавления.")
+        await msg.answer(
+            "✅ Заметка добавлена!\n\nИспользуйте кнопку «➕ Добавить заметку» для удобного добавления."
+        )
     except Exception as e:
         logger.error(f"Ошибка при выполнении команды /addnote: {e}")
         await msg.answer("Произошла ошибка при добавлении заметки")
+
 
 @router.message(Command("ticket"))
 async def teacher_ticket_command(msg: Message, lang: str):
@@ -232,15 +246,17 @@ async def teacher_ticket_command(msg: Message, lang: str):
         if not user or user not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             return
-            
+
         # Парсим команду: /ticket Описание
         text = msg.text.replace("/ticket", "").strip()
         if not text:
             await msg.answer("Использование: /ticket Описание_проблемы")
             return
-            
+
         # Здесь должна быть логика создания заявки
-        await msg.answer("✅ IT-заявка создана!\n\nИспользуйте кнопку «🛠 IT-заявки» для удобного создания заявок.")
+        await msg.answer(
+            "✅ IT-заявка создана!\n\nИспользуйте кнопку «🛠 IT-заявки» для удобного создания заявок."
+        )
     except Exception as e:
         logger.error(f"Ошибка при выполнении команды /ticket: {e}")
-        await msg.answer("Произошла ошибка при создании заявки") 
+        await msg.answer("Произошла ошибка при создании заявки")

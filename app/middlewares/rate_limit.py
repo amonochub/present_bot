@@ -1,7 +1,9 @@
 from aiogram import BaseMiddleware
 from aiogram.types import Message
+
 from app.i18n import t
 from app.services.limiter import hit
+
 
 class RateLimitMiddleware(BaseMiddleware):
     def __init__(self, limit=20, window=60):
@@ -15,4 +17,4 @@ class RateLimitMiddleware(BaseMiddleware):
                 lang = data.get("lang", "ru")
                 await event.answer(t("common.rate_limited", lang))
                 return
-        return await handler(event, data) 
+        return await handler(event, data)
