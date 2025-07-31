@@ -198,8 +198,22 @@ async def cmd_start(m: Message, state: FSMContext, lang: str):
         await m.answer(f"Вы уже авторизованы как <b>{ROLES[u.role]}</b>",
                        reply_markup=menu(u.role, lang, u.theme))
     else:
-        await state.set_state("await_login")
-        await m.answer(t("common.start_welcome", lang))
+        # Предлагаем онбординг для новых пользователей
+        welcome_text = (
+            "🎓 **Добро пожаловать в SchoolBot!**\n\n"
+            "Это образовательная платформа для всех участников учебного процесса.\n\n"
+            "Выберите, что хотите сделать:"
+        )
+        
+        from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+        keyboard = InlineKeyboardMarkup(inline_keyboard=[
+            [
+                InlineKeyboardButton(text="🚀 Пройти онбординг", callback_data="start_onboarding"),
+                InlineKeyboardButton(text="🔑 Войти в систему", callback_data="start_login")
+            ]
+        ])
+        
+        await m.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
 
 @dp.message(F.text)
 async def fsm_login(m: Message, state: FSMContext, lang: str):
@@ -222,6 +236,21 @@ async def fsm_login(m: Message, state: FSMContext, lang: str):
             await m.answer(t("common.bad_credentials", lang))
     else:
         await m.answer("Используйте /start для начала.")
+
+# ────────────────── Обработка выбора действия при старте ──────────────────
+@dp.callback_query(F.data == "start_onboarding")
+async def handle_start_onboarding(call: CallbackQuery, state: FSMContext, lang: str):
+    """Обработка выбора онбординга"""
+    from app.handlers.onboarding import start_onboarding
+    await start_onboarding(call.message, state, lang)
+    await call.answer()
+
+@dp.callback_query(F.data == "start_login")
+async def handle_start_login(call: CallbackQuery, state: FSMContext, lang: str):
+    """Обработка выбора входа в систему"""
+    await state.set_state("await_login")
+    await call.message.edit_text(t("common.start_welcome", lang))
+    await call.answer()
 
 # ────────────────── Переключение роли демо-аккаунта ──────────────────
 @dp.callback_query(lambda c: c.data.startswith("switch_"))

@@ -4,11 +4,17 @@ services:
   bot:
     build: .
     environment:
-      - BOT_TOKEN=${BOT_TOKEN}
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - DB_NAME=${POSTGRES_DB:-schoolbot}
+      - DB_USER=${POSTGRES_USER:-schoolbot}
+      - DB_PASS=${POSTGRES_PASSWORD:-schoolbot}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - REDIS_DSN=${REDIS_URL:-redis://redis:6379/0}
       - ADMIN_IDS=${ADMIN_IDS}
-      - SENTRY_DSN=${SENTRY_DSN}
+      - GLITCHTIP_DSN=${GLITCHTIP_DSN}
+      - ENV=${ENVIRONMENT:-prod}
+      - KEEP_DAYS=${KEEP_DAYS:-14}
     depends_on:
       - postgres
       - redis

@@ -1,15 +1,75 @@
 repos:
-  - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.4.4
-    hooks: 
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: debug-statements
+      - id: name-tests-test
+      - id: requirements-txt-fixer
+
+  - repo: https://github.com/psf/black
+    rev: 23.12.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: [--line-length=88]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
+    hooks:
       - id: ruff
-        args: [--config, pyproject.toml]
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.10.0
-    hooks: 
+    rev: v1.8.0
+    hooks:
       - id: mypy
-  - repo: https://github.com/pytest-dev/pytest
-    rev: v8.2.0
-    hooks: 
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports]
+
+  - repo: https://github.com/PyCQA/bandit
+    rev: 1.7.5
+    hooks:
+      - id: bandit
+        args: [-r, app/, -f, json, -o, bandit-report.json]
+        exclude: ^tests/
+
+  - repo: https://github.com/PyCQA/safety
+    rev: 2.3.5
+    hooks:
+      - id: safety
+        args: [--full-report]
+
+  - repo: local
+    hooks:
       - id: pytest
-        additional_dependencies: [pytest-aiogram] 
+        name: pytest
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [tests/, -v, --tb=short]
+
+      - id: security-tests
+        name: security tests
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [tests/test_security.py, tests/test_config_security.py, tests/test_xss_protection.py, -v]
+
+      - id: docker-build-test
+        name: docker build test
+        entry: docker
+        language: system
+        pass_filenames: false
+        always_run: true
+        args: [build, -t, schoolbot-test, .]
+        stages: [manual] 
