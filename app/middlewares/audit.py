@@ -61,6 +61,7 @@ class AuditMiddleware(BaseMiddleware):
         except Exception as e:
             logger.error(f"Ошибка при получении информации о пользователе: {e}")
             return {"error": str(e)}
+        return {"error": "unknown"}
 
     async def _log_action(self, event: TelegramObject, user_info: dict[str, Any]) -> None:
         """Логировать действие пользователя"""

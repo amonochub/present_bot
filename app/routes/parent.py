@@ -10,6 +10,7 @@ from app.db.user import User
 from app.keyboards.main_menu import menu
 from app.repositories import task_repo
 from app.services.pdf_factory import make_certificate
+from aiogram.types import BufferedInputFile
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -88,12 +89,15 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
         )
 
         if call.message is not None and hasattr(call.message, 'answer_document'):
+            # Конвертируем BytesIO в InputFile
+            pdf_data.seek(0)
+            input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
             await call.message.answer_document(
-            document=pdf_data,
-            caption="📄 Справка о посещаемости\n\n"
-            "Справка сгенерирована автоматически.\n"
-            "Для получения официальной справки обратитесь в секретариат.",
-        )
+                document=input_file,
+                caption="📄 Справка о посещаемости\n\n"
+                "Справка сгенерирована автоматически.\n"
+                "Для получения официальной справки обратитесь в секретариат.",
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при генерации справки о посещаемости: {e}")
@@ -115,8 +119,11 @@ async def generate_progress_cert(call: CallbackQuery) -> None:
         )
 
         if call.message is not None and hasattr(call.message, 'answer_document'):
+            # Конвертируем BytesIO в InputFile
+            pdf_data.seek(0)
+            input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
             await call.message.answer_document(
-                document=pdf_data,
+                document=input_file,
                 caption="📄 Справка об успеваемости\n\n"
                 "Справка сгенерирована автоматически.\n"
                 "Для получения официальной справки обратитесь в секретариат.",
@@ -142,8 +149,11 @@ async def generate_behavior_cert(call: CallbackQuery) -> None:
         )
 
         if call.message is not None and hasattr(call.message, 'answer_document'):
+            # Конвертируем BytesIO в InputFile
+            pdf_data.seek(0)
+            input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
             await call.message.answer_document(
-                document=pdf_data,
+                document=input_file,
                 caption="📄 Справка о поведении\n\n"
                 "Справка сгенерирована автоматически.\n"
                 "Для получения официальной справки обратитесь в секретариат.",

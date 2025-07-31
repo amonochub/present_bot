@@ -86,6 +86,7 @@ async def mark_request_done(call: CallbackQuery) -> None:
         logger.error(f"Ошибка при отметке обращения как обработанного: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
         return
+    return  # type: ignore
 
 
 # ─────────── Статистика ───────────
