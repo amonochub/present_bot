@@ -75,7 +75,7 @@ async def view_tasks(call: CallbackQuery) -> None:
         else:
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
-                f"{ico[t.status]} <b>#{t.id}</b> — {t.title}\n"
+                f"{ico[t.status]} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
                 f"📝 {t.description}\n"
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks
@@ -212,7 +212,7 @@ async def change_task_status(call: CallbackQuery):
             tasks = await task_repo.list_open()
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
-                f"{ico[t.status]} <b>#{t.id}</b> — {t.title}\n"
+                f"{ico[t.status]} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
                 f"📝 {t.description}\n"
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks

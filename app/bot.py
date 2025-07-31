@@ -87,7 +87,7 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
         result = await conn.execute(select(User))
         if not result.first():
-            await conn.execute(User.__table__.insert(), DEMO_USERS)
+            await conn.execute(User.__table__.insert(), DEMO_USERS)  # type: ignore
             await conn.commit()
         await seed_demo(conn)
 

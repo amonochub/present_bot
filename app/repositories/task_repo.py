@@ -8,6 +8,22 @@ from app.db.session import AsyncSessionLocal
 from app.db.task import Task, TaskStatus
 
 
+async def create_task(title: str, description: str, deadline: date, author_id: int) -> Task:
+    """Создать новую задачу"""
+    async with AsyncSessionLocal() as s:
+        task = Task(
+            title=title,
+            description=description,
+            deadline=deadline,
+            author_id=author_id,
+            status=TaskStatus.PENDING
+        )
+        s.add(task)
+        await s.commit()
+        await s.refresh(task)
+        return task
+
+
 async def list_open() -> List[Task]:
     """Получить список открытых поручений"""
     async with AsyncSessionLocal() as s:

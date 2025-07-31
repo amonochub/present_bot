@@ -31,7 +31,7 @@ async def get_user_role(tg_id: int) -> Any:
 
 def ticket_lines(tickets: list[Any]) -> str:
     ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-    return "\n".join(f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets)
+    return "\n".join(f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets)  # type: ignore
 
 
 # ─────────── Заявки ───────────
@@ -100,7 +100,7 @@ async def view_media(call: CallbackQuery) -> None:
         else:
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests
+                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
             )
         if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
@@ -131,7 +131,7 @@ async def change_media_status(call: CallbackQuery) -> None:
             requests = await media_repo.list_all()
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests
+                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
             )
             if call.message is not None and hasattr(call.message, 'edit_text'):
                 await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
