@@ -1,3 +1,5 @@
+from typing import Any
+
 from aiogram import Router
 from aiogram.filters import Command
 from aiogram.fsm.state import State, StatesGroup
@@ -17,7 +19,7 @@ class TourFSM(StatesGroup):
     step = State()
 
 
-async def set_role(tg_id: int, role: str):
+async def set_role(tg_id: int, role: str) -> None:
     async with AsyncSessionLocal() as s:
         await s.execute(
             select(User).where(User.tg_id == tg_id).execution_options(populate_existing=True)
@@ -41,7 +43,7 @@ def _tour_text(role: str) -> str:
 
 # ───────────── /tour ─────────────
 @router.message(Command("tour"))
-async def start_tour(msg: Message, state, lang: str):
+async def start_tour(msg: Message, state: Any, lang: str) -> None:
     await state.set_state(TourFSM.step)
     await state.update_data(idx=0)
     await next_step(msg, state, lang)
@@ -49,20 +51,22 @@ async def start_tour(msg: Message, state, lang: str):
 
 # ───────────── «Дальше» ─────────────
 @router.callback_query(lambda c: c.data == "tour_next")
-async def next_cb(call: CallbackQuery, state, lang: str):
-    await next_step(call.message, state, lang)
+async def next_cb(call: CallbackQuery, state: Any, lang: str) -> None:
+    if call.message is not None:
+        await next_step(call.message, state, lang)
     await call.answer()
 
 
 # ───────────── «Главное меню» ─────────────
 @router.callback_query(lambda c: c.data == "back_to_main")
-async def back_to_main_cb(call: CallbackQuery, state, lang: str):
+async def back_to_main_cb(call: CallbackQuery, state: Any, lang: str) -> None:
     await state.clear()
-    await call.message.edit_text("🏠 Вы вернулись в демо-меню", reply_markup=menu("super", lang))
+    if call.message is not None:
+        await call.message.edit_text("🏠 Вы вернулись в демо-меню", reply_markup=menu("super", lang))
     await call.answer()
 
 
-async def next_step(msg: Message, state, lang: str):
+async def next_step(msg: Message, state: Any, lang: str) -> None:
     data = await state.get_data()
     idx = data.get("idx", 0)
 
@@ -80,7 +84,7 @@ async def next_step(msg: Message, state, lang: str):
     next_btn = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton("➡️ Дальше", callback_data="tour_next")],
-            get_back_btn(),  # позволяет выйти в любой момент
+            [get_back_btn()],  # позволяет выйти в любой момент
         ]
     )
     await msg.answer("Переключайтесь по меню или нажмите «Дальше» →", reply_markup=next_btn)

@@ -1,3 +1,5 @@
+from typing import Any
+
 from aiogram import BaseMiddleware
 from aiogram.types import Message
 
@@ -10,7 +12,7 @@ class RateLimitMiddleware(BaseMiddleware):
         self.limit = limit
         self.window = window
 
-    async def __call__(self, handler, event, data):
+    async def __call__(self, handler: Any, event: Any, data: Any) -> Any:
         if isinstance(event, Message):
             res = await hit(f"rl:{event.from_user.id}", self.limit, self.window)
             if not res.allowed:

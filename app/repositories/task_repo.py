@@ -13,7 +13,7 @@ async def list_open() -> List[Task]:
     async with AsyncSessionLocal() as s:
         result = await s.execute(select(Task).where(Task.status == TaskStatus.PENDING))
         tasks = result.scalars().all()
-        return list(tasks)
+        return list(tasks)  # type: ignore
 
 
 async def set_status(task_id: int, status: Status) -> bool:
@@ -41,4 +41,4 @@ async def get_overdue_count() -> int:
         result = await s.scalar(
             select(Task).where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
         )
-        return result or 0
+        return result or 0  # type: ignore

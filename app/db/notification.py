@@ -34,10 +34,10 @@ class Notification(Base, TimestampMixin):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    type: NotificationType = Column(Enum(NotificationType), nullable=False)
+    type = Column(Enum(NotificationType), nullable=False)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    status: NotificationStatus = Column(Enum(NotificationStatus), default=NotificationStatus.PENDING, nullable=False)
+    status = Column(Enum(NotificationStatus), default=NotificationStatus.PENDING, nullable=False)
     scheduled_at = Column(DateTime, nullable=True)  # Когда отправить
     sent_at = Column(DateTime, nullable=True)  # Когда было отправлено
     read_at = Column(DateTime, nullable=True)  # Когда было прочитано

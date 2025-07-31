@@ -27,7 +27,7 @@ async def get_user_role(tg_id: int) -> Optional[str]:
 
 # ─────────── Команда /help ───────────
 @router.message(Command("help"))
-async def help_command(msg: Message, lang: str):
+async def help_command(msg: Message, lang: str) -> None:
     try:
         user_role = await get_user_role(msg.from_user.id)
         if not user_role:
@@ -179,7 +179,7 @@ def get_faq_text(lang: str) -> str:
 
 # ─────────── Кнопка справки ───────────
 @router.callback_query(F.data == "help")
-async def help_button(call: CallbackQuery, lang: str):
+async def help_button(call: CallbackQuery, lang: str) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if not user_role:
@@ -189,7 +189,8 @@ async def help_button(call: CallbackQuery, lang: str):
         help_text = get_help_text(user_role, lang)
         faq_text = get_faq_text(lang)
         full_text = help_text + "\n\n" + faq_text
-        await call.message.edit_text(full_text, reply_markup=menu(user_role, lang))
+        if call.message is not None:
+            await call.message.edit_text(full_text, reply_markup=menu(user_role, lang))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при показе справки: {e}")
@@ -198,7 +199,7 @@ async def help_button(call: CallbackQuery, lang: str):
 
 # ─────────── Команды для учителей ───────────
 @router.message(Command("notes"))
-async def teacher_notes_command(msg: Message, lang: str):
+async def teacher_notes_command(msg: Message, lang: str) -> None:
     """Команда /notes для учителей"""
     try:
         user = await get_user_role(msg.from_user.id)
@@ -216,7 +217,7 @@ async def teacher_notes_command(msg: Message, lang: str):
 
 
 @router.message(Command("addnote"))
-async def teacher_addnote_command(msg: Message, lang: str):
+async def teacher_addnote_command(msg: Message, lang: str) -> None:
     """Команда /addnote для учителей"""
     try:
         user = await get_user_role(msg.from_user.id)
@@ -225,6 +226,9 @@ async def teacher_addnote_command(msg: Message, lang: str):
             return
 
         # Парсим команду: /addnote Имя Текст
+        if msg.text is None:
+            await msg.answer("Использование: /addnote Имя_ученика Текст_заметки")
+            return
         text = msg.text.replace("/addnote", "").strip()
         if not text:
             await msg.answer("Использование: /addnote Имя_ученика Текст_заметки")
@@ -241,7 +245,7 @@ async def teacher_addnote_command(msg: Message, lang: str):
 
 
 @router.message(Command("ticket"))
-async def teacher_ticket_command(msg: Message, lang: str):
+async def teacher_ticket_command(msg: Message, lang: str) -> None:
     """Команда /ticket для учителей"""
     try:
         user = await get_user_role(msg.from_user.id)
@@ -250,6 +254,9 @@ async def teacher_ticket_command(msg: Message, lang: str):
             return
 
         # Парсим команду: /ticket Описание
+        if msg.text is None:
+            await msg.answer("Использование: /ticket Описание_проблемы")
+            return
         text = msg.text.replace("/ticket", "").strip()
         if not text:
             await msg.answer("Использование: /ticket Описание_проблемы")

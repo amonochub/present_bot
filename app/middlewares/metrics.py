@@ -50,16 +50,16 @@ class MetricsMiddleware(BaseMiddleware):
             raise
 
 
-def increment_tickets():
+def increment_tickets() -> None:
     """Увеличить счетчик открытых заявок"""
     TICKETS_OPEN.inc()
 
 
-def decrement_tickets():
+def decrement_tickets() -> None:
     """Уменьшить счетчик открытых заявок"""
     TICKETS_OPEN.dec()
 
 
-def set_tickets_count(count: int):
+def set_tickets_count(count: int) -> None:
     """Установить точное количество открытых заявок"""
     TICKETS_OPEN.set(count)

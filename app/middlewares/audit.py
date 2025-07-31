@@ -95,9 +95,9 @@ class AuditMiddleware(BaseMiddleware):
             elif event.photo or event.document or event.voice:
                 return "file_upload"
         elif isinstance(event, CallbackQuery):
-            if event.data.startswith("switch_"):
+            if event.data and event.data.startswith("switch_"):
                 return "role_change"
-            elif event.data.startswith("admin_") or event.data.startswith("teacher_"):
+            elif event.data and (event.data.startswith("admin_") or event.data.startswith("teacher_")):
                 return "menu_access"
             else:
                 return "button_click"
@@ -111,6 +111,7 @@ class AuditMiddleware(BaseMiddleware):
                 # Ограничиваем длину для безопасности
                 return event.text[:100] + ("..." if len(event.text) > 100 else "")
         elif isinstance(event, CallbackQuery):
-            return event.data[:50] + ("..." if len(event.data) > 50 else "")
+            if event.data:
+                return event.data[:50] + ("..." if len(event.data) > 50 else "")
 
         return "no_data"
