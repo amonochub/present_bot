@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Optional
+from typing import Any, Optional
 
 from aiogram import F, Router
 from aiogram.fsm.state import State, StatesGroup
@@ -34,14 +34,14 @@ class MediaFSM(StatesGroup):
 
 
 # helper: get current user
-async def me(tg_id: int) -> Optional[User]:
+async def me(tg_id: int) -> Any:
     async with AsyncSessionLocal() as s:
         return await s.scalar(select(User).where(User.tg_id == tg_id))
 
 
 # 1. список заметок
 @router.callback_query(F.data == "teacher_notes")
-async def teacher_notes(call: CallbackQuery, lang: str):
+async def teacher_notes(call: CallbackQuery, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["teacher", "super"]:
@@ -55,7 +55,8 @@ async def teacher_notes(call: CallbackQuery, lang: str):
             txt = "📝 <b>Мои заметки</b>\n\n" + "\n".join(
                 f"• <i>{n.student_name}</i> — {n.text} " for n in notes
             )
-        await call.message.edit_text(txt, reply_markup=menu("teacher", lang))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("teacher", lang))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заметок: {e}")
@@ -64,7 +65,7 @@ async def teacher_notes(call: CallbackQuery, lang: str):
 
 # 2. кнопка «➕ Добавить заметку»
 @router.callback_query(F.data == "teacher_add")
-async def start_add(call: CallbackQuery, state, lang: str):
+async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["teacher", "super"]:
@@ -72,7 +73,8 @@ async def start_add(call: CallbackQuery, state, lang: str):
             return
 
         await state.set_state(AddNote.waiting_text)
-        await call.message.edit_text(t("teacher.add_note_prompt", lang))
+        if call.message is not None:
+            await call.message.edit_text(t("teacher.add_note_prompt", lang))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале добавления заметки: {e}")
@@ -81,7 +83,7 @@ async def start_add(call: CallbackQuery, state, lang: str):
 
 # 3. приём строки, сохранение
 @router.message(AddNote.waiting_text, F.text)
-async def save_note(msg: Message, state, lang: str):
+async def save_note(msg: Message, state: Any, lang: str) -> None:
     try:
         user = await me(msg.from_user.id)
         if not user or user.role not in ["teacher", "super"]:
@@ -89,6 +91,9 @@ async def save_note(msg: Message, state, lang: str):
             await state.clear()
             return
 
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите текст заметки.")
+            return
         parts = msg.text.strip().split(maxsplit=2)
         if len(parts) < 2:
             await msg.answer(
@@ -119,7 +124,7 @@ async def save_note(msg: Message, state, lang: str):
 
 # ─────────── Заявки IT ───────────
 @router.callback_query(F.data == "teacher_ticket")
-async def start_ticket(call: CallbackQuery, state, lang: str):
+async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["teacher", "super"]:
@@ -127,7 +132,8 @@ async def start_ticket(call: CallbackQuery, state, lang: str):
             return
 
         await state.set_state(AddTicket.waiting_title)
-        await call.message.edit_text(t("teacher.ticket_text_prompt", lang))
+        if call.message is not None:
+            await call.message.edit_text(t("teacher.ticket_text_prompt", lang))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале создания заявки: {e}")

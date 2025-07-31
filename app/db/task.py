@@ -32,8 +32,8 @@ class Task(Base, TimestampMixin):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
-    status = Column(Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False)
-    priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False)
+    status: TaskStatus = Column(Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False)
+    priority: TaskPriority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False)
     due_date = Column(DateTime, nullable=True)
     deadline = Column(Date, nullable=True)  # Дедлайн для KPI
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)

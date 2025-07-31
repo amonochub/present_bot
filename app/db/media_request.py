@@ -11,5 +11,5 @@ class MediaRequest(Base):
     event_date = Column(Date)  # дата мероприятия
     comment = Column(String)  # краткое описание/сценарий
     file_id = Column(String)  # обязательный Telegram file_id
-    status = Column(Enum(Status), default=Status.open, nullable=False)  # open / in_progress / done
+    status: Status = Column(Enum(Status), default=Status.open, nullable=False)  # open / in_progress / done
     created_at = Column(DateTime, server_default=func.now())

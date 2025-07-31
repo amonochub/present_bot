@@ -20,7 +20,7 @@ async def list_open() -> List[PsychRequest]:
             .where(PsychRequest.status == Status.open)
             .order_by(PsychRequest.created_at)
         )
-        return list(rows)  # type: ignore
+        return list(rows)
 
 
 async def mark_done(req_id: int) -> None:

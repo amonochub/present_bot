@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery, Message
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 # helper: get current user role
-async def get_user_role(tg_id: int) -> Optional[str]:
+async def get_user_role(tg_id: int) -> Any:
     async with AsyncSessionLocal() as s:
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
         return user.role if user else None
@@ -23,7 +23,7 @@ async def get_user_role(tg_id: int) -> Optional[str]:
 
 # ─────────── Задания ───────────
 @router.callback_query(F.data == "stu_tasks")
-async def view_tasks(call: CallbackQuery):
+async def view_tasks(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["student", "super"]:
@@ -44,7 +44,8 @@ async def view_tasks(call: CallbackQuery):
             if len(tasks) > 5:
                 txt += f"\n... и еще {len(tasks) - 5} заданий"
 
-        await call.message.edit_text(txt, reply_markup=menu("student", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("student", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заданий: {e}")
@@ -53,19 +54,20 @@ async def view_tasks(call: CallbackQuery):
 
 # ─────────── Помощь психолога ───────────
 @router.callback_query(F.data == "stu_help")
-async def ask_help(call: CallbackQuery, lang: str):
+async def ask_help(call: CallbackQuery, lang: str) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["student", "super"]:
             await call.answer("Эта функция доступна только ученикам", show_alert=True)
             return
 
-        await call.message.edit_text(
-            "💬 <b>Обращение к психологу</b>\n\n"
-            "Напишите ваш вопрос или проблему, и психолог ответит вам.\n"
-            "Вы также можете отправить голосовое сообщение.",
-            reply_markup=menu("student", lang),
-        )
+        if call.message is not None:
+            await call.message.edit_text(
+                "💬 <b>Обращение к психологу</b>\n\n"
+                "Напишите ваш вопрос или проблему, и психолог ответит вам.\n"
+                "Вы также можете отправить голосовое сообщение.",
+                reply_markup=menu("student", lang),
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при запросе помощи: {e}")
@@ -73,7 +75,7 @@ async def ask_help(call: CallbackQuery, lang: str):
 
 
 @router.message(F.content_type.in_({"voice", "text"}))
-async def receive_help(msg: Message, lang: str):
+async def receive_help(msg: Message, lang: str) -> None:
     try:
         user_role = await get_user_role(msg.from_user.id)
         if user_role not in ["student", "super"]:
@@ -90,6 +92,9 @@ async def receive_help(msg: Message, lang: str):
             )
             return
         else:
+            if msg.text is None:
+                await msg.answer("Пожалуйста, напишите ваш вопрос или проблему.")
+                return
             text = msg.text.strip()
 
         if not text:
