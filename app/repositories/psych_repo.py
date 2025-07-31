@@ -23,6 +23,15 @@ async def list_open() -> List[PsychRequest]:
         return list(rows)
 
 
+async def list_all() -> List[PsychRequest]:
+    async with AsyncSessionLocal() as s:
+        rows = await s.scalars(
+            select(PsychRequest)
+            .order_by(PsychRequest.created_at)
+        )
+        return list(rows)
+
+
 async def mark_done(req_id: int) -> None:
     async with AsyncSessionLocal() as s:
         await s.execute(

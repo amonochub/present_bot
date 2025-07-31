@@ -78,8 +78,10 @@ async def mark_request_done(call: CallbackQuery) -> None:
                 )
             if call.message is not None and hasattr(call.message, 'edit_text'):
                 await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
+            return
         else:
             await call.answer("Ошибка при обработке обращения", show_alert=True)
+            return
     except Exception as e:
         logger.error(f"Ошибка при отметке обращения как обработанного: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
