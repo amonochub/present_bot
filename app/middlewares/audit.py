@@ -102,7 +102,7 @@ class AuditMiddleware(BaseMiddleware):
             else:
                 return "button_click"
 
-        return "unknown"
+        return "unknown"  # type: ignore
 
     def _get_action_data(self, event: TelegramObject) -> str:
         """Получить данные действия"""

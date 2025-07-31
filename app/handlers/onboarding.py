@@ -338,6 +338,9 @@ async def handle_start_carousel(callback: CallbackQuery, state: FSMContext, lang
 async def handle_carousel_navigation(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка навигации по карусели"""
     try:
+        if callback.data is None:
+            await callback.answer("Ошибка данных", show_alert=True)
+            return
         index = int(callback.data.split("_", 1)[1])
         if callback.message is not None:
             await send_role_carousel(callback.message, index, lang)
@@ -349,6 +352,9 @@ async def handle_carousel_navigation(callback: CallbackQuery, state: FSMContext,
 @router.callback_query(F.data.startswith("info_"))
 async def show_role_info(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Показать информацию о роли"""
+    if callback.data is None:
+        await callback.answer("Ошибка данных", show_alert=True)
+        return
     role = callback.data.split("_", 1)[1]
 
     if role not in ROLES:
@@ -390,7 +396,8 @@ async def show_role_info(callback: CallbackQuery, state: FSMContext, lang: str) 
                 ]
             )
 
-            await callback.message.edit_reply_markup(reply_markup=keyboard)
+            if hasattr(callback.message, 'edit_reply_markup'):
+                await callback.message.edit_reply_markup(reply_markup=keyboard)
 
     except Exception:
         # Если изображение не найдено, отправляем только текст

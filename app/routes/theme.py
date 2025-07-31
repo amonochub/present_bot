@@ -27,7 +27,7 @@ async def toggle_theme(uid: int) -> str:
             return "light"  # дефолт для неавторизованных
 
         new = "dark" if user.theme == "light" else "light"
-        if user is not None and hasattr(user, 'id') and user.id is not None:
+        if user is not None and hasattr(user, 'id') and user.id is not None:  # type: ignore
             await s.execute(update(User).where(User.id == user.id).values(theme=new))
             await s.commit()
             return new

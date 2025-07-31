@@ -8,7 +8,7 @@ from app.services.limiter import hit
 
 
 class RateLimitMiddleware(BaseMiddleware):
-    def __init__(self, limit=20, window=60):
+    def __init__(self, limit: int = 20, window: int = 60) -> None:
         self.limit = limit
         self.window = window
 
