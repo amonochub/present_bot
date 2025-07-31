@@ -34,7 +34,7 @@ def t(key: str, lang: str = "ru") -> str:
         Локализованная строка или ключ, если строка не найдена
     """
     parts = key.split(".")
-    node = load_lang(lang)
+    node: Any = load_lang(lang)
 
     for part in parts:
         if isinstance(node, dict):
@@ -42,9 +42,9 @@ def t(key: str, lang: str = "ru") -> str:
         else:
             return key
 
-    return node if isinstance(node, str) else key
+    return str(node) if isinstance(node, str) else key
 
 
-def clear_cache():
+def clear_cache() -> None:
     """Очищает кэш локализации (для разработки)"""
     _cache.clear()

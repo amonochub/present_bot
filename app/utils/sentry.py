@@ -1,7 +1,9 @@
+from typing import Any
+
 from sentry_sdk import push_scope
 
 
-async def enrich_scope(update, user):
+async def enrich_scope(update: Any, user: Any) -> None:
     """
     Добавить в текущий Sentry-scope:
     • role (teacher / admin / …)

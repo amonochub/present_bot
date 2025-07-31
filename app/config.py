@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 
 from pydantic import validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -33,7 +33,7 @@ class Settings(BaseSettings):
     )
 
     @validator("TELEGRAM_TOKEN")
-    def validate_telegram_token(cls, v):
+    def validate_telegram_token(cls, v: str) -> str:
         """Валидация формата Telegram токена"""
         if not v or ":" not in v:
             raise ValueError("Invalid Telegram token format")
@@ -43,27 +43,27 @@ class Settings(BaseSettings):
         return v
 
     @validator("DB_PASS")
-    def validate_db_password(cls, v):
+    def validate_db_password(cls, v: str) -> str:
         """Валидация сложности пароля базы данных"""
         if len(v) < 8:
             raise ValueError("Database password must be at least 8 characters long")
         return v
 
     @validator("DB_PORT")
-    def validate_db_port(cls, v):
+    def validate_db_port(cls, v: int) -> int:
         """Валидация порта базы данных"""
         if not 1 <= v <= 65535:
             raise ValueError("Database port must be between 1 and 65535")
         return v
 
     @validator("KEEP_DAYS")
-    def validate_keep_days(cls, v):
+    def validate_keep_days(cls, v: int) -> int:
         """Валидация количества дней хранения"""
         if v < 1 or v > 365:
             raise ValueError("KEEP_DAYS must be between 1 and 365")
         return v
 
-    def __init__(self, **kwargs) -> None:
+    def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         # Parse ADMIN_IDS from comma-separated string
         if self.ADMIN_IDS:

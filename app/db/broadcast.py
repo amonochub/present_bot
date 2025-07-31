@@ -20,5 +20,5 @@ class Broadcast(Base):
     # Связи
     author = relationship("User", back_populates="broadcasts")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Broadcast(id={self.id}, title='{self.title}', status={self.status})>"

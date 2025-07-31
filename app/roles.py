@@ -12,7 +12,7 @@ ROLES = {
 }
 
 
-def _make(prefix, n, pwd, role):
+def _make(prefix: str, n: int, pwd: str, role: str) -> list[dict[str, str]]:
     return [
         {
             "login": f"{prefix}{str(i).zfill(2)}",

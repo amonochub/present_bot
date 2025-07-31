@@ -43,5 +43,5 @@ class Task(Base, TimestampMixin):
     author = relationship("User", foreign_keys=[author_id], back_populates="tasks")
     assigned_to = relationship("User", foreign_keys=[assigned_to_id])
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Task(id={self.id}, title='{self.title}', status={self.status})>"

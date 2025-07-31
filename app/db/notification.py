@@ -48,5 +48,5 @@ class Notification(Base, TimestampMixin):
     # Связи
     user = relationship("User", back_populates="notifications")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"<Notification(id={self.id}, type={self.type}, user_id={self.user_id})>"

@@ -39,12 +39,12 @@ class User(Base, TimestampMixin):
     email_notifications = Column(Boolean, default=False, nullable=False)
 
     # Связи
-    notes: "list[Note]" = relationship("Note", back_populates="teacher")
-    tasks: "list[Task]" = relationship(
+    notes = relationship("Note", back_populates="teacher")
+    tasks = relationship(
         "Task", foreign_keys="Task.author_id", back_populates="author"
     )
-    broadcasts: "list[Broadcast]" = relationship("Broadcast", back_populates="author")
-    notifications: "list[Notification]" = relationship("Notification", back_populates="user")
+    broadcasts = relationship("Broadcast", back_populates="author")
+    notifications = relationship("Notification", back_populates="user")
 
     def __repr__(self) -> str:
         return f"<User(id={self.id}, tg_id={self.tg_id}, role={self.role})>"

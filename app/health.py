@@ -13,7 +13,7 @@ from app.db.session import AsyncSessionLocal
 from app.db.user import User
 
 
-async def health_check(request):
+async def health_check(request: web.Request) -> web.Response:
     """Health check endpoint"""
     try:
         # Check database connection
@@ -48,7 +48,7 @@ async def health_check(request):
         )
 
 
-async def init_health_app():
+async def init_health_app() -> web.Application:
     """Initialize health check app"""
     app = web.Application()
     app.router.add_get("/healthz", health_check)
@@ -57,6 +57,6 @@ async def init_health_app():
     return app
 
 
-async def metrics(request):
+async def metrics(request: web.Request) -> web.Response:
     """Prometheus metrics endpoint"""
     return web.Response(body=generate_latest(), content_type="text/plain; version=0.0.4")

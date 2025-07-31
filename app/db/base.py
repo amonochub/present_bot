@@ -5,9 +5,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
 
 if TYPE_CHECKING:
-    from sqlalchemy.ext.declarative import DeclarativeBase
-
-Base: "DeclarativeBase" = declarative_base()
+    from sqlalchemy.orm import DeclarativeBase
+    Base = DeclarativeBase
+else:
+    Base = declarative_base()
 
 
 class TimestampMixin:

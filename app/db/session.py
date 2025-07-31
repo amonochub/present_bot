@@ -12,7 +12,11 @@ engine = create_async_engine(
 )
 
 # Создание фабрики сессий
-AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+AsyncSessionLocal = sessionmaker(
+    bind=engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+)
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
