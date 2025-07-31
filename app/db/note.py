@@ -17,7 +17,7 @@ class Note(Base, TimestampMixin):
     # Связи
     teacher = relationship("User", back_populates="notes")
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"<Note(id={self.id}, student_name='{self.student_name}', "
             f"teacher_id={self.teacher_id})>"

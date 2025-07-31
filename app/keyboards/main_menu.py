@@ -172,7 +172,7 @@ def menu(
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
 
-    mapping = {}
+    mapping: dict[str, list[str]] = {}
     kb = [
         [InlineKeyboardButton(text=text, callback_data=f"{nonce}:stub")]
         for text in sum(mapping.get(role, []), [])

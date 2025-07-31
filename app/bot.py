@@ -4,7 +4,7 @@ import logging.config
 import pathlib
 import signal
 from datetime import date, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 import redis.asyncio as redis
 import sentry_sdk
@@ -48,7 +48,7 @@ logging.config.dictConfig(yaml.safe_load(pathlib.Path("logging.yml").read_text()
 # Sentry integration
 
 
-def _should_suppress_event(event, hint):
+def _should_suppress_event(event: Any, hint: Any) -> bool:
     """Filter out validation errors and rate limits from Sentry"""
     exc = hint.get("exc_info", (None, None, None))[1]
     if exc:
@@ -92,7 +92,7 @@ async def init_db() -> None:
         await seed_demo(conn)
 
 
-async def seed_demo(conn) -> None:
+async def seed_demo(conn: Any) -> None:
     """
     Наполняем таблицы примерами, если там пусто.
     """
@@ -202,7 +202,11 @@ async def seed_demo(conn) -> None:
     from sqlalchemy.ext.asyncio import AsyncSession
     from sqlalchemy.orm import sessionmaker
 
-    async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async_session = sessionmaker(
+        bind=engine,
+        class_=AsyncSession,
+        expire_on_commit=False,
+    )
 
     async with async_session() as session:
         session.add_all(notes + tickets + media + psych + tasks + broadcasts)
@@ -233,11 +237,11 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Optional[User]:
 # ────────────────── /start & логин FSM ──────────────────
 @dp.message(Command("start"))
 async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
-    if await get_user(m.from_user.id):
-        u = await get_user(m.from_user.id)
+    user = await get_user(m.from_user.id)
+    if user:
         await m.answer(
-            f"Вы уже авторизованы как <b>{ROLES[u.role]}</b>",
-            reply_markup=menu(u.role, lang, u.theme),
+            f"Вы уже авторизованы как <b>{ROLES[user.role]}</b>",
+            reply_markup=menu(user.role, lang, user.theme),
         )
     else:
         # Предлагаем онбординг для новых пользователей
@@ -275,6 +279,9 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
         await state.set_data(data)
         await m.answer(t("common.login_prompt", lang))
     elif current_state == "await_pwd":
+        if m.text is None:
+            await m.answer("Пожалуйста, введите пароль.")
+            return
         user = await authenticate(m.from_user.id, data["login"], m.text.strip())
         await state.clear()
         if user:
@@ -311,6 +318,9 @@ async def handle_start_login(call: CallbackQuery, state: FSMContext, lang: str) 
 @dp.callback_query(lambda c: c.data.startswith("switch_"))
 async def demo_switch(call: CallbackQuery, lang: str) -> None:
     """Переключение между демо-аккаунтами"""
+    if call.data is None:
+        await call.answer("Ошибка данных", show_alert=True)
+        return
     role_target = call.data.split("_", 1)[1]  # teacher / admin ...
     user = await get_user(call.from_user.id)
     if not user or user.role != "super":
@@ -366,7 +376,7 @@ async def main() -> None:
     loop = asyncio.get_running_loop()
     stop = asyncio.Event()
 
-    def _sig(*_):
+    def _sig(*_: Any) -> None:
         stop.set()
 
     for sig in (signal.SIGTERM, signal.SIGINT):

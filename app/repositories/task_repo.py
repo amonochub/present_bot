@@ -12,7 +12,8 @@ async def list_open() -> List[Task]:
     """Получить список открытых поручений"""
     async with AsyncSessionLocal() as s:
         result = await s.execute(select(Task).where(Task.status == TaskStatus.PENDING))
-        return result.scalars().all()
+        tasks = result.scalars().all()
+        return list(tasks)
 
 
 async def set_status(task_id: int, status: Status) -> bool:

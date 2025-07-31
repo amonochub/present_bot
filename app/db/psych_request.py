@@ -10,5 +10,5 @@ class PsychRequest(Base):
     from_id = Column(Integer)  # Telegram-ID автора (анонимный, хранится лишь ID)
     content_id = Column(String, nullable=True)  # file_id голосового / None если текст
     text = Column(String, nullable=True)  # текст обращения (если не voice)
-    status = Column(Enum(Status), default=Status.open, nullable=False)  # open / done
+    status: Status = Column(Enum(Status), default=Status.open, nullable=False)  # open / done
     created_at = Column(DateTime, server_default=func.now())

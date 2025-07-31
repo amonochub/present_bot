@@ -3,7 +3,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from app.db.enums import ico
 
 
-def tasks_board(tasks, lang="ru"):
+def tasks_board(tasks: list, lang: str = "ru") -> InlineKeyboardMarkup:
     """Клавиатура со списком поручений"""
     rows = [
         [
@@ -19,7 +19,7 @@ def tasks_board(tasks, lang="ru"):
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def add_back(rows):
+def add_back(rows: list) -> InlineKeyboardMarkup:
     """Добавить кнопку "Назад" к существующим рядам"""
     rows.append([InlineKeyboardButton("◀️ Назад", callback_data="back_to_main")])
     return InlineKeyboardMarkup(inline_keyboard=rows)
