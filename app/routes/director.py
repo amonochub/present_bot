@@ -183,7 +183,7 @@ async def task_deadline(msg: Message, state: Any) -> None:
             title=data["title"],
             description=data["description"],
             deadline=deadline,
-            author_id=user.id,
+            author_id=user.id,  # type: ignore
         )
 
         await state.clear()
@@ -202,6 +202,9 @@ async def change_task_status(call: CallbackQuery):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
+        if call.data is None:
+            await call.answer("Ошибка данных", show_alert=True)
+            return
         task_id = int(call.data.split("_")[-1])
         status = Status.done if call.data.startswith("task_done") else Status.in_progress
 
@@ -217,7 +220,8 @@ async def change_task_status(call: CallbackQuery):
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks
             )
-            await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
+            if call.message is not None and hasattr(call.message, 'edit_text'):
+                await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
     except Exception as e:
