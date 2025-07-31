@@ -55,7 +55,7 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
             txt = "📝 <b>Мои заметки</b>\n\n" + "\n".join(
                 f"• <i>{n.student_name}</i> — {n.text} " for n in notes
             )
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(txt, reply_markup=menu("teacher", lang))
         await call.answer()
     except Exception as e:
@@ -73,7 +73,7 @@ async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
             return
 
         await state.set_state(AddNote.waiting_text)
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(t("teacher.add_note_prompt", lang))
         await call.answer()
     except Exception as e:
@@ -113,7 +113,8 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
             await msg.answer("Текст заметки не может быть пустым")
             return
 
-        await note_repo.create_note(user.id, student, text)
+        if user.id is not None:
+            await note_repo.create_note(user.id, student, text)
         await state.clear()
         await msg.answer(t("teacher.note_added", lang), reply_markup=menu("teacher", lang))
     except Exception as e:
@@ -132,7 +133,7 @@ async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
             return
 
         await state.set_state(AddTicket.waiting_title)
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text(t("teacher.ticket_text_prompt", lang))
         await call.answer()
     except Exception as e:
@@ -209,7 +210,7 @@ async def media_start(call: CallbackQuery, state: Any, lang: str) -> None:
             return
 
         await state.set_state(MediaFSM.waiting_date)
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, 'edit_text'):
             await call.message.edit_text("Введите дату мероприятия (например, 25.12.2024):")
         await call.answer()
     except Exception as e:
@@ -259,7 +260,7 @@ async def media_file(msg: Message, state: Any) -> None:
 
 
 @router.message(MediaFSM.waiting_text, F.text)
-async def media_finish(msg: Message, state, lang: str):
+async def media_finish(msg: Message, state: Any, lang: str) -> None:
     try:
         data = await state.get_data()
         user = await me(msg.from_user.id)
@@ -268,12 +269,16 @@ async def media_finish(msg: Message, state, lang: str):
             await state.clear()
             return
 
+        if msg.text is None:
+            await msg.answer("Пожалуйста, введите комментарий.")
+            return
         comment = msg.text.strip()
         if len(comment) > 500:
             await msg.answer("Комментарий слишком длинный (максимум 500 символов)")
             return
 
-        await media_repo.create(user.id, data["date"], comment, data["file_id"])
+        if user.id is not None:
+            await media_repo.create(user.id, data["date"], comment, data["file_id"])
         await state.clear()
         await msg.answer("✅ Медиа-заявка создана!", reply_markup=menu("teacher", lang))
     except Exception as e:

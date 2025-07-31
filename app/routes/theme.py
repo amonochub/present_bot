@@ -29,10 +29,10 @@ async def toggle_theme(uid: int) -> str:
         new = "dark" if user.theme == "light" else "light"
         if user is not None and user.id is not None:
             await s.execute(update(User).where(User.id == user.id).values(theme=new))
+            await s.commit()
+            return new
         else:
-            return
-        await s.commit()
-        return new
+            return "light"  # дефолт если пользователь не найден
 
 
 @router.message(Command("theme"))
