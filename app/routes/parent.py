@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 # helper: get current user role
-async def get_user_role(tg_id: int) -> Optional[str]:
+async def get_user_role(tg_id: int) -> Any:
     async with AsyncSessionLocal() as s:
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
         return user.role if user else None
@@ -24,7 +24,7 @@ async def get_user_role(tg_id: int) -> Optional[str]:
 
 # ─────────── Задания ребенка ───────────
 @router.callback_query(F.data == "parent_tasks")
-async def view_child_tasks(call: CallbackQuery):
+async def view_child_tasks(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
@@ -45,7 +45,8 @@ async def view_child_tasks(call: CallbackQuery):
             if len(tasks) > 3:
                 txt += f"\n... и еще {len(tasks) - 3} заданий"
 
-        await call.message.edit_text(txt, reply_markup=menu("parent", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("parent", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заданий ребенка: {e}")
@@ -54,17 +55,18 @@ async def view_child_tasks(call: CallbackQuery):
 
 # ─────────── Справки ───────────
 @router.callback_query(F.data == "parent_cert")
-async def request_certificate(call: CallbackQuery):
+async def request_certificate(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
             await call.answer("Эта функция доступна только родителям", show_alert=True)
             return
 
-        await call.message.edit_text(
-            "📄 <b>Запрос справки</b>\n\n" "Выберите тип справки:",
-            reply_markup=menu("parent", "ru"),
-        )
+        if call.message is not None:
+            await call.message.edit_text(
+                "📄 <b>Запрос справки</b>\n\n" "Выберите тип справки:",
+                reply_markup=menu("parent", "ru"),
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при запросе справки: {e}")
@@ -72,7 +74,7 @@ async def request_certificate(call: CallbackQuery):
 
 
 @router.callback_query(F.data == "cert_attendance")
-async def generate_attendance_cert(call: CallbackQuery):
+async def generate_attendance_cert(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
@@ -87,7 +89,8 @@ async def generate_attendance_cert(call: CallbackQuery):
             date="2024-12-19",
         )
 
-        await call.message.answer_document(
+        if call.message is not None:
+            await call.message.answer_document(
             document=pdf_data,
             caption="📄 Справка о посещаемости\n\n"
             "Справка сгенерирована автоматически.\n"

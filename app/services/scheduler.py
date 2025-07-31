@@ -23,14 +23,14 @@ async def kpi_loop():
                 done = await s.scalar(
                     select(func.count())
                     .select_from(Task)
-                    .where(Task.status == TaskStatus.COMPLETED)
+                    .where(Task.status == TaskStatus.COMPLETED)  # type: ignore
                 )
 
                 # Просрочено поручений
                 overdue = await s.scalar(
                     select(func.count())
                     .select_from(Task)
-                    .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
+                    .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())  # type: ignore
                 )
 
             # Обновляем метрики Prometheus

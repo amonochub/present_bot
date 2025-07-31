@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 # helper: get current user role
-async def get_user_role(tg_id: int) -> Optional[str]:
+async def get_user_role(tg_id: int) -> Any:
     async with AsyncSessionLocal() as s:
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
         return user.role if user else None
@@ -24,7 +24,7 @@ async def get_user_role(tg_id: int) -> Optional[str]:
 
 # ─────────── Входящие обращения ───────────
 @router.callback_query(F.data == "psych_inbox")
-async def view_inbox(call: CallbackQuery):
+async def view_inbox(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["psych", "super"]:
@@ -41,7 +41,8 @@ async def view_inbox(call: CallbackQuery):
                 f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                 for r in requests
             )
-        await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении входящих обращений: {e}")
@@ -49,7 +50,7 @@ async def view_inbox(call: CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data.startswith("psych_mark_done_"))
-async def mark_request_done(call: CallbackQuery):
+async def mark_request_done(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["psych", "super"]:
@@ -72,7 +73,8 @@ async def mark_request_done(call: CallbackQuery):
                     f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                     for r in requests
                 )
-            await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
+            if call.message is not None:
+                await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
         else:
             await call.answer("Ошибка при обработке обращения", show_alert=True)
     except Exception as e:
@@ -82,7 +84,7 @@ async def mark_request_done(call: CallbackQuery):
 
 # ─────────── Статистика ───────────
 @router.callback_query(F.data == "psych_stats")
-async def view_stats(call: CallbackQuery):
+async def view_stats(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["psych", "super"]:
@@ -108,7 +110,8 @@ async def view_stats(call: CallbackQuery):
             "📈 Процент обработки: 0%"
         )
 
-        await call.message.edit_text(stats_text, reply_markup=menu("psych", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(stats_text, reply_markup=menu("psych", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении статистики: {e}")

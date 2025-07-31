@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -25,14 +25,14 @@ class AddTask(StatesGroup):
 
 
 # helper: get current user
-async def me(tg_id: int) -> Optional[User]:
+async def me(tg_id: int) -> Any:
     async with AsyncSessionLocal() as s:
         return await s.scalar(select(User).where(User.tg_id == tg_id))
 
 
 # ─────────── KPI ───────────
 @router.message(Command("kpi"))
-async def kpi_cmd(msg: Message):
+async def kpi_cmd(msg: Message) -> None:
     try:
         user = await me(msg.from_user.id)
         if not user or user.role not in ["director", "super"]:
@@ -62,7 +62,7 @@ async def kpi_cmd(msg: Message):
 
 # ─────────── Задачи ───────────
 @router.callback_query(F.data == "director_tasks")
-async def view_tasks(call: CallbackQuery):
+async def view_tasks(call: CallbackQuery) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["director", "super"]:
@@ -80,7 +80,8 @@ async def view_tasks(call: CallbackQuery):
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks
             )
-        await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении задач: {e}")
@@ -88,7 +89,7 @@ async def view_tasks(call: CallbackQuery):
 
 
 @router.callback_query(F.data == "director_add_task")
-async def start_add_task(call: CallbackQuery, state):
+async def start_add_task(call: CallbackQuery, state: Any) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["director", "super"]:
@@ -96,7 +97,8 @@ async def start_add_task(call: CallbackQuery, state):
             return
 
         await state.set_state(AddTask.waiting_title)
-        await call.message.edit_text("📋 <b>Добавление задачи</b>\n\n" "Введите название задачи:")
+        if call.message is not None:
+            await call.message.edit_text("📋 <b>Добавление задачи</b>\n\n" "Введите название задачи:")
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале добавления задачи: {e}")

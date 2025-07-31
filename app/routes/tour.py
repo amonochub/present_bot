@@ -25,8 +25,9 @@ async def set_role(tg_id: int, role: str) -> None:
             select(User).where(User.tg_id == tg_id).execution_options(populate_existing=True)
         )
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
-        user.role = role
-        await s.commit()
+        if user is not None:
+            user.role = role
+            await s.commit()
 
 
 def _tour_text(role: str) -> str:
@@ -52,7 +53,7 @@ async def start_tour(msg: Message, state: Any, lang: str) -> None:
 # ───────────── «Дальше» ─────────────
 @router.callback_query(lambda c: c.data == "tour_next")
 async def next_cb(call: CallbackQuery, state: Any, lang: str) -> None:
-    if call.message is not None:
+    if call.message is not None and hasattr(call.message, 'edit_text'):
         await next_step(call.message, state, lang)
     await call.answer()
 
@@ -61,7 +62,7 @@ async def next_cb(call: CallbackQuery, state: Any, lang: str) -> None:
 @router.callback_query(lambda c: c.data == "back_to_main")
 async def back_to_main_cb(call: CallbackQuery, state: Any, lang: str) -> None:
     await state.clear()
-    if call.message is not None:
+    if call.message is not None and hasattr(call.message, 'edit_text'):
         await call.message.edit_text("🏠 Вы вернулись в демо-меню", reply_markup=menu("super", lang))
     await call.answer()
 
@@ -76,7 +77,8 @@ async def next_step(msg: Message, state: Any, lang: str) -> None:
         return
 
     role = TOUR_ROLES[idx]
-    await set_role(msg.from_user.id, role)  # «переключаем» роль
+    if msg.from_user is not None:
+        await set_role(msg.from_user.id, role)  # «переключаем» роль
 
     # отправляем пояснение и меню роли
     await msg.answer(_tour_text(role), parse_mode="HTML", reply_markup=menu(role, lang))

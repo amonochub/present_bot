@@ -11,7 +11,7 @@ from app.db.task import Task, TaskStatus
 async def list_open() -> List[Task]:
     """Получить список открытых поручений"""
     async with AsyncSessionLocal() as s:
-        result = await s.execute(select(Task).where(Task.status == TaskStatus.PENDING))
+        result = await s.execute(select(Task).where(Task.status == TaskStatus.PENDING))  # type: ignore
         tasks = result.scalars().all()
         return list(tasks)
 
@@ -39,6 +39,6 @@ async def get_overdue_count() -> int:
     """Получить количество просроченных поручений"""
     async with AsyncSessionLocal() as s:
         result = await s.scalar(
-            select(Task).where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
+            select(Task).where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())  # type: ignore
         )
         return result or 0

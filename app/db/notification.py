@@ -34,16 +34,16 @@ class Notification(Base, TimestampMixin):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    type: NotificationType = Column(Enum(NotificationType), nullable=False)
+    type = Column(Enum(NotificationType), nullable=False)  # type: ignore
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    status: NotificationStatus = Column(Enum(NotificationStatus), default=NotificationStatus.PENDING, nullable=False)
+    status = Column(Enum(NotificationStatus), default=NotificationStatus.PENDING, nullable=False)  # type: ignore
     scheduled_at = Column(DateTime, nullable=True)  # Когда отправить
     sent_at = Column(DateTime, nullable=True)  # Когда было отправлено
     read_at = Column(DateTime, nullable=True)  # Когда было прочитано
 
     # Дополнительные данные (JSON)
-    metadata: str = Column(String, nullable=True)  # Дополнительные данные
+    metadata = Column(String, nullable=True)  # Дополнительные данные
 
     # Связи
     user = relationship("User", back_populates="notifications")

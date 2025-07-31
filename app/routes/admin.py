@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from aiogram import F, Router
 from aiogram.fsm.state import State, StatesGroup
@@ -23,20 +23,20 @@ class BroadcastFSM(StatesGroup):
 
 
 # helper: get current user
-async def get_user_role(tg_id: int) -> Optional[str]:
+async def get_user_role(tg_id: int) -> Any:
     async with AsyncSessionLocal() as s:
         user = await s.scalar(select(User).where(User.tg_id == tg_id))
         return user.role if user else None
 
 
-def ticket_lines(tickets):
+def ticket_lines(tickets: list[Any]) -> str:
     ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
     return "\n".join(f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets)
 
 
 # ─────────── Заявки ───────────
 @router.callback_query(F.data == "admin_tickets")
-async def view_tickets(call: CallbackQuery):
+async def view_tickets(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["admin", "super"]:
@@ -48,7 +48,8 @@ async def view_tickets(call: CallbackQuery):
             txt = "📋 <b>Заявки техподдержки</b>\n\nНет активных заявок"
         else:
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
-        await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заявок: {e}")
@@ -56,7 +57,7 @@ async def view_tickets(call: CallbackQuery):
 
 
 @router.callback_query(lambda c: c.data.startswith(("mark_done", "mark_prog")))
-async def change_status(call: CallbackQuery):
+async def change_status(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["admin", "super"]:
@@ -72,7 +73,8 @@ async def change_status(call: CallbackQuery):
             # Обновляем список заявок
             tickets = await ticket_repo.list_all()
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
-            await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
+            if call.message is not None:
+                await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
     except Exception as e:
@@ -82,7 +84,7 @@ async def change_status(call: CallbackQuery):
 
 # ─────────── Медиа-заявки ───────────
 @router.callback_query(F.data == "admin_media")
-async def view_media(call: CallbackQuery):
+async def view_media(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["admin", "super"]:
@@ -97,7 +99,8 @@ async def view_media(call: CallbackQuery):
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
                 f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests
             )
-        await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
+        if call.message is not None:
+            await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении медиа-заявок: {e}")
