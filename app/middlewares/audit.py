@@ -98,7 +98,9 @@ class AuditMiddleware(BaseMiddleware):
         elif isinstance(event, CallbackQuery):
             if event.data is not None and event.data.startswith("switch_"):
                 return "role_change"
-            elif event.data is not None and (event.data.startswith("admin_") or event.data.startswith("teacher_")):
+            elif event.data is not None and (
+                event.data.startswith("admin_") or event.data.startswith("teacher_")
+            ):
                 return "menu_access"
             else:
                 return "button_click"

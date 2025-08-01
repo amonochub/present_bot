@@ -1,5 +1,5 @@
 from app.db.user import User
-from app.handlers.intro import INTRO_SLIDES
+from app.routes.intro import INTRO_SLIDES
 
 
 def test_intro_slides_structure():

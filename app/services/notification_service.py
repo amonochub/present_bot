@@ -109,7 +109,8 @@ class NotificationService:
             query = query.order_by(Notification.created_at.desc()).limit(limit)
 
             result = await session.execute(query)
-            return result.scalars().all()
+            notifications = result.scalars().all()
+            return list(notifications)
 
     @staticmethod
     async def create_task_reminder(

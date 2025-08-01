@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from aiogram import F, Router
 from aiogram.fsm.state import State, StatesGroup
@@ -31,7 +31,7 @@ async def get_user_role(tg_id: int) -> Any:
 
 def ticket_lines(tickets: list[Any]) -> str:
     ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-    return "\n".join(f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets)  # type: ignore
+    return "\n".join(f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets)
 
 
 # ─────────── Заявки ───────────
@@ -48,7 +48,7 @@ async def view_tickets(call: CallbackQuery) -> None:
             txt = "📋 <b>Заявки техподдержки</b>\n\nНет активных заявок"
         else:
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
     except Exception as e:
@@ -76,7 +76,7 @@ async def change_status(call: CallbackQuery) -> None:
             # Обновляем список заявок
             tickets = await ticket_repo.list_all()
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
-            if call.message is not None and hasattr(call.message, 'edit_text'):
+            if call.message is not None and hasattr(call.message, "edit_text"):
                 await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
@@ -100,9 +100,10 @@ async def view_media(call: CallbackQuery) -> None:
         else:
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
+                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} "
+                for r in requests  # type: ignore
             )
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
     except Exception as e:
@@ -131,9 +132,10 @@ async def change_media_status(call: CallbackQuery) -> None:
             requests = await media_repo.list_all()
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
+                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} "
+                for r in requests  # type: ignore
             )
-            if call.message is not None and hasattr(call.message, 'edit_text'):
+            if call.message is not None and hasattr(call.message, "edit_text"):
                 await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
@@ -152,7 +154,7 @@ async def start_broadcast(call: CallbackQuery, state: Any) -> None:
             return
 
         await state.set_state(BroadcastFSM.waiting_text)
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(
                 "📢 <b>Массовая рассылка</b>\n\n"
                 "Введите текст сообщения для рассылки всем пользователям:"
@@ -166,8 +168,13 @@ async def start_broadcast(call: CallbackQuery, state: Any) -> None:
 @router.message(BroadcastFSM.waiting_text, F.text)
 async def send_broadcast(msg: Message, state: Any) -> None:
     try:
+        if msg.from_user is None:
+            await msg.answer("Доступ запрещен")
+            await state.clear()
+            return
+
         user_role = await get_user_role(msg.from_user.id)
-        if user_role not in ["admin", "super"]:
+        if not user_role or user_role not in ["admin", "super"]:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return

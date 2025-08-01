@@ -243,14 +243,16 @@ async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang
             "✅ **Подтвердите выбор роли**"
         )
 
-        if callback.message is not None and hasattr(callback.message, 'answer_photo'):
+        if callback.message is not None and hasattr(callback.message, "answer_photo"):
             await callback.message.answer_photo(photo=photo, caption=caption, parse_mode="Markdown")
 
             # Обновляем клавиатуру для подтверждения
             from app.keyboards.onboarding import get_confirmation_keyboard
 
-            if hasattr(callback.message, 'edit_reply_markup'):
-                await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
+            if hasattr(callback.message, "edit_reply_markup"):
+                await callback.message.edit_reply_markup(
+                    reply_markup=get_confirmation_keyboard(role)
+                )
 
     except Exception:
         # Если изображение не найдено, отправляем только текст
@@ -260,13 +262,15 @@ async def handle_role_selection(callback: CallbackQuery, state: FSMContext, lang
             "✅ **Подтвердите выбор роли**"
         )
 
-        if callback.message is not None and hasattr(callback.message, 'answer'):
+        if callback.message is not None and hasattr(callback.message, "answer"):
             await callback.message.answer(caption, parse_mode="Markdown")
 
             from app.keyboards.onboarding import get_confirmation_keyboard
 
-            if hasattr(callback.message, 'edit_reply_markup'):
-                await callback.message.edit_reply_markup(reply_markup=get_confirmation_keyboard(role))
+            if hasattr(callback.message, "edit_reply_markup"):
+                await callback.message.edit_reply_markup(
+                    reply_markup=get_confirmation_keyboard(role)
+                )
 
     await callback.answer()
 
@@ -303,7 +307,7 @@ async def handle_role_confirmation(callback: CallbackQuery, state: FSMContext, l
         "• Пройти тур по возможностям через /tour"
     )
 
-    if callback.message is not None and hasattr(callback.message, 'answer'):
+    if callback.message is not None and hasattr(callback.message, "answer"):
         await callback.message.answer(success_text, parse_mode="Markdown")
 
     # Очищаем состояние
@@ -316,7 +320,7 @@ async def back_to_role_selection(callback: CallbackQuery, state: FSMContext, lan
     """Возврат к выбору роли"""
     await state.set_state(OnboardingStates.selecting_role)
 
-    if callback.message is not None and hasattr(callback.message, 'edit_text'):
+    if callback.message is not None and hasattr(callback.message, "edit_text"):
         await callback.message.edit_text(
             "🎓 **Выберите вашу роль:**\n\n"
             "Каждая роль предоставляет уникальные возможности для эффективной работы в школе.",
@@ -329,7 +333,7 @@ async def back_to_role_selection(callback: CallbackQuery, state: FSMContext, lan
 @router.callback_query(F.data == "start_carousel")
 async def handle_start_carousel(callback: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Запуск карусели ролей"""
-    if callback.message is not None and hasattr(callback.message, 'answer'):
+    if callback.message is not None and hasattr(callback.message, "answer"):
         await send_role_carousel(callback.message, 0, lang)  # type: ignore
     await callback.answer()
 
@@ -342,7 +346,7 @@ async def handle_carousel_navigation(callback: CallbackQuery, state: FSMContext,
             await callback.answer("Ошибка данных", show_alert=True)
             return
         index = int(callback.data.split("_", 1)[1])
-        if callback.message is not None and hasattr(callback.message, 'answer'):
+        if callback.message is not None and hasattr(callback.message, "edit_text"):
             await send_role_carousel(callback.message, index, lang)  # type: ignore
         await callback.answer()
     except (ValueError, IndexError):
@@ -396,7 +400,7 @@ async def show_role_info(callback: CallbackQuery, state: FSMContext, lang: str) 
                 ]
             )
 
-            if hasattr(callback.message, 'edit_reply_markup'):
+            if callback.message is not None and hasattr(callback.message, "edit_reply_markup"):
                 await callback.message.edit_reply_markup(reply_markup=keyboard)
 
     except Exception:
@@ -429,6 +433,7 @@ async def show_role_info(callback: CallbackQuery, state: FSMContext, lang: str) 
                 ]
             )
 
-            await callback.message.edit_reply_markup(reply_markup=keyboard)
+            if callback.message is not None and hasattr(callback.message, "edit_reply_markup"):
+                await callback.message.edit_reply_markup(reply_markup=keyboard)
 
     await callback.answer()

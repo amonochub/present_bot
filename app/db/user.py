@@ -6,10 +6,7 @@ from sqlalchemy.orm import relationship
 from app.db.base import Base, TimestampMixin
 
 if TYPE_CHECKING:
-    from .broadcast import Broadcast
-    from .note import Note
-    from .notification import Notification
-    from .task import Task
+    pass
 
 
 class User(Base, TimestampMixin):
@@ -40,9 +37,7 @@ class User(Base, TimestampMixin):
 
     # Связи
     notes = relationship("Note", back_populates="teacher")
-    tasks = relationship(
-        "Task", foreign_keys="Task.author_id", back_populates="author"
-    )
+    tasks = relationship("Task", foreign_keys="Task.author_id", back_populates="author")
     broadcasts = relationship("Broadcast", back_populates="author")
     notifications = relationship("Notification", back_populates="user")
 

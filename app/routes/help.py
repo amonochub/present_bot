@@ -195,9 +195,13 @@ async def help_button(call: CallbackQuery, lang: str) -> None:
         help_text = get_help_text(user_role, lang)
         faq_text = get_faq_text(lang)
         full_text = help_text + "\n\n" + faq_text
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(full_text, reply_markup=menu(user_role, lang))
-        await call.answer()
+            await call.answer("Справка загружена")
+        else:
+            await call.answer("Справка загружена")
+            return
+        return
     except Exception as e:
         logger.error(f"Ошибка при показе справки: {e}")
         await call.answer("Произошла ошибка при загрузке справки", show_alert=True)

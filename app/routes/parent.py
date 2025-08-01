@@ -1,8 +1,8 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from aiogram import F, Router
-from aiogram.types import CallbackQuery
+from aiogram.types import BufferedInputFile, CallbackQuery
 from sqlalchemy import select
 
 from app.db.session import AsyncSessionLocal
@@ -10,7 +10,6 @@ from app.db.user import User
 from app.keyboards.main_menu import menu
 from app.repositories import task_repo
 from app.services.pdf_factory import make_certificate
-from aiogram.types import BufferedInputFile
 
 router = Router()
 logger = logging.getLogger(__name__)
@@ -46,7 +45,7 @@ async def view_child_tasks(call: CallbackQuery) -> None:
             if len(tasks) > 3:
                 txt += f"\n... и еще {len(tasks) - 3} заданий"
 
-        if call.message is not None:
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("parent", "ru"))
         await call.answer()
     except Exception as e:
@@ -63,7 +62,7 @@ async def request_certificate(call: CallbackQuery) -> None:
             await call.answer("Эта функция доступна только родителям", show_alert=True)
             return
 
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(
                 "📄 <b>Запрос справки</b>\n\n" "Выберите тип справки:",
                 reply_markup=menu("parent", "ru"),
@@ -88,7 +87,7 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
             child_name="Иванов Иван",
         )
 
-        if call.message is not None and hasattr(call.message, 'answer_document'):
+        if call.message is not None and hasattr(call.message, "answer_document"):
             # Конвертируем BytesIO в InputFile
             pdf_data.seek(0)
             input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
@@ -118,7 +117,7 @@ async def generate_progress_cert(call: CallbackQuery) -> None:
             child_name="Иванов Иван",
         )
 
-        if call.message is not None and hasattr(call.message, 'answer_document'):
+        if call.message is not None and hasattr(call.message, "answer_document"):
             # Конвертируем BytesIO в InputFile
             pdf_data.seek(0)
             input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
@@ -148,7 +147,7 @@ async def generate_behavior_cert(call: CallbackQuery) -> None:
             child_name="Иванов Иван",
         )
 
-        if call.message is not None and hasattr(call.message, 'answer_document'):
+        if call.message is not None and hasattr(call.message, "answer_document"):
             # Конвертируем BytesIO в InputFile
             pdf_data.seek(0)
             input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")

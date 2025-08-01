@@ -27,21 +27,22 @@ async def toggle_theme(uid: int) -> str:
             return "light"  # дефолт для неавторизованных
 
         new = "dark" if user.theme == "light" else "light"
-        if user is not None and hasattr(user, 'id') and user.id is not None:
-            await s.execute(update(User).where(User.id == user.id).values(theme=new))
-            await s.commit()
-            return new
-        else:
-            return "light"  # дефолт если пользователь не найден
+        await s.execute(update(User).where(User.id == user.id).values(theme=new))
+        await s.commit()
+        return new
 
 
 @router.message(Command("theme"))
 async def cmd_theme(msg: Message, lang: str) -> None:
     """Команда /theme для переключения темы"""
+    if msg.from_user is None:
+        await msg.answer(t("common.theme_switched", lang))
+        return
+
     new = await toggle_theme(msg.from_user.id)
     user = await get_user(msg.from_user.id)
 
-    if user is not None and hasattr(user, 'role'):
+    if user is not None and hasattr(user, "role"):
         await msg.answer(
             t("common.theme_switched", lang),
             reply_markup=menu(user.role, lang, theme=new),
@@ -53,9 +54,24 @@ async def cmd_theme(msg: Message, lang: str) -> None:
 @router.callback_query(lambda c: c.data == "switch_theme")
 async def cb_theme(call: CallbackQuery, lang: str) -> None:
     """Кнопка переключения темы"""
+    if call.from_user is None:
+        await call.answer(t("common.theme_switched", lang))
+        return
+
     new = await toggle_theme(call.from_user.id)
     user = await get_user(call.from_user.id)
 
-    if user is not None and hasattr(user, 'role') and call.message is not None and hasattr(call.message, 'edit_reply_markup'):
-        await call.message.edit_reply_markup(menu(user.role, lang, theme=new))  # type: ignore
-    await call.answer(t("common.theme_switched", lang))
+    if (
+        user is not None
+        and hasattr(user, "role")
+        and call.message is not None
+        and hasattr(call.message, "edit_reply_markup")
+    ):
+        keyboard = menu(user.role, lang, theme=new)
+        await call.message.edit_reply_markup(reply_markup=keyboard)
+        await call.answer(t("common.theme_switched", lang))
+    else:
+        await call.answer(t("common.theme_switched", lang))
+        return
+    return
+    return

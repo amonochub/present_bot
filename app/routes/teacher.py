@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Any, Optional
+from typing import Any
 
 from aiogram import F, Router
 from aiogram.fsm.state import State, StatesGroup
@@ -44,11 +44,11 @@ async def me(tg_id: int) -> Any:
 async def teacher_notes(call: CallbackQuery, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
-        if user is not None and user.id is not None:
+        if user is not None and hasattr(user, "id") and user.id is not None:
             notes = await note_repo.list_notes(user.id)
         else:
             notes = []
@@ -58,7 +58,7 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
             txt = "📝 <b>Мои заметки</b>\n\n" + "\n".join(
                 f"• <i>{n.student_name}</i> — {n.text} " for n in notes
             )
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("teacher", lang))
         await call.answer()
     except Exception as e:
@@ -71,12 +71,12 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
 async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
         await state.set_state(AddNote.waiting_text)
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(t("teacher.add_note_prompt", lang))
         await call.answer()
     except Exception as e:
@@ -88,8 +88,13 @@ async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
 @router.message(AddNote.waiting_text, F.text)
 async def save_note(msg: Message, state: Any, lang: str) -> None:
     try:
+        if msg.from_user is None:
+            await msg.answer("Доступ запрещен")
+            await state.clear()
+            return
+
         user = await me(msg.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
@@ -116,8 +121,7 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
             await msg.answer("Текст заметки не может быть пустым")
             return
 
-        if user is not None and user.id is not None:
-            await note_repo.create_note(user.id, student, text)
+        await note_repo.create_note(user.id, student, text)
         await state.clear()
         await msg.answer(t("teacher.note_added", lang), reply_markup=menu("teacher", lang))
     except Exception as e:
@@ -131,12 +135,12 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
 async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
         await state.set_state(AddTicket.waiting_title)
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(t("teacher.ticket_text_prompt", lang))
         await call.answer()
     except Exception as e:
@@ -184,14 +188,18 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
             await msg.answer("Пожалуйста, прикрепите файл или напишите «Пропустить»")
             return
 
-        user = await me(msg.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if msg.from_user is None:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
 
-        if user is not None and user.id is not None:
-            ticket = await ticket_repo.create_ticket(user.id, data["title"], file_id)
+        user = await me(msg.from_user.id)
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+            await msg.answer("Доступ запрещен")
+            await state.clear()
+            return
+
+        ticket = await ticket_repo.create_ticket(user.id, data["title"], file_id)
         await state.clear()
         await msg.answer(
             t("teacher.ticket_created", lang).format(ticket_id=ticket.id),
@@ -208,12 +216,12 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
 async def media_start(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
         await state.set_state(MediaFSM.waiting_date)
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text("Введите дату мероприятия (например, 25.12.2024):")
         await call.answer()
     except Exception as e:
@@ -266,8 +274,13 @@ async def media_file(msg: Message, state: Any) -> None:
 async def media_finish(msg: Message, state: Any, lang: str) -> None:
     try:
         data = await state.get_data()
+        if msg.from_user is None:
+            await msg.answer("Доступ запрещен")
+            await state.clear()
+            return
+
         user = await me(msg.from_user.id)
-        if not user or not hasattr(user, 'role') or user.role not in ["teacher", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
@@ -280,8 +293,7 @@ async def media_finish(msg: Message, state: Any, lang: str) -> None:
             await msg.answer("Комментарий слишком длинный (максимум 500 символов)")
             return
 
-        if user is not None and user.id is not None:
-            await media_repo.create(user.id, data["date"], comment, data["file_id"])
+        await media_repo.create(user.id, data["date"], comment, data["file_id"])
         await state.clear()
         await msg.answer("✅ Медиа-заявка создана!", reply_markup=menu("teacher", lang))
     except Exception as e:

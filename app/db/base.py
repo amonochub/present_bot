@@ -6,6 +6,7 @@ from sqlalchemy.sql import func
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import DeclarativeBase
+
     Base = DeclarativeBase
 else:
     Base = declarative_base()

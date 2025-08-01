@@ -1,3 +1,5 @@
+from typing import Any
+
 from .admin import router as admin
 from .director import router as director
 from .help import router as help_router
@@ -11,7 +13,7 @@ from .theme import router as theme
 from .tour import router as tour
 
 
-def include_all(dp):
+def include_all(dp: Any) -> None:
     """Include all routers in the dispatcher"""
     dp.include_router(intro)  # Подключаем первым для обработки /start
     dp.include_router(onboarding)  # Подключаем онбординг

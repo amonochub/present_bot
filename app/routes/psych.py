@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from aiogram import F, Router
 from aiogram.types import CallbackQuery
@@ -41,9 +41,13 @@ async def view_inbox(call: CallbackQuery) -> None:
                 f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                 for r in requests
             )
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
-        await call.answer()
+            await call.answer()
+        else:
+            await call.answer()
+            return
+        return
     except Exception as e:
         logger.error(f"Ошибка при получении входящих обращений: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
@@ -76,17 +80,14 @@ async def mark_request_done(call: CallbackQuery) -> None:
                     f"📅 {r.created_at.strftime('%d.%m.%Y %H:%M')}\n"
                     for r in requests
                 )
-            if call.message is not None and hasattr(call.message, 'edit_text'):
+            if call.message is not None and hasattr(call.message, "edit_text"):
                 await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
             return
         else:
             await call.answer("Ошибка при обработке обращения", show_alert=True)
-            return
     except Exception as e:
         logger.error(f"Ошибка при отметке обращения как обработанного: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
-        return
-    return  # type: ignore
 
 
 # ─────────── Статистика ───────────
@@ -117,9 +118,13 @@ async def view_stats(call: CallbackQuery) -> None:
             "📈 Процент обработки: 0%"
         )
 
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(stats_text, reply_markup=menu("psych", "ru"))
-        await call.answer()
+            await call.answer()
+        else:
+            await call.answer()
+            return
+        return
     except Exception as e:
         logger.error(f"Ошибка при получении статистики: {e}")
         await call.answer("Произошла ошибка", show_alert=True)

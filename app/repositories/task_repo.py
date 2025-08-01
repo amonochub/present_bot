@@ -16,7 +16,7 @@ async def create_task(title: str, description: str, deadline: date | None, autho
             description=description,
             deadline=deadline,
             author_id=author_id,
-            status=TaskStatus.PENDING
+            status=TaskStatus.PENDING,
         )
         s.add(task)
         await s.commit()

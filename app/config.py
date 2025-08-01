@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from pydantic import validator
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -32,7 +32,8 @@ class Settings(BaseSettings):
         env_file=".env", case_sensitive=True, env_file_encoding="utf-8"
     )
 
-    @validator("TELEGRAM_TOKEN")
+    @field_validator("TELEGRAM_TOKEN")
+    @classmethod
     def validate_telegram_token(cls, v: str) -> str:
         """Валидация формата Telegram токена"""
         if not v or ":" not in v:
@@ -42,21 +43,24 @@ class Settings(BaseSettings):
             raise ValueError("Invalid Telegram token format")
         return v
 
-    @validator("DB_PASS")
+    @field_validator("DB_PASS")
+    @classmethod
     def validate_db_password(cls, v: str) -> str:
         """Валидация сложности пароля базы данных"""
         if len(v) < 8:
             raise ValueError("Database password must be at least 8 characters long")
         return v
 
-    @validator("DB_PORT")
+    @field_validator("DB_PORT")
+    @classmethod
     def validate_db_port(cls, v: int) -> int:
         """Валидация порта базы данных"""
         if not 1 <= v <= 65535:
             raise ValueError("Database port must be between 1 and 65535")
         return v
 
-    @validator("KEEP_DAYS")
+    @field_validator("KEEP_DAYS")
+    @classmethod
     def validate_keep_days(cls, v: int) -> int:
         """Валидация количества дней хранения"""
         if v < 1 or v > 365:

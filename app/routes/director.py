@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Optional
+from typing import Any
 
 from aiogram import F, Router
 from aiogram.filters import Command
@@ -34,8 +34,12 @@ async def me(tg_id: int) -> Any:
 @router.message(Command("kpi"))
 async def kpi_cmd(msg: Message) -> None:
     try:
+        if msg.from_user is None:
+            await msg.answer("Команда доступна только директору.")
+            return
+
         user = await me(msg.from_user.id)
-        if not user or user.role not in ["director", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
             await msg.answer("Команда доступна только директору.")
             return
 
@@ -65,7 +69,7 @@ async def kpi_cmd(msg: Message) -> None:
 async def view_tasks(call: CallbackQuery) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or user.role not in ["director", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -74,13 +78,16 @@ async def view_tasks(call: CallbackQuery) -> None:
             txt = "📋 <b>Задачи директора</b>\n\nНет активных задач"
         else:
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-            txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
-                f"{ico[t.status]} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
-                f"📝 {t.description}\n"
-                f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
-                for t in tasks
+            txt = (
+                "📋 <b>Задачи директора</b>\n\n"
+                + "\n".join(
+                    f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
+                    f"📝 {t.description}\n"
+                    f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
+                    for t in tasks
+                )
             )
-        if call.message is not None and hasattr(call.message, 'edit_text'):
+        if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
         await call.answer()
     except Exception as e:
@@ -92,13 +99,13 @@ async def view_tasks(call: CallbackQuery) -> None:
 async def start_add_task(call: CallbackQuery, state: Any) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or user.role not in ["director", "super"]:
+        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
         await state.set_state(AddTask.waiting_title)
-        if call.message is not None and hasattr(call.message, 'edit_text'):
-            await call.message.edit_text("📋 <b>Добавление задачи</b>\n\n" "Введите название задачи:")
+        if call.message is not None and hasattr(call.message, "edit_text"):
+            await call.message.edit_text("📋 <b>Добавление задачи</b>\n\nВведите название задачи:")
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале добавления задачи: {e}")
@@ -173,6 +180,11 @@ async def task_deadline(msg: Message, state: Any) -> None:
                 return
 
         data = await state.get_data()
+        if msg.from_user is None:
+            await msg.answer("Доступ запрещен")
+            await state.clear()
+            return
+
         user = await me(msg.from_user.id)
         if not user or user.role not in ["director", "super"]:
             await msg.answer("Доступ запрещен")
@@ -195,7 +207,7 @@ async def task_deadline(msg: Message, state: Any) -> None:
 
 
 @router.callback_query(lambda c: c.data.startswith(("task_done", "task_prog")))
-async def change_task_status(call: CallbackQuery):
+async def change_task_status(call: CallbackQuery) -> None:
     try:
         user = await me(call.from_user.id)
         if not user or user.role not in ["director", "super"]:
@@ -214,13 +226,16 @@ async def change_task_status(call: CallbackQuery):
             # Обновляем список задач
             tasks = await task_repo.list_open()
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-            txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
-                f"{ico[t.status]} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
-                f"📝 {t.description}\n"
-                f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
-                for t in tasks
+            txt = (
+                "📋 <b>Задачи директора</b>\n\n"
+                + "\n".join(
+                    f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
+                    f"📝 {t.description}\n"
+                    f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
+                    for t in tasks
+                )
             )
-            if call.message is not None and hasattr(call.message, 'edit_text'):
+            if call.message is not None and hasattr(call.message, "edit_text"):
                 await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)

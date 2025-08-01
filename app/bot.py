@@ -4,7 +4,7 @@ import logging.config
 import pathlib
 import signal
 from datetime import date, timedelta
-from typing import Any, Optional
+from typing import Any
 
 import redis.asyncio as redis
 import sentry_sdk
@@ -237,6 +237,10 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Any:
 # ────────────────── /start & логин FSM ──────────────────
 @dp.message(Command("start"))
 async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
+    if m.from_user is None:
+        await m.answer("Ошибка: пользователь не найден.")
+        return
+
     user = await get_user(m.from_user.id)
     if user:
         await m.answer(
@@ -270,6 +274,10 @@ async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
 @dp.message(F.text)
 async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
     """Обработка логина через FSM"""
+    if m.from_user is None:
+        await m.answer("Ошибка: пользователь не найден.")
+        return
+
     current_state = await state.get_state()
     data = await state.get_data()
 
@@ -291,7 +299,7 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
             nonce = await issue_nonce(dp.storage, m.chat.id, m.from_user.id)
             await m.answer(
                 t("common.auth_success", lang),
-                reply_markup=menu(str(user.role), lang, str(user.theme), nonce),  # type: ignore
+                reply_markup=menu(str(user.role), lang, str(user.theme), nonce),
             )
         else:
             await m.answer(t("common.bad_credentials", lang))
@@ -313,7 +321,7 @@ async def handle_start_onboarding(call: CallbackQuery, state: FSMContext, lang: 
 async def handle_start_login(call: CallbackQuery, state: FSMContext, lang: str) -> None:
     """Обработка выбора входа в систему"""
     await state.set_state("await_login")
-    if call.message is not None and hasattr(call.message, 'edit_text'):
+    if call.message is not None and hasattr(call.message, "edit_text"):
         await call.message.edit_text(t("common.start_welcome", lang))
     await call.answer()
 
@@ -322,6 +330,10 @@ async def handle_start_login(call: CallbackQuery, state: FSMContext, lang: str) 
 @dp.callback_query(lambda c: c.data.startswith("switch_"))
 async def demo_switch(call: CallbackQuery, lang: str) -> None:
     """Переключение между демо-аккаунтами"""
+    if call.from_user is None:
+        await call.answer("Ошибка: пользователь не найден.", show_alert=True)
+        return
+
     if call.data is None:
         await call.answer("Ошибка данных", show_alert=True)
         return
@@ -332,15 +344,19 @@ async def demo_switch(call: CallbackQuery, lang: str) -> None:
         return
 
     async with AsyncSessionLocal() as s:
-        if user is not None and user.id is not None:  # type: ignore
+        if user is not None and hasattr(user, "id") and user.id is not None:
             await s.execute(update(User).where(User.id == user.id).values(role=role_target))
             await s.commit()
-    if call.message is not None and hasattr(call.message, 'edit_text'):
+    if call.message is not None and hasattr(call.message, "edit_text"):
         await call.message.edit_text(
             f"🚀 Вы переключились в режим «{ROLES[role_target]}»",
             reply_markup=menu(role_target, lang, user.theme),
         )
-    await call.answer()
+        await call.answer()
+    else:
+        await call.answer()
+        return
+    return
 
 
 # ────────────────── Подключение роутеров ──────────────────

@@ -8,7 +8,7 @@ from sqlalchemy import select
 
 from app.db.session import AsyncSessionLocal
 from app.db.user import User
-from app.keyboards.main_menu import get_back_btn, menu
+from app.keyboards.main_menu import menu
 
 router = Router()
 
@@ -53,7 +53,7 @@ async def start_tour(msg: Message, state: Any, lang: str) -> None:
 # ───────────── «Дальше» ─────────────
 @router.callback_query(lambda c: c.data == "tour_next")
 async def next_cb(call: CallbackQuery, state: Any, lang: str) -> None:
-    if call.message is not None and hasattr(call.message, 'edit_text'):
+    if call.message is not None and hasattr(call.message, "edit_text"):
         await next_step(call.message, state, lang)  # type: ignore
     await call.answer()
 
@@ -62,8 +62,11 @@ async def next_cb(call: CallbackQuery, state: Any, lang: str) -> None:
 @router.callback_query(lambda c: c.data == "back_to_main")
 async def back_to_main_cb(call: CallbackQuery, state: Any, lang: str) -> None:
     await state.clear()
-    if call.message is not None and hasattr(call.message, 'edit_text'):
-        await call.message.edit_text("🏠 Вы вернулись в демо-меню", reply_markup=menu("super", lang))
+    if call.message is not None and hasattr(call.message, "edit_text"):
+        await call.message.edit_text(
+            "🏠 Вы вернулись в демо-меню",
+            reply_markup=menu("super", lang),
+        )
     await call.answer()
 
 
@@ -81,14 +84,26 @@ async def next_step(msg: Message, state: Any, lang: str) -> None:
         await set_role(msg.from_user.id, role)  # «переключаем» роль
 
     # отправляем пояснение и меню роли
-    await msg.answer(_tour_text(role), parse_mode="HTML", reply_markup=menu(role, lang))
+    await msg.answer(
+        _tour_text(role),
+        parse_mode="HTML",
+        reply_markup=menu(role, lang),
+    )
     # добавляем кнопку «Дальше»
     next_btn = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text="➡️ Дальше", callback_data="tour_next")],
-            [InlineKeyboardButton(text="◀️ Главное меню", callback_data="back_to_main")],  # позволяет выйти в любой момент
+            [
+                InlineKeyboardButton(
+                    text="◀️ Главное меню",
+                    callback_data="back_to_main",
+                )  # позволяет выйти в любой момент
+            ],
         ]
     )
-    await msg.answer("Переключайтесь по меню или нажмите «Дальше» →", reply_markup=next_btn)
+    await msg.answer(
+        "Переключайтесь по меню или нажмите «Дальше» →",
+        reply_markup=next_btn,
+    )
 
     await state.update_data(idx=idx + 1)

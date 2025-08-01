@@ -25,10 +25,7 @@ async def list_open() -> List[PsychRequest]:
 
 async def list_all() -> List[PsychRequest]:
     async with AsyncSessionLocal() as s:
-        rows = await s.scalars(
-            select(PsychRequest)
-            .order_by(PsychRequest.created_at)
-        )
+        rows = await s.scalars(select(PsychRequest).order_by(PsychRequest.created_at))
         return list(rows)
 
 

@@ -1,7 +1,6 @@
 import importlib.resources
-from typing import Any, Dict
-
 import tomllib
+from typing import Any, Dict
 
 _cache: Dict[str, Dict[str, Any]] = {}
 
