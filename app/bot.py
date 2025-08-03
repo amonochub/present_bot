@@ -337,9 +337,17 @@ async def demo_switch(call: CallbackQuery, lang: str) -> None:
     if call.data is None:
         await call.answer("Ошибка данных", show_alert=True)
         return
-    role_target = call.data.split("_", 1)[1]  # teacher / admin ...
+    # CSRF middleware уже очистил nonce, поэтому call.data содержит только реальные данные
+    role_target = call.data.split("_", 1)[1]  # teacher / admin / super ...
     user = await get_user(call.from_user.id)
-    if not user or user.role != "super":
+    if not user:
+        await call.answer("Ошибка: пользователь не найден.", show_alert=True)
+        return
+
+    # Проверяем, что пользователь авторизован (любая роль)
+    if not user.login or not user.login.startswith(
+        ("demo", "teacher", "admin", "director", "student", "parent", "psych")
+    ):
         await call.answer("Только для демо-аккаунта", show_alert=True)
         return
 
@@ -348,9 +356,11 @@ async def demo_switch(call: CallbackQuery, lang: str) -> None:
             await s.execute(update(User).where(User.id == user.id).values(role=role_target))
             await s.commit()
     if call.message is not None and hasattr(call.message, "edit_text"):
+        # Генерируем новый nonce для обновленного меню
+        nonce = await issue_nonce(dp.storage, call.message.chat.id, call.from_user.id)
         await call.message.edit_text(
             f"🚀 Вы переключились в режим «{ROLES[role_target]}»",
-            reply_markup=menu(role_target, lang, user.theme),
+            reply_markup=menu(role_target, lang, user.theme, nonce),
         )
         await call.answer()
     else:
@@ -388,7 +398,7 @@ async def main() -> None:
     health_app = await init_health_app()
     runner = web.AppRunner(health_app)
     await runner.setup()
-    site = web.TCPSite(runner, "127.0.0.1", 8080)
+    site = web.TCPSite(runner, "127.0.0.1", 8081)
     await site.start()
 
     # Start KPI metrics loop

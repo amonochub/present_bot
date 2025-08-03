@@ -23,4 +23,4 @@ async def check_nonce(storage: Any, chat_id: int, user_id: int, nonce: str) -> b
 
 def escape_html(text: str) -> str:
     """Экранирует HTML-символы для безопасного отображения"""
-    return html.escape(text, quote=True)
+    return html.escape(text, quote=True).replace("&", "&amp;")

@@ -96,6 +96,12 @@ def menu(
                     callback_data=f"{nonce}:teacher_media",
                 )
             ],
+            [
+                InlineKeyboardButton(
+                    text="🔙 Вернуться к демо-меню",
+                    callback_data=f"{nonce}:switch_super",
+                )
+            ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -119,6 +125,12 @@ def menu(
                     callback_data=f"{nonce}:admin_media",
                 )
             ],
+            [
+                InlineKeyboardButton(
+                    text="🔙 Вернуться к демо-меню",
+                    callback_data=f"{nonce}:switch_super",
+                )
+            ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -127,13 +139,19 @@ def menu(
             [
                 InlineKeyboardButton(
                     text=f"{e['par_tasks']} Задания ребёнка",
-                    callback_data=f"{nonce}:par_tasks",
+                    callback_data=f"{nonce}:parent_tasks",
                 )
             ],
             [
                 InlineKeyboardButton(
                     text=f"{e['par_cert']} Заказать справку",
-                    callback_data=f"{nonce}:par_cert",
+                    callback_data=f"{nonce}:parent_cert",
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🔙 Вернуться к демо-меню",
+                    callback_data=f"{nonce}:switch_super",
                 )
             ],
         ]
@@ -143,6 +161,12 @@ def menu(
         kb = [
             [InlineKeyboardButton(text=f"{e['stub']} KPI", callback_data=f"{nonce}:stub")],
             [InlineKeyboardButton(text="⏱ Поручения", callback_data=f"{nonce}:director_tasks")],
+            [
+                InlineKeyboardButton(
+                    text="🔙 Вернуться к демо-меню",
+                    callback_data=f"{nonce}:switch_super",
+                )
+            ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -158,6 +182,12 @@ def menu(
                     text=f"{e['stu_help']} Психолог", callback_data=f"{nonce}:stu_help"
                 )
             ],
+            [
+                InlineKeyboardButton(
+                    text="🔙 Вернуться к демо-меню",
+                    callback_data=f"{nonce}:switch_super",
+                )
+            ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
 
@@ -166,9 +196,15 @@ def menu(
             [
                 InlineKeyboardButton(
                     text=f"{e['psy_inbox']} {t('psych.menu_requests', lang)}",
-                    callback_data=f"{nonce}:psy_inbox",
+                    callback_data=f"{nonce}:psych_inbox",
                 )
-            ]
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🔙 Вернуться к демо-меню",
+                    callback_data=f"{nonce}:switch_super",
+                )
+            ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
 

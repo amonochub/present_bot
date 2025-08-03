@@ -60,9 +60,15 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    from sqlalchemy.ext.asyncio import create_async_engine
+    # Convert async URL to sync URL for Alembic
+    url = get_url().replace("+asyncpg", "")
 
-    connectable = create_async_engine(get_url(), future=True)
+    connectable = engine_from_config(
+        config.get_section(config.config_ini_section),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+        url=url,
+    )
 
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)

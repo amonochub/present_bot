@@ -64,6 +64,36 @@ async def kpi_cmd(msg: Message) -> None:
         await msg.answer("Произошла ошибка при получении KPI")
 
 
+# ─────────── KPI ───────────
+@router.callback_query(F.data == "stub")
+async def view_kpi(call: CallbackQuery) -> None:
+    try:
+        user = await me(call.from_user.id)
+        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
+            await call.answer("Доступ запрещен", show_alert=True)
+            return
+
+        kpi_text = (
+            "📊 <b>KPI директора</b>\n\n"
+            "📈 <b>Статистика за месяц:</b>\n"
+            "• Активных задач: 12\n"
+            "• Выполнено задач: 8\n"
+            "• Средний срок выполнения: 3.2 дня\n"
+            "• Удовлетворенность: 94%\n\n"
+            "🎯 <b>Цели на следующий месяц:</b>\n"
+            "• Сократить время выполнения на 15%\n"
+            "• Увеличить удовлетворенность до 96%\n"
+            "• Запустить 3 новых проекта"
+        )
+
+        if call.message is not None and hasattr(call.message, "edit_text"):
+            await call.message.edit_text(kpi_text, reply_markup=menu("director", "ru"))
+        await call.answer()
+    except Exception as e:
+        logger.error(f"Ошибка при получении KPI: {e}")
+        await call.answer("Произошла ошибка", show_alert=True)
+
+
 # ─────────── Задачи ───────────
 @router.callback_query(F.data == "director_tasks")
 async def view_tasks(call: CallbackQuery) -> None:

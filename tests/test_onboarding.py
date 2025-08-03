@@ -99,8 +99,7 @@ async def test_start_onboarding(mock_keyboard, mock_message, mock_state):
 
 
 @pytest.mark.asyncio
-@patch("app.handlers.onboarding.get_confirmation_keyboard")
-async def test_role_selection(mock_keyboard, mock_callback, mock_state):
+async def test_role_selection(mock_callback, mock_state):
     """Тест выбора роли"""
     from app.handlers.onboarding import handle_role_selection
 
@@ -177,8 +176,7 @@ def test_role_descriptions_exist():
 
 
 @pytest.mark.asyncio
-@patch("app.handlers.onboarding.get_confirmation_keyboard")
-async def test_info_role_display(mock_keyboard, mock_callback, mock_state):
+async def test_info_role_display(mock_callback, mock_state):
     """Тест отображения информации о роли"""
     from app.handlers.onboarding import show_role_info
 
