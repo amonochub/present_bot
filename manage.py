@@ -6,6 +6,7 @@ import typer
 
 from alembic.config import main as alembic_main
 from app.bot import seed_demo
+from app.db.base import Base
 from app.db.session import engine
 
 cli = typer.Typer(help="Утилита админа SchoolBot")
