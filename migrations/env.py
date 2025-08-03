@@ -3,7 +3,7 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 
 from alembic import context
-from app.config import DATABASE_URL
+from app.config import settings
 from app.db.base import Base
 
 # this is the Alembic Config object, which provides
@@ -26,7 +26,7 @@ target_metadata = Base.metadata
 
 
 def get_url():
-    return DATABASE_URL
+    return settings.DATABASE_URL
 
 
 def run_migrations_offline() -> None:
