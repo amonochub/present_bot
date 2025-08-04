@@ -26,13 +26,12 @@ def makemigrations(msg: str = "auto"):
 
 @cli.command()
 def seed():
-    """Заполнить демо-данными (safe)"""
-
-    async def _seed():
-        async with engine.begin() as conn:
-            await seed_demo(conn)
-
-    asyncio.run(_seed())
+    """Заполнить демо-данными (safe) - ВРЕМЕННО ОТКЛЮЧЕНО"""
+    print("⚠️  Команда seed временно отключена для быстрого запуска")
+    # async def _seed():
+    #     async with engine.begin() as conn:
+    #         await seed_demo(conn)
+    # asyncio.run(_seed())
 
 
 @cli.command()

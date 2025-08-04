@@ -89,7 +89,8 @@ async def init_db() -> None:
         if not result.first():
             await conn.execute(User.__table__.insert(), DEMO_USERS)  # type: ignore
             await conn.commit()
-        await seed_demo(conn)
+        # Временно отключаем seed_demo для быстрого запуска
+        # await seed_demo(conn)
 
 
 async def seed_demo(conn: Any) -> None:
