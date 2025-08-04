@@ -1,0 +1,571 @@
+warning: The top-level linter settings are deprecated in favour of their counterparts in the `lint` section. Please update the following options in `.ruff.toml`:
+  - 'select' -> 'lint.select'
+[
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 54,
+      "row": 238
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/bot.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 238
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 238,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 82,
+      "row": 239
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/bot.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 239
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 239,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 64,
+      "row": 240
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/bot.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 240
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 240,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 73,
+      "row": 241
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/bot.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 241
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 241,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "E402",
+    "end_location": {
+      "column": 68,
+      "row": 242
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/bot.py",
+    "fix": null,
+    "location": {
+      "column": 1,
+      "row": 242
+    },
+    "message": "Module level import not at top of file",
+    "noqa_row": 242,
+    "url": "https://docs.astral.sh/ruff/rules/module-import-not-at-top-of-file"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 19,
+      "row": 97
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/middlewares/loading.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 22,
+            "row": 97
+          },
+          "location": {
+            "column": 9,
+            "row": 97
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `start_time`"
+    },
+    "location": {
+      "column": 9,
+      "row": 97
+    },
+    "message": "Local variable `start_time` is assigned to but never used",
+    "noqa_row": 97,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 50,
+      "row": 70
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/repositories/optimized_user_repo.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "User.is_active is True",
+          "end_location": {
+            "column": 50,
+            "row": 70
+          },
+          "location": {
+            "column": 28,
+            "row": 70
+          }
+        }
+      ],
+      "message": "Replace with `User.is_active`"
+    },
+    "location": {
+      "column": 28,
+      "row": 70
+    },
+    "message": "Avoid equality comparisons to `True`; use `if User.is_active:` for truth checks",
+    "noqa_row": 70,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 76,
+      "row": 99
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/repositories/optimized_user_repo.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "User.is_active is True",
+          "end_location": {
+            "column": 76,
+            "row": 99
+          },
+          "location": {
+            "column": 54,
+            "row": 99
+          }
+        }
+      ],
+      "message": "Replace with `User.is_active`"
+    },
+    "location": {
+      "column": 54,
+      "row": 99
+    },
+    "message": "Avoid equality comparisons to `True`; use `if User.is_active:` for truth checks",
+    "noqa_row": 99,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 144,
+      "row": 185
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/repositories/optimized_user_repo.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 185
+    },
+    "message": "Line too long (143 > 100)",
+    "noqa_row": 185,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 65,
+      "row": 189
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/repositories/optimized_user_repo.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "User.is_active is True",
+          "end_location": {
+            "column": 65,
+            "row": 189
+          },
+          "location": {
+            "column": 43,
+            "row": 189
+          }
+        }
+      ],
+      "message": "Replace with `User.is_active`"
+    },
+    "location": {
+      "column": 43,
+      "row": 189
+    },
+    "message": "Avoid equality comparisons to `True`; use `if User.is_active:` for truth checks",
+    "noqa_row": 189,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E712",
+    "end_location": {
+      "column": 99,
+      "row": 235
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/repositories/optimized_user_repo.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "User.is_active is True",
+          "end_location": {
+            "column": 99,
+            "row": 235
+          },
+          "location": {
+            "column": 77,
+            "row": 235
+          }
+        }
+      ],
+      "message": "Replace with `User.is_active`"
+    },
+    "location": {
+      "column": 77,
+      "row": 235
+    },
+    "message": "Avoid equality comparisons to `True`; use `if User.is_active:` for truth checks",
+    "noqa_row": 235,
+    "url": "https://docs.astral.sh/ruff/rules/true-false-comparison"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 114,
+      "row": 93
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/routes/docs.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 93
+    },
+    "message": "Line too long (113 > 100)",
+    "noqa_row": 93,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 102,
+      "row": 99
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/routes/docs.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 99
+    },
+    "message": "Line too long (101 > 100)",
+    "noqa_row": 99,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 19,
+      "row": 229
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/routes/interactions.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 22,
+            "row": 229
+          },
+          "location": {
+            "column": 9,
+            "row": 229
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `sent_count`"
+    },
+    "location": {
+      "column": 9,
+      "row": 229
+    },
+    "message": "Local variable `sent_count` is assigned to but never used",
+    "noqa_row": 229,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 50,
+      "row": 175
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/cache_service.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 50,
+            "row": 175
+          },
+          "location": {
+            "column": 39,
+            "row": 175
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `session`"
+    },
+    "location": {
+      "column": 43,
+      "row": 175
+    },
+    "message": "Local variable `session` is assigned to but never used",
+    "noqa_row": 175,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 13,
+      "row": 27
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/feedback_service.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 16,
+            "row": 27
+          },
+          "location": {
+            "column": 9,
+            "row": 27
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `user`"
+    },
+    "location": {
+      "column": 9,
+      "row": 27
+    },
+    "message": "Local variable `user` is assigned to but never used",
+    "noqa_row": 27,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 117,
+      "row": 72
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/feedback_service.py",
+    "fix": null,
+    "location": {
+      "column": 100,
+      "row": 72
+    },
+    "message": "Line too long (117 > 100)",
+    "noqa_row": 72,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 113,
+      "row": 73
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/feedback_service.py",
+    "fix": null,
+    "location": {
+      "column": 100,
+      "row": 73
+    },
+    "message": "Line too long (113 > 100)",
+    "noqa_row": 73,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 109,
+      "row": 161
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/feedback_service.py",
+    "fix": null,
+    "location": {
+      "column": 100,
+      "row": 161
+    },
+    "message": "Line too long (109 > 100)",
+    "noqa_row": 161,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "E501",
+    "end_location": {
+      "column": 148,
+      "row": 66
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/news_parser.py",
+    "fix": null,
+    "location": {
+      "column": 101,
+      "row": 66
+    },
+    "message": "Line too long (147 > 100)",
+    "noqa_row": 66,
+    "url": "https://docs.astral.sh/ruff/rules/line-too-long"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 90
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/notification_service.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 90
+          },
+          "location": {
+            "column": 9,
+            "row": 90
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `ticket`"
+    },
+    "location": {
+      "column": 9,
+      "row": 90
+    },
+    "message": "Local variable `ticket` is assigned to but never used",
+    "noqa_row": 90,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 121
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/notification_service.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 121
+          },
+          "location": {
+            "column": 9,
+            "row": 121
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `ticket`"
+    },
+    "location": {
+      "column": 9,
+      "row": 121
+    },
+    "message": "Local variable `ticket` is assigned to but never used",
+    "noqa_row": 121,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  },
+  {
+    "cell": null,
+    "code": "F841",
+    "end_location": {
+      "column": 15,
+      "row": 152
+    },
+    "filename": "/home/runner/work/present_bot/present_bot/app/services/notification_service.py",
+    "fix": {
+      "applicability": "unsafe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 18,
+            "row": 152
+          },
+          "location": {
+            "column": 9,
+            "row": 152
+          }
+        }
+      ],
+      "message": "Remove assignment to unused variable `ticket`"
+    },
+    "location": {
+      "column": 9,
+      "row": 152
+    },
+    "message": "Local variable `ticket` is assigned to but never used",
+    "noqa_row": 152,
+    "url": "https://docs.astral.sh/ruff/rules/unused-variable"
+  }
+]
