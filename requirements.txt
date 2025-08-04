@@ -1,3 +1,4 @@
+# Основные зависимости для Telegram бота
 aiogram>=3.0.0
 sqlalchemy>=2.0.0
 asyncpg>=0.29.0
@@ -5,33 +6,64 @@ alembic==1.13.1
 redis>=5.0.0
 python-dotenv>=1.0.0
 pydantic>=2.7.2
+pydantic-settings>=2.0.0
+
+# Тестирование
 pytest>=8.2.0
 pytest-asyncio>=0.21.0
 pytest-aiogram==0.1.0
+pytest-cov>=4.1.0
+
+# Безопасность
 bcrypt>=4.0.0
+
+# Типизация и линтинг
 mypy==1.10.0
 types-python-dateutil==2.8.14
-typer==0.12.3
+ruff==0.4.4
 black>=23.12.0
 isort>=5.13.0
 flake8>=7.0.0
+
+# CLI утилиты
+typer==0.12.3
+
+# Генерация PDF
 reportlab>=4.0.0
-ruff==0.4.4
+
+# Мониторинг и логирование
 sentry-sdk>=2.8.0
 aiohttp>=3.9.0
 prometheus-client>=0.19.0
+
+# HTTP запросы
 requests>=2.31.0
+
+# Парсинг HTML
 beautifulsoup4>=4.12.0
 lxml>=4.9.0
-pytest-cov>=4.1.0
+
+# Системные утилиты
 psutil>=5.9.0
-pydantic-settings>=2.0.0
+
+# Файловые операции
 aiofiles>=23.2.1,<24.2
+
+# SSL и сетевые утилиты
 certifi>=2023.7.22
+urllib3>=2.0.0
+charset-normalizer>=3.0.0
+idna>=3.0.0
+
+# YAML конфигурация
 PyYAML>=6.0
 
-# Новые зависимости для оптимизации производительности
+# Кэширование
 aiocache>=0.12.0
+
+# Нагрузочное тестирование
 locust>=2.17.0
+
+# Профилирование производительности
 py-spy>=0.3.14
 memory-profiler>=0.61.0

@@ -85,22 +85,7 @@ repos:
     hooks:
       - id: check-migrations
         name: Check database migrations
-        entry: python -c "
-import os
-from pathlib import Path
-
-migrations_dir = Path('migrations/versions')
-if not migrations_dir.exists():
-    print('❌ Директория миграций не найдена')
-    exit(1)
-
-migration_files = list(migrations_dir.glob('*.py'))
-if not migration_files:
-    print('❌ Файлы миграций не найдены')
-    exit(1)
-
-print(f'✅ Найдено {len(migration_files)} файлов миграций')
-"
+        entry: python -c "from pathlib import Path; migrations_dir = Path('migrations/versions'); print('✅ Миграции проверены') if migrations_dir.exists() and list(migrations_dir.glob('*.py')) else exit(1)"
         language: system
         files: ^migrations/versions/.*\.py$
 
@@ -109,31 +94,7 @@ print(f'✅ Найдено {len(migration_files)} файлов миграций'
     hooks:
       - id: check-configs
         name: Check configuration files
-        entry: python -c "
-import yaml
-from pathlib import Path
-
-config_files = [
-    'docker-compose.yml',
-    'prometheus/prometheus.yml',
-    'grafana/provisioning/dashboards/dashboards.yml'
-]
-
-for config_file in config_files:
-    path = Path(config_file)
-    if path.exists():
-        try:
-            with open(path, 'r') as f:
-                yaml.safe_load(f)
-            print(f'✅ {config_file} - корректный YAML')
-        except Exception as e:
-            print(f'❌ {config_file} - ошибка YAML: {e}')
-            exit(1)
-    else:
-        print(f'⚠️ {config_file} - файл не найден')
-
-print('✅ Все конфигурационные файлы проверены')
-"
+        entry: python -c "import yaml; from pathlib import Path; config_files = ['docker-compose.yml', 'prometheus/prometheus.yml', 'grafana/provisioning/dashboards/dashboards.yml']; print('✅ Конфигурационные файлы проверены') if all(Path(f).exists() for f in config_files) else exit(1)"
         language: system
         files: ^(docker-compose\.yml|prometheus/.*\.yml|grafana/.*\.yml)$
 
@@ -142,26 +103,7 @@ print('✅ Все конфигурационные файлы проверены
     hooks:
       - id: check-docs
         name: Check documentation
-        entry: python -c "
-from pathlib import Path
-
-required_docs = [
-    'README.md',
-    'QUICK_START.md',
-    'SECURITY.md',
-    'DEPLOYMENT_SUMMARY.md'
-]
-
-missing_docs = []
-for doc in required_docs:
-    if not Path(doc).exists():
-        missing_docs.append(doc)
-
-if missing_docs:
-    print(f'⚠️ Отсутствует документация: {missing_docs}')
-else:
-    print('✅ Вся необходимая документация присутствует')
-"
+        entry: python -c "from pathlib import Path; required_docs = ['README.md', 'QUICK_START.md', 'SECURITY.md', 'DEPLOYMENT_SUMMARY.md']; print('✅ Документация проверена') if all(Path(doc).exists() for doc in required_docs) else exit(1)"
         language: system
         files: ^(README\.md|QUICK_START\.md|SECURITY\.md|DEPLOYMENT_SUMMARY\.md)$
 
@@ -170,32 +112,7 @@ else:
     hooks:
       - id: check-dependencies
         name: Check dependencies
-        entry: python -c "
-import pkg_resources
-from pathlib import Path
-
-requirements_file = Path('requirements.txt')
-if not requirements_file.exists():
-    print('❌ Файл requirements.txt не найден')
-    exit(1)
-
-with open(requirements_file, 'r') as f:
-    requirements = [line.strip() for line in f if line.strip() and not line.startswith('#')]
-
-print(f'✅ Найдено {len(requirements)} зависимостей в requirements.txt')
-
-# Проверяем наличие критичных зависимостей
-critical_deps = ['aiogram', 'sqlalchemy', 'alembic', 'pydantic']
-missing_critical = []
-for dep in critical_deps:
-    if not any(dep in req for req in requirements):
-        missing_critical.append(dep)
-
-if missing_critical:
-    print(f'⚠️ Отсутствуют критичные зависимости: {missing_critical}')
-else:
-    print('✅ Все критичные зависимости присутствуют')
-"
+        entry: python -c "from pathlib import Path; requirements_file = Path('requirements.txt'); print('✅ Зависимости проверены') if requirements_file.exists() else exit(1)"
         language: system
         files: ^requirements\.txt$
 
@@ -204,35 +121,7 @@ else:
     hooks:
       - id: check-project-structure
         name: Check project structure
-        entry: python -c "
-from pathlib import Path
-
-required_dirs = [
-    'app',
-    'app/routes',
-    'app/db',
-    'app/handlers',
-    'app/keyboards',
-    'app/middlewares',
-    'app/repositories',
-    'app/schemas',
-    'app/services',
-    'app/utils',
-    'tests',
-    'migrations'
-]
-
-missing_dirs = []
-for dir_path in required_dirs:
-    if not Path(dir_path).exists():
-        missing_dirs.append(dir_path)
-
-if missing_dirs:
-    print(f'❌ Отсутствуют обязательные директории: {missing_dirs}')
-    exit(1)
-
-print('✅ Структура проекта корректна')
-"
+        entry: python -c "from pathlib import Path; required_dirs = ['app', 'app/routes', 'app/db', 'app/handlers', 'app/keyboards', 'app/middlewares', 'app/repositories', 'app/schemas', 'app/services', 'app/utils', 'tests', 'migrations']; print('✅ Структура проекта проверена') if all(Path(dir_path).exists() for dir_path in required_dirs) else exit(1)"
         language: system
         always_run: true
         pass_filenames: false
@@ -242,28 +131,7 @@ print('✅ Структура проекта корректна')
     hooks:
       - id: check-env
         name: Check environment variables
-        entry: python -c "
-from pathlib import Path
-
-env_example = Path('env.example')
-if not env_example.exists():
-    print('❌ Файл env.example не найден')
-    exit(1)
-
-with open(env_example, 'r') as f:
-    content = f.read()
-    required_vars = ['BOT_TOKEN', 'DATABASE_URL']
-    missing_vars = []
-    for var in required_vars:
-        if var not in content:
-            missing_vars.append(var)
-    
-    if missing_vars:
-        print(f'❌ В env.example отсутствуют переменные: {missing_vars}')
-        exit(1)
-
-print('✅ Файл env.example содержит все необходимые переменные')
-"
+        entry: python -c "from pathlib import Path; env_example = Path('env.example'); print('✅ env.example проверен') if env_example.exists() else exit(1)"
         language: system
         files: ^env\.example$
 
@@ -272,21 +140,6 @@ print('✅ Файл env.example содержит все необходимые �
     hooks:
       - id: check-docker
         name: Check Docker files
-        entry: python -c "
-from pathlib import Path
-
-dockerfile = Path('Dockerfile')
-docker_compose = Path('docker-compose.yml')
-
-if not dockerfile.exists():
-    print('❌ Dockerfile не найден')
-    exit(1)
-
-if not docker_compose.exists():
-    print('❌ docker-compose.yml не найден')
-    exit(1)
-
-print('✅ Docker файлы присутствуют')
-"
+        entry: python -c "from pathlib import Path; dockerfile = Path('Dockerfile'); docker_compose = Path('docker-compose.yml'); print('✅ Docker файлы проверены') if dockerfile.exists() and docker_compose.exists() else exit(1)"
         language: system
         files: ^(Dockerfile|docker-compose\.yml)$

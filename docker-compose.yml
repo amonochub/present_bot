@@ -3,6 +3,7 @@ version: '3.9'
 services:
   bot:
     build: .
+    container_name: present-bot
     environment:
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - DB_NAME=${POSTGRES_DB:-schoolbot}
@@ -26,9 +27,19 @@ services:
       - ./scripts:/app/scripts
       - ./migrations:/app/migrations
       - ./alembic.ini:/app/alembic.ini
+    networks:
+      - shared-net
+      - schoolbot_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   postgres:
     image: postgres:15-alpine
+    container_name: present-bot-postgres
     environment:
       - POSTGRES_DB=${POSTGRES_DB:-schoolbot}
       - POSTGRES_USER=${POSTGRES_USER:-schoolbot}
@@ -38,16 +49,33 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+    networks:
+      - schoolbot_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-schoolbot}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
+    container_name: present-bot-redis
     ports:
       - "6379:6379"
     restart: unless-stopped
+    networks:
+      - shared-net
+      - schoolbot_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # GlitchTip - лёгкий мониторинг ошибок
   glitchtip:
     image: glitchtip/glitchtip:3.5.0
+    container_name: present-bot-glitchtip
     depends_on:
       - postgres
       - redis
@@ -66,10 +94,13 @@ services:
     volumes:
       - glitchtip_data:/var/lib/glitchtip   # вложения
     restart: unless-stopped
+    networks:
+      - schoolbot_network
 
   # Prometheus - сбор метрик
   prometheus:
     image: prom/prometheus:v2.48.1
+    container_name: present-bot-prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
       - '--storage.tsdb.path=/prometheus'
@@ -83,10 +114,13 @@ services:
       - ./prometheus:/etc/prometheus
       - prometheus_data:/prometheus
     restart: unless-stopped
+    networks:
+      - schoolbot_network
 
   # Grafana - дашборды
   grafana:
     image: grafana/grafana-oss:10.4.2
+    container_name: present-bot-grafana
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=admin123
@@ -98,10 +132,13 @@ services:
     depends_on:
       - prometheus
     restart: unless-stopped
+    networks:
+      - schoolbot_network
 
   # Alertmanager - уведомления
   alertmanager:
     image: prom/alertmanager:v0.27.0
+    container_name: present-bot-alertmanager
     command:
       - '--config.file=/etc/alertmanager/alertmanager.yml'
       - '--storage.path=/alertmanager'
@@ -111,10 +148,13 @@ services:
       - ./alertmanager:/etc/alertmanager
       - alertmanager_data:/alertmanager
     restart: unless-stopped
+    networks:
+      - schoolbot_network
 
   # Maintenance - автоматическое обслуживание
   maintenance:
     image: alpine:3.20
+    container_name: present-bot-maintenance
     env_file: .env
     volumes:
       - ./scripts:/scripts:ro
@@ -126,6 +166,8 @@ services:
                   echo '30 3 * * * /scripts/maintenance.sh' | crontab - && \
                   crond -f -L /var/log/cron.log"
     restart: unless-stopped
+    networks:
+      - schoolbot_network
 
 volumes:
   postgres_data:
@@ -136,5 +178,7 @@ volumes:
   backups:
 
 networks:
-  default:
+  shared-net:
+    external: true
+  schoolbot_network:
     name: schoolbot_network
