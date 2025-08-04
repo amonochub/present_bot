@@ -175,7 +175,7 @@ help_faq_support = "**Q: How to contact support?**\nA: Use /feedback command for
 
 [docs]
 list_header = "📄 List of available documents:"
-item_standard = "• Order of psychological and pedagogical assistance (Order DONM №___)"
+item_standard = "• Order of psychological and pedagogical assistance (Order DONM №2033 dated 31.12.2020)"
 item_pay = "• Methodology of remuneration for teaching staff"
 item_help = "• Official contacts of assistance services"
 reply_footer = "Select a document to get a link or brief information."
@@ -195,7 +195,9 @@ card_more = "More details"
 student = "Hello, student! Available commands: /docs /news"
 parent = "Hello, parent! /docs /news /feedback"
 teacher = "Hello, teacher! /docs /news /support"
+psych = "Hello, psychologist! /inbox /requests /schedule"
 admin = "Welcome to the administrative module. /announce /docs /news"
+director = "Hello, director! /kpi /stats /reports"
 unknown = "Role not defined. Contact support."
 
 [onboarding]

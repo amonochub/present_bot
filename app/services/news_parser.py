@@ -88,8 +88,8 @@ class NewsParser:
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.INFO)
 
-    def get_news_cards(self, limit: int = 5) -> List[Dict[str, Any]]:
-        """Получить карточки новостей с mos.ru с кэшированием"""
+    async def get_news_cards(self, limit: int = 5) -> List[Dict[str, Any]]:
+        """Получить карточки новостей с mos.ru с улучшенным кэшированием"""
         self.logger.info(f"Запрос новостей, лимит: {limit}")
 
         # Проверяем rate limiting
@@ -97,14 +97,27 @@ class NewsParser:
             self.logger.warning("Превышен лимит запросов к парсеру новостей")
             return self._get_fallback_news()
 
-        # Проверяем кэш согласно Context7
-        cache_key = f"news_{limit}"
+        # Проверяем Redis кэш (если доступен)
+        cache_key = f"news_cache:{limit}"
+        try:
+            from app.services.cache_service import redis_client
+            import json
+            
+            cached_data = await redis_client.get(cache_key)
+            if cached_data:
+                self.logger.info(f"Возвращаем новости из Redis кэша: {len(json.loads(cached_data))}")
+                return json.loads(cached_data)
+        except Exception as e:
+            self.logger.warning(f"Redis кэш недоступен: {e}")
+
+        # Проверяем локальный кэш согласно Context7
+        cache_key_local = f"news_{limit}"
         now = datetime.now()
 
-        if cache_key in self._cache:
-            cached_data, cached_time = self._cache[cache_key]
+        if cache_key_local in self._cache:
+            cached_data, cached_time = self._cache[cache_key_local]
             if now - cached_time < self._cache_ttl:
-                self.logger.info(f"Возвращаем кэшированные новости: {len(cached_data)}")
+                self.logger.info(f"Возвращаем кэшированные новости из локального кэша: {len(cached_data)}")
                 return cached_data
 
         try:
@@ -118,8 +131,15 @@ class NewsParser:
 
             news_cards = self._parse_news_cards(soup, limit)
 
-            # Сохраняем в кэш
-            self._cache[cache_key] = (news_cards, now)
+            # Сохраняем в Redis кэш (если доступен)
+            try:
+                await redis_client.setex(cache_key, 300, json.dumps(news_cards))  # 5 минут TTL
+                self.logger.info(f"Новости сохранены в Redis кэш")
+            except Exception as e:
+                self.logger.warning(f"Не удалось сохранить в Redis кэш: {e}")
+
+            # Сохраняем в локальный кэш
+            self._cache[cache_key_local] = (news_cards, now)
             self.logger.info(f"Получено {len(news_cards)} новостей")
             return news_cards
 
@@ -130,10 +150,10 @@ class NewsParser:
             self.logger.error(f"Неожиданная ошибка при получении новостей: {e}", exc_info=True)
             return self._get_fallback_news()
 
-    def get_news_response(self, limit: int = 5) -> NewsResponse:
+    async def get_news_response(self, limit: int = 5) -> NewsResponse:
         """Получить новости в виде валидированного ответа"""
         try:
-            raw_news = self.get_news_cards(limit)
+            raw_news = await self.get_news_cards(limit)
 
             # Валидируем каждую новость с помощью Pydantic
             validated_news = []
@@ -324,11 +344,11 @@ class NewsParser:
 news_parser = NewsParser()
 
 
-def get_news_cards(limit: int = 5) -> List[Dict[str, Any]]:
+async def get_news_cards(limit: int = 5) -> List[Dict[str, Any]]:
     """Получить карточки новостей"""
-    return news_parser.get_news_cards(limit)
+    return await news_parser.get_news_cards(limit)
 
 
-def get_news_response(limit: int = 5) -> NewsResponse:
+async def get_news_response(limit: int = 5) -> NewsResponse:
     """Получить валидированный ответ с новостями"""
-    return news_parser.get_news_response(limit)
+    return await news_parser.get_news_response(limit)

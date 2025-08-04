@@ -182,7 +182,7 @@ async def show_news(message: Message) -> None:
             return
 
         # Получаем новости с улучшенным парсером согласно Context7
-        news_cards = get_news_cards(limit=5)
+        news_cards = await get_news_cards(limit=5)
 
         if not news_cards:
             await message.answer("📰 Новости временно недоступны. Попробуйте позже.")

@@ -26,9 +26,9 @@ async def start_command(message: Message, state: FSMContext) -> None:
             "student": t("start.student"),
             "parent": t("start.parent"),
             "teacher": t("start.teacher"),
+            "psych": t("start.psych"),
             "admin": t("start.admin"),
-            "director": t("start.admin"),  # Директор использует то же сообщение
-            "psych": t("start.teacher"),  # Психолог использует сообщение учителя
+            "director": t("start.director"),
         }
 
         welcome_message = role_messages.get(user.role, t("start.unknown"))
