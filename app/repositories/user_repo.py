@@ -30,7 +30,16 @@ async def get_user(tg_id: int) -> User:
             user = result.scalar_one_or_none()
             if not user:
                 # Создаем нового пользователя
-                user = User(tg_id=tg_id, role="student", seen_intro=False)  # По умолчанию
+                user = User(
+                    tg_id=tg_id, 
+                    role="student", 
+                    seen_intro=False,
+                    theme="light",
+                    notifications_enabled=True,
+                    email_notifications=False,
+                    is_active=True,
+                    used=False
+                )  # По умолчанию
                 s.add(user)
                 await s.commit()
                 await s.refresh(user)
@@ -38,7 +47,16 @@ async def get_user(tg_id: int) -> User:
     except Exception as e:
         logger.error(f"Ошибка при получении пользователя {tg_id}: {e}")
         # Создаем пользователя по умолчанию в случае ошибки
-        return User(tg_id=tg_id, role="student", seen_intro=False)
+        return User(
+            tg_id=tg_id, 
+            role="student", 
+            seen_intro=False,
+            theme="light",
+            notifications_enabled=True,
+            email_notifications=False,
+            is_active=True,
+            used=False
+        )
 
 
 async def update_user_intro(tg_id: int, seen_intro: bool) -> None:
@@ -56,7 +74,16 @@ async def create_user(tg_id: int, role: str = "student", seen_intro: bool = Fals
     """Создать нового пользователя"""
     try:
         async with AsyncSessionLocal() as s:
-            user = User(tg_id=tg_id, role=role, seen_intro=seen_intro)
+            user = User(
+                tg_id=tg_id, 
+                role=role, 
+                seen_intro=seen_intro,
+                theme="light",
+                notifications_enabled=True,
+                email_notifications=False,
+                is_active=True,
+                used=False
+            )
             s.add(user)
             await s.commit()
             await s.refresh(user)

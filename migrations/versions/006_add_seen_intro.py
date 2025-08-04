@@ -7,6 +7,7 @@ Create Date: 2024-01-15 10:00:00.000000
 """
 
 import sqlalchemy as sa
+from sqlalchemy import text
 
 from alembic import op
 
@@ -18,10 +19,19 @@ depends_on = None
 
 
 def upgrade() -> None:
-    # Добавляем поле seen_intro в таблицу users
-    op.add_column(
-        "users", sa.Column("seen_intro", sa.Boolean(), nullable=False, server_default="false")
-    )
+    # Проверяем, существует ли уже колонка seen_intro
+    connection = op.get_bind()
+    result = connection.execute(text("""
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'seen_intro'
+    """))
+    
+    if not result.fetchone():
+        # Добавляем поле seen_intro в таблицу users
+        op.add_column(
+            "users", sa.Column("seen_intro", sa.Boolean(), nullable=False, server_default="false")
+        )
 
 
 def downgrade() -> None:

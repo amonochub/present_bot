@@ -50,6 +50,10 @@ async def init_demo_user():
                 is_active=True,
                 used=False,
                 tg_id=None,
+                theme="light",
+                seen_intro=False,
+                notifications_enabled=True,
+                email_notifications=False,
             )
             session.add(demo_user)
             await session.commit()
