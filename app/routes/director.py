@@ -108,14 +108,11 @@ async def view_tasks(call: CallbackQuery) -> None:
             txt = "📋 <b>Задачи директора</b>\n\nНет активных задач"
         else:
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-            txt = (
-                "📋 <b>Задачи директора</b>\n\n"
-                + "\n".join(
-                    f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
-                    f"📝 {t.description}\n"
-                    f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
-                    for t in tasks
-                )
+            txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
+                f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
+                f"📝 {t.description}\n"
+                f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
+                for t in tasks
             )
         if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
@@ -256,14 +253,11 @@ async def change_task_status(call: CallbackQuery) -> None:
             # Обновляем список задач
             tasks = await task_repo.list_open()
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-            txt = (
-                "📋 <b>Задачи директора</b>\n\n"
-                + "\n".join(
-                    f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
-                    f"📝 {t.description}\n"
-                    f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
-                    for t in tasks
-                )
+            txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
+                f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
+                f"📝 {t.description}\n"
+                f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
+                for t in tasks
             )
             if call.message is not None and hasattr(call.message, "edit_text"):
                 await call.message.edit_text(txt, reply_markup=menu("director", "ru"))

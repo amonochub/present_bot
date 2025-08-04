@@ -50,3 +50,17 @@ async def update_user_intro(tg_id: int, seen_intro: bool) -> None:
     except Exception as e:
         logger.error(f"Ошибка при обновлении онбординга для {tg_id}: {e}")
         raise
+
+
+async def create_user(tg_id: int, role: str = "student", seen_intro: bool = False) -> User:
+    """Создать нового пользователя"""
+    try:
+        async with AsyncSessionLocal() as s:
+            user = User(tg_id=tg_id, role=role, seen_intro=seen_intro)
+            s.add(user)
+            await s.commit()
+            await s.refresh(user)
+            return user
+    except Exception as e:
+        logger.error(f"Ошибка при создании пользователя {tg_id}: {e}")
+        raise

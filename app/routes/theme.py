@@ -72,6 +72,3 @@ async def cb_theme(call: CallbackQuery, lang: str) -> None:
         await call.answer(t("common.theme_switched", lang))
     else:
         await call.answer(t("common.theme_switched", lang))
-        return
-    return
-    return

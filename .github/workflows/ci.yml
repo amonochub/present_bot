@@ -6,16 +6,63 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
+env:
+  PYTHON_VERSION: "3.11"
+  POETRY_VERSION: "1.7.1"
 
+jobs:
+  # Проверка качества кода
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black ruff mypy bandit safety pre-commit
+
+      - name: Run Black (code formatting)
+        run: black --check --diff .
+
+      - name: Run Ruff (linting)
+        run: ruff check --fix .
+
+      - name: Run MyPy (type checking)
+        run: mypy app/
+
+      - name: Run Bandit (security)
+        run: bandit -r app/ -f json -o bandit-report.json || true
+
+      - name: Run Safety (dependency vulnerabilities)
+        run: safety check --json --output safety-report.json || true
+
+      - name: Upload security reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-reports
+          path: |
+            bandit-report.json
+            safety-report.json
+
+  # Тестирование
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:15
         env:
           POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: schoolbot_test
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_db
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -24,105 +71,357 @@ jobs:
         ports:
           - 5432:5432
 
-      redis:
-        image: redis:7-alpine
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov pytest-asyncio
+
+      - name: Set up environment
+        run: |
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> $GITHUB_ENV
+          echo "BOT_TOKEN=test_token" >> $GITHUB_ENV
+          echo "ENVIRONMENT=test" >> $GITHUB_ENV
+
+      - name: Wait for database
+        run: |
+          python scripts/wait_db.py
+
+      - name: Run database migrations
+        run: |
+          alembic upgrade head
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ --cov=app --cov-report=xml --cov-report=html --cov-report=term-missing --cov-fail-under=80
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v3
+        with:
+          name: coverage-reports
+          path: |
+            htmlcov/
+            coverage.xml
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # Проверка локализации
+  localization:
+    name: Localization Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest toml
+
+      - name: Run localization tests
+        run: |
+          pytest tests/test_localization.py -v
+
+  # Проверка ролей и авторизации
+  roles-test:
+    name: Roles and Authorization Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run roles tests
+        run: |
+          pytest tests/test_roles_and_access.py -v
+
+  # Проверка бизнес-логики
+  business-logic:
+    name: Business Logic Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run business logic tests
+        run: |
+          pytest tests/test_business_logic.py -v
+
+  # Проверка безопасности
+  security:
+    name: Security Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run security tests
+        run: |
+          pytest tests/test_security*.py -v
+
+  # Проверка интеграции
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_db
         options: >-
-          --health-cmd "redis-cli ping"
+          --health-cmd pg_isready
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
-          - 6379:6379
+          - 5432:5432
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Cache pip dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-asyncio pytest-cov
+      - name: Set up environment
+        run: |
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> $GITHUB_ENV
+          echo "BOT_TOKEN=test_token" >> $GITHUB_ENV
+          echo "ENVIRONMENT=test" >> $GITHUB_ENV
 
-    - name: Run linting checks
-      run: |
-        python -m ruff check app/ --output-format=text
-        python -m black --check app/
-        python -m mypy app/ --ignore-missing-imports --show-error-codes
+      - name: Wait for database
+        run: |
+          python scripts/wait_db.py
 
-    - name: Run security checks
-      run: |
-        python -m bandit -r app/ -f json -o bandit-report.json || true
+      - name: Run database migrations
+        run: |
+          alembic upgrade head
 
-    - name: Run tests
-      env:
-        DATABASE_URL: postgresql://postgres:postgres@localhost:5432/schoolbot_test
-        REDIS_URL: redis://localhost:6379/0
-        TELEGRAM_TOKEN: test_token
-        ENV: test
-      run: |
-        python -m pytest tests/ -v --cov=app --cov-report=xml
+      - name: Run integration tests
+        run: |
+          pytest tests/test_integration.py -v
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
-
-  quality:
+  # Проверка производительности
+  performance:
+    name: Performance Tests
     runs-on: ubuntu-latest
-    needs: test
-
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.13'
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pre-commit
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
 
-    - name: Run pre-commit
-      run: |
-        pre-commit run --all-files
+      - name: Run performance tests
+        run: |
+          pytest tests/test_performance.py -v
 
-    - name: Check code quality metrics
-      run: |
-        echo "=== Ruff Errors ==="
-        python -m ruff check app/ --output-format=text | wc -l
-        echo "=== MyPy Errors ==="
-        python -m mypy app/ --ignore-missing-imports --show-error-codes | wc -l
-        echo "=== Black Check ==="
-        python -m black --check app/ || echo "Files need formatting"
-
-  deploy:
+  # Проверка документации
+  documentation:
+    name: Documentation Check
     runs-on: ubuntu-latest
-    needs: [test, quality]
-    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check documentation files
+        run: |
+          required_docs=("README.md" "QUICK_START.md" "SECURITY.md" "DEPLOYMENT_SUMMARY.md")
+          for doc in "${required_docs[@]}"; do
+            if [ ! -f "$doc" ]; then
+              echo "❌ Missing required documentation: $doc"
+              exit 1
+            fi
+          done
+          echo "✅ All required documentation present"
+
+  # Проверка Docker
+  docker:
+    name: Docker Build Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        run: |
+          docker build -t schoolbot:test .
+
+      - name: Test Docker image
+        run: |
+          docker run --rm schoolbot:test python -c "print('Docker image test successful')"
+
+  # Проверка pre-commit
+  pre-commit:
+    name: Pre-commit Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install pre-commit
+        run: |
+          python -m pip install --upgrade pip
+          pip install pre-commit
+
+      - name: Run pre-commit on all files
+        run: |
+          pre-commit run --all-files
+
+  # Проверка миграций
+  migrations:
+    name: Database Migrations Test
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Deploy to production
-      run: |
-        echo "Deployment would happen here"
-        echo "Current environment: ${{ github.ref }}"
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set up environment
+        run: |
+          echo "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/test_db" >> $GITHUB_ENV
+
+      - name: Wait for database
+        run: |
+          python scripts/wait_db.py
+
+      - name: Test migrations from scratch
+        run: |
+          # Удаляем все таблицы
+          alembic downgrade base
+          # Применяем все миграции
+          alembic upgrade head
+
+  # Финальная проверка
+  final-check:
+    name: Final Quality Check
+    runs-on: ubuntu-latest
+    needs: [code-quality, test, localization, roles-test, business-logic, security, integration, performance, documentation, docker, pre-commit, migrations]
+    if: always()
+    steps:
+      - name: Check all jobs status
+        run: |
+          echo "All quality checks completed"
+          echo "Code Quality: ${{ needs.code-quality.result }}"
+          echo "Tests: ${{ needs.test.result }}"
+          echo "Localization: ${{ needs.localization.result }}"
+          echo "Roles: ${{ needs.roles-test.result }}"
+          echo "Business Logic: ${{ needs.business-logic.result }}"
+          echo "Security: ${{ needs.security.result }}"
+          echo "Integration: ${{ needs.integration.result }}"
+          echo "Performance: ${{ needs.performance.result }}"
+          echo "Documentation: ${{ needs.documentation.result }}"
+          echo "Docker: ${{ needs.docker.result }}"
+          echo "Pre-commit: ${{ needs.pre-commit.result }}"
+          echo "Migrations: ${{ needs.migrations.result }}"
+
+      - name: Fail if any job failed
+        if: contains(needs.*.result, 'failure')
+        run: |
+          echo "❌ Some quality checks failed"
+          exit 1
+
+      - name: Success message
+        if: contains(needs.*.result, 'success')
+        run: |
+          echo "✅ All quality checks passed successfully!"

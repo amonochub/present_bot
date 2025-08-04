@@ -100,8 +100,7 @@ async def view_media(call: CallbackQuery) -> None:
         else:
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} "
-                for r in requests  # type: ignore
+                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
             )
         if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
@@ -132,8 +131,7 @@ async def change_media_status(call: CallbackQuery) -> None:
             requests = await media_repo.list_all()
             ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
             txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} "
-                for r in requests  # type: ignore
+                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
             )
             if call.message is not None and hasattr(call.message, "edit_text"):
                 await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))

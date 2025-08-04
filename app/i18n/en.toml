@@ -93,9 +93,221 @@ network_error = "🌐 Network error"
 unknown_error = "❓ Unknown error"
 
 [help]
+super = "🧩 Demo mode:\n• /tour — quick tour of all roles\n• /help — this help\n\n👉 You can also manually press role buttons to return to the section of interest.\n"
 teacher = "👩‍🏫 Teacher:\n• /notes — list notes\n• /addnote — add note\n• /ticket — IT request"
 admin = "🏛 Admin:\n• /tickets — requests\n• /broadcast — broadcast"
 director = "📈 Director:\n• /kpi — metrics"
 parent = "👪 Parent:\n• /tasks — assignments\n• /cert — certificate"
-student = "👨‍🎓 Student:\n• /tasks — assignments\n• /ask — ask teacher"
-psych = "🧑‍⚕️ Psychologist:\n• /inbox — new requests"
+
+help_title = "❓ SchoolBot Help"
+help_unauthorized = """
+❓ **SchoolBot Help**
+
+🎓 SchoolBot is an educational platform for all participants in the educational process.
+
+**To get started:**
+1. Press /start to launch the bot
+2. Complete onboarding or log into the system
+3. Choose your role in the educational process
+
+**Main commands:**
+• /start - launch the bot
+• /help - this help
+• /feedback - feedback
+• /theme - change theme
+
+**Roles in the system:**
+• 👨‍🎓 Student - view assignments, ask teachers questions
+• 👩‍🏫 Teacher - notes about students, IT requests
+• 👪 Parent - certificates, child's progress
+• 🧑‍⚕️ Psychologist - consultations, anonymous appeals
+• 🏛 Administrator - request management, broadcasts
+• 📈 Director - KPI, statistics, reports
+
+**Support:**
+If you have questions, use the /feedback command
+"""
+
+help_start_button = "🚀 Start"
+help_back_button = "🔙 Back to help"
+help_main_menu_button = "🏠 Main menu"
+help_help_loaded = "Help loaded"
+help_error_loading = "An error occurred while loading help"
+help_please_login = "Please log in first."
+help_user_not_found = "Error: user not found."
+help_start_message = "🚀 Press /start to get started"
+help_login_required = "❓ Please log in first to get help"
+
+# Roles
+help_student_title = "👨‍🎓 **Student Help**"
+help_teacher_title = "👩‍🏫 **Teacher Help**"
+help_parent_title = "👪 **Parent Help**"
+help_psychologist_title = "🧑‍⚕️ **Psychologist Help**"
+help_admin_title = "🏛 **Administrator Help**"
+help_director_title = "📈 **Director Help**"
+
+# Buttons for roles
+help_student_tasks = "📋 Assignments"
+help_student_notes = "📝 Notes"
+help_student_ask = "❓ Questions"
+help_teacher_notes = "📝 Notes"
+help_teacher_tickets = "🛠 Requests"
+help_teacher_students = "👥 Students"
+help_parent_tasks = "📋 Assignments"
+help_parent_certs = "📄 Certificates"
+help_parent_progress = "📈 Progress"
+help_psych_inbox = "📥 Appeals"
+help_psych_requests = "📋 Requests"
+help_psych_schedule = "📅 Schedule"
+help_admin_tickets = "🛠 Requests"
+help_admin_broadcast = "📢 Broadcasts"
+help_admin_stats = "📊 Statistics"
+help_director_kpi = "📈 KPI"
+help_director_stats = "📊 Statistics"
+help_director_reports = "📋 Reports"
+
+# FAQ
+help_faq_title = "❓ **Frequently Asked Questions**"
+help_faq_role_change = "**Q: How to change role?**\nA: Contact the system administrator."
+help_faq_password = "**Q: Forgot password?**\nA: Use /start command for re-authorization."
+help_faq_notifications = "**Q: Not receiving notifications?**\nA: Check notification settings in main menu."
+help_faq_support = "**Q: How to contact support?**\nA: Use /feedback command for feedback."
+
+[docs]
+list_header = "📄 List of available documents:"
+item_standard = "• Order of psychological and pedagogical assistance (Order DONM №___)"
+item_pay = "• Methodology of remuneration for teaching staff"
+item_help = "• Official contacts of assistance services"
+reply_footer = "Select a document to get a link or brief information."
+unknown_doc = "Document not found. Please clarify your request."
+
+[admin_requests]
+announcement = "Dear colleagues!\n\n{announcement}\n\nDocument: {url}"
+event_info = "Dear parents and students!\n{event}.\nDate: {date}\nAdditional information: {url}"
+
+[news]
+card_header = "📰 {title}"
+card_date = "Date: {date}"
+card_desc = "{desc}"
+card_more = "More details"
+
+[start]
+student = "Hello, student! Available commands: /docs /news"
+parent = "Hello, parent! /docs /news /feedback"
+teacher = "Hello, teacher! /docs /news /support"
+admin = "Welcome to the administrative module. /announce /docs /news"
+unknown = "Role not defined. Contact support."
+
+[onboarding]
+welcome = "🎓 Welcome to SchoolBot!\n\nChoose your role in the educational process:\n\nEach role provides unique opportunities for effective work in school."
+role_selected = "✅ Role selected successfully!"
+role_confirmation = "Confirm role selection"
+back_to_selection = "🔄 Choose another role"
+start_onboarding = "🚀 Start onboarding"
+
+[commands]
+start = "🚀 Start bot"
+help = "❓ Help"
+menu = "🏠 Main menu"
+feedback = "💬 Feedback"
+theme = "🌗 Change theme"
+
+[commands.student]
+tasks = "📋 My assignments"
+notes = "📝 My notes"
+ask = "❓ Ask question"
+ticket = "🛠 Create request"
+
+[commands.teacher]
+notes = "📝 My notes"
+addnote = "➕ Add note"
+ticket = "🛠 Create request"
+students = "👥 My students"
+
+[commands.parent]
+tasks = "📋 Child's assignments"
+cert = "📄 Certificates"
+progress = "📈 Progress"
+ticket = "🛠 Create request"
+
+[commands.psych]
+inbox = "📥 Inbox"
+requests = "📋 Requests"
+schedule = "📅 Schedule"
+
+[commands.admin]
+tickets = "🛠 Requests"
+broadcast = "📢 Broadcast"
+users = "👥 Users"
+stats = "📊 Statistics"
+
+[commands.director]
+kpi = "📈 KPI"
+stats = "📊 Statistics"
+reports = "📋 Reports"
+tasks = "📋 Tasks"
+
+# === NEW MESSAGE TEMPLATES ===
+
+[student_requests]
+request_psy = "Hello! I want to contact a psychologist. I'm concerned about bullying in class. Please arrange a consultation."
+psy_request_confirm = "✅ Your request has been accepted. The psychologist will contact you soon."
+psy_request_sent = "📤 Request sent to psychologist. Please wait for response."
+
+[teacher_requests]
+support_request = "Printer in room {room} is not working. Specialist assistance required."
+support_request_confirm = "✅ Your request has been accepted. Expect specialist arrival today by {time}."
+incident_report = "Conflict between students occurred in {classroom}. Conversation held, parents notified."
+incident_teacher_thank = "✅ Your message sent to director and registered."
+support_request_sent = "📤 Request sent to technical support. Request number: #{ticket_id}"
+
+[psychologist_requests]
+student_alert = "🆕 New request from student {student} ({classroom}):\nTopic — {theme}.\nPlease schedule a meeting."
+psy_to_student = "Hello! I received your request. Let's arrange a meeting time."
+parent_consent_request = "Your child has submitted a request for consultation with a psychologist. Consent form required. Click 'Agree' to confirm."
+parent_consent_ok = "✅ Thank you! Consent received, consultation will be scheduled."
+parent_consent_no = "❌ Consent not received. Consultation cancelled."
+consultation_scheduled = "📅 Consultation scheduled for {date} at {time}. Location: {location}."
+
+[parent_requests]
+transfer_request = "I request to transfer my child ({child}, {classroom}) to advanced English group."
+transfer_request_confirm = "✅ Request accepted. We will contact you for clarification within 3 days."
+consent_yes = "Agree"
+consent_no = "Decline"
+consent_button_yes = "✅ Agree"
+consent_button_no = "❌ Decline"
+
+[admin_requests]
+power_outage = "⚠️ Attention! {date} from {start} to {end} — planned power outage. Please complete all work in advance."
+event_announce = "📢 {date} at {time} parent meeting will be held. Confirm attendance with button below."
+event_confirm = "✅ Your registration confirmed."
+teacher_change = "🔄 Tomorrow {subject} lesson will be conducted by {new_teacher} instead of main teacher due to illness."
+broadcast_sent = "📤 Mass notification sent to {count} users."
+confirm_presence = "✅ Confirm attendance"
+
+[director_requests]
+incident_notify = "🚨 New incident report in {classroom}. Measures taken: {measures}."
+incident_received = "✅ Incident report received and registered."
+kpi_report = "📊 KPI report for {period}:\n• Active users: {users}\n• Requests processed: {tickets}\n• Notes created: {notes}"
+
+[support_requests]
+request_received = "🆕 New request: {description}\nRoom: {room}\nFrom: {teacher}"
+request_processed = "✅ Request #{ticket_id} processed. {description}"
+request_in_progress = "🔄 Request #{ticket_id} in progress. Expect specialist."
+
+[notifications]
+welcome_new_user = "🎉 Welcome to SchoolBot!\n\nYour role: {role}\nAvailable commands: /help"
+role_changed = "🔄 Your role changed to: {new_role}"
+system_maintenance = "🔧 Planned maintenance {date} from {start} to {end}. Service interruptions possible."
+emergency_alert = "🚨 ATTENTION! {message}"
+success_operation = "✅ Operation completed successfully."
+error_operation = "❌ Error during operation. Please try again."
+
+[roles]
+student = "Student"
+teacher = "Teacher"
+parent = "Parent"
+director = "Director"
+admin = "Administrator"
+psychologist = "Psychologist"
+support = "Technical Support"

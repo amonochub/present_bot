@@ -1,49 +1,292 @@
 repos:
-  # Black - форматирование кода
+  # Автоформатирование кода
   - repo: https://github.com/psf/black
-    rev: 24.1.1
+    rev: 23.12.1
     hooks:
       - id: black
-        language_version: python3
-        args: [--line-length=100]
+        language_version: python3.11
+        args: [--line-length=88]
 
-  # Ruff - линтер и форматирование
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.2.1
-    hooks:
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-      - id: ruff-format
-
-  # MyPy - статический анализ типов
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
-    hooks:
-      - id: mypy
-        args: [--ignore-missing-imports, --show-error-codes]
-
-  # isort - сортировка импортов
+  # Сортировка импортов
   - repo: https://github.com/pycqa/isort
     rev: 5.13.2
     hooks:
       - id: isort
-        args: [--profile=black, --line-length=100]
+        args: [--profile=black, --line-length=88]
 
-  # trailing-whitespace - удаление лишних пробелов
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+  # Линтер для проверки стиля и потенциальных ошибок
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.1.9
     hooks:
-      - id: trailing-whitespace
-      - id: end-of-file-fixer
-      - id: check-yaml
-      - id: check-added-large-files
-      - id: check-merge-conflict
-      - id: check-case-conflict
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
 
-  # bandit - проверка безопасности
+  # Статическая типизация
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.8.0
+    hooks:
+      - id: mypy
+        additional_dependencies: [types-all]
+        args: [--ignore-missing-imports, --no-strict-optional]
+
+  # Проверка безопасности
   - repo: https://github.com/PyCQA/bandit
     rev: 1.7.5
     hooks:
       - id: bandit
-        args: [-r, app/]
-        exclude: ^tests/
+        args: [-r, ., -f, json, -o, bandit-report.json]
+        exclude: ^(tests/|venv/|.venv/)
+
+  # Проверка на уязвимости в зависимостях
+  - repo: https://github.com/pyupio/safety
+    rev: v2.3.5
+    hooks:
+      - id: safety
+        args: [--full-report]
+
+  # Проверка на секреты в коде
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.1
+    hooks:
+      - id: gitleaks
+        args: [detect, --source, ., --report-format, json, --report-path, gitleaks-report.json]
+
+  # Проверка файлов локализации
+  - repo: local
+    hooks:
+      - id: check-locales
+        name: Check locale files
+        entry: python -c "import toml; from pathlib import Path; ru_path = Path('app/i18n/ru.toml'); en_path = Path('app/i18n/en.toml'); ru = toml.load(ru_path) if ru_path.exists() else {}; en = toml.load(en_path) if en_path.exists() else {}; print('✅ Файлы локализации проверены')"
+        language: system
+        files: ^app/i18n/.*\.toml$
+
+  # Запуск тестов
+  - repo: local
+    hooks:
+      - id: run-tests
+        name: Run tests
+        entry: pytest tests/ -v --tb=short
+        language: system
+        always_run: true
+        pass_filenames: false
+
+  # Проверка покрытия тестами
+  - repo: local
+    hooks:
+      - id: check-coverage
+        name: Check test coverage
+        entry: pytest tests/ --cov=app --cov-report=term-missing --cov-fail-under=80
+        language: system
+        always_run: true
+        pass_filenames: false
+
+  # Проверка миграций
+  - repo: local
+    hooks:
+      - id: check-migrations
+        name: Check database migrations
+        entry: python -c "
+import os
+from pathlib import Path
+
+migrations_dir = Path('migrations/versions')
+if not migrations_dir.exists():
+    print('❌ Директория миграций не найдена')
+    exit(1)
+
+migration_files = list(migrations_dir.glob('*.py'))
+if not migration_files:
+    print('❌ Файлы миграций не найдены')
+    exit(1)
+
+print(f'✅ Найдено {len(migration_files)} файлов миграций')
+"
+        language: system
+        files: ^migrations/versions/.*\.py$
+
+  # Проверка конфигурационных файлов
+  - repo: local
+    hooks:
+      - id: check-configs
+        name: Check configuration files
+        entry: python -c "
+import yaml
+from pathlib import Path
+
+config_files = [
+    'docker-compose.yml',
+    'prometheus/prometheus.yml',
+    'grafana/provisioning/dashboards/dashboards.yml'
+]
+
+for config_file in config_files:
+    path = Path(config_file)
+    if path.exists():
+        try:
+            with open(path, 'r') as f:
+                yaml.safe_load(f)
+            print(f'✅ {config_file} - корректный YAML')
+        except Exception as e:
+            print(f'❌ {config_file} - ошибка YAML: {e}')
+            exit(1)
+    else:
+        print(f'⚠️ {config_file} - файл не найден')
+
+print('✅ Все конфигурационные файлы проверены')
+"
+        language: system
+        files: ^(docker-compose\.yml|prometheus/.*\.yml|grafana/.*\.yml)$
+
+  # Проверка документации
+  - repo: local
+    hooks:
+      - id: check-docs
+        name: Check documentation
+        entry: python -c "
+from pathlib import Path
+
+required_docs = [
+    'README.md',
+    'QUICK_START.md',
+    'SECURITY.md',
+    'DEPLOYMENT_SUMMARY.md'
+]
+
+missing_docs = []
+for doc in required_docs:
+    if not Path(doc).exists():
+        missing_docs.append(doc)
+
+if missing_docs:
+    print(f'⚠️ Отсутствует документация: {missing_docs}')
+else:
+    print('✅ Вся необходимая документация присутствует')
+"
+        language: system
+        files: ^(README\.md|QUICK_START\.md|SECURITY\.md|DEPLOYMENT_SUMMARY\.md)$
+
+  # Проверка зависимостей
+  - repo: local
+    hooks:
+      - id: check-dependencies
+        name: Check dependencies
+        entry: python -c "
+import pkg_resources
+from pathlib import Path
+
+requirements_file = Path('requirements.txt')
+if not requirements_file.exists():
+    print('❌ Файл requirements.txt не найден')
+    exit(1)
+
+with open(requirements_file, 'r') as f:
+    requirements = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+
+print(f'✅ Найдено {len(requirements)} зависимостей в requirements.txt')
+
+# Проверяем наличие критичных зависимостей
+critical_deps = ['aiogram', 'sqlalchemy', 'alembic', 'pydantic']
+missing_critical = []
+for dep in critical_deps:
+    if not any(dep in req for req in requirements):
+        missing_critical.append(dep)
+
+if missing_critical:
+    print(f'⚠️ Отсутствуют критичные зависимости: {missing_critical}')
+else:
+    print('✅ Все критичные зависимости присутствуют')
+"
+        language: system
+        files: ^requirements\.txt$
+
+  # Проверка структуры проекта
+  - repo: local
+    hooks:
+      - id: check-project-structure
+        name: Check project structure
+        entry: python -c "
+from pathlib import Path
+
+required_dirs = [
+    'app',
+    'app/routes',
+    'app/db',
+    'app/handlers',
+    'app/keyboards',
+    'app/middlewares',
+    'app/repositories',
+    'app/schemas',
+    'app/services',
+    'app/utils',
+    'tests',
+    'migrations'
+]
+
+missing_dirs = []
+for dir_path in required_dirs:
+    if not Path(dir_path).exists():
+        missing_dirs.append(dir_path)
+
+if missing_dirs:
+    print(f'❌ Отсутствуют обязательные директории: {missing_dirs}')
+    exit(1)
+
+print('✅ Структура проекта корректна')
+"
+        language: system
+        always_run: true
+        pass_filenames: false
+
+  # Проверка переменных окружения
+  - repo: local
+    hooks:
+      - id: check-env
+        name: Check environment variables
+        entry: python -c "
+from pathlib import Path
+
+env_example = Path('env.example')
+if not env_example.exists():
+    print('❌ Файл env.example не найден')
+    exit(1)
+
+with open(env_example, 'r') as f:
+    content = f.read()
+    required_vars = ['BOT_TOKEN', 'DATABASE_URL']
+    missing_vars = []
+    for var in required_vars:
+        if var not in content:
+            missing_vars.append(var)
+    
+    if missing_vars:
+        print(f'❌ В env.example отсутствуют переменные: {missing_vars}')
+        exit(1)
+
+print('✅ Файл env.example содержит все необходимые переменные')
+"
+        language: system
+        files: ^env\.example$
+
+  # Проверка Docker файлов
+  - repo: local
+    hooks:
+      - id: check-docker
+        name: Check Docker files
+        entry: python -c "
+from pathlib import Path
+
+dockerfile = Path('Dockerfile')
+docker_compose = Path('docker-compose.yml')
+
+if not dockerfile.exists():
+    print('❌ Dockerfile не найден')
+    exit(1)
+
+if not docker_compose.exists():
+    print('❌ docker-compose.yml не найден')
+    exit(1)
+
+print('✅ Docker файлы присутствуют')
+"
+        language: system
+        files: ^(Dockerfile|docker-compose\.yml)$

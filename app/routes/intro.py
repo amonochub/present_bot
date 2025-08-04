@@ -67,14 +67,15 @@ async def start_with_intro(msg: Message, state: FSMContext, lang: str = "ru") ->
     """Обработчик команды /start с проверкой онбординга"""
     user = await get_user(msg.from_user.id)
 
-    if not user.seen_intro:
+    if user and not user.seen_intro:
         # Показываем онбординг
         await state.set_state("IntroFSM:idx")
         await state.update_data(idx=0)
         await send_intro_slide(msg, 0, lang)
     else:
         # Показываем обычное меню
-        await msg.answer(t("common.welcome", lang), reply_markup=menu(user.role, lang))
+        if user:
+            await msg.answer(t("common.welcome", lang), reply_markup=menu(user.role, lang))
 
 
 @router.callback_query(F.data == "intro_next")
@@ -84,7 +85,7 @@ async def intro_next(callback: CallbackQuery, state: FSMContext, lang: str = "ru
     idx = data.get("idx", 0)
 
     if idx < len(INTRO_SLIDES) - 1:
-        if callback.message:
+        if callback.message and hasattr(callback.message, "delete"):
             await callback.message.delete()
         await state.update_data(idx=idx + 1)
         if callback.message:
@@ -100,7 +101,7 @@ async def intro_prev(callback: CallbackQuery, state: FSMContext, lang: str = "ru
     idx = data.get("idx", 0)
 
     if idx > 0:
-        if callback.message:
+        if callback.message and hasattr(callback.message, "delete"):
             await callback.message.delete()
         await state.update_data(idx=idx - 1)
         if callback.message:
@@ -120,8 +121,11 @@ async def intro_done(callback: CallbackQuery, state: FSMContext, lang: str = "ru
 
     # Показываем основное меню
     user = await get_user(callback.from_user.id)
-    if callback.message:
+    if callback.message and hasattr(callback.message, "delete"):
         await callback.message.delete()
-        await callback.message.answer(t("common.welcome", lang), reply_markup=menu(user.role, lang))
+        if user and callback.message:
+            await callback.message.answer(
+                t("common.welcome", lang), reply_markup=menu(user.role, lang)
+            )
 
     await callback.answer()

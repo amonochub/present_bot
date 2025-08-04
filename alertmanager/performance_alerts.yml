@@ -1,0 +1,329 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: 'https://hooks.slack.com/services/YOUR_SLACK_WEBHOOK'
+
+route:
+  group_by: ['alertname', 'instance']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  receiver: 'telegram-admin'
+
+receivers:
+  - name: 'telegram-admin'
+    telegram_configs:
+      - bot_token: 'YOUR_BOT_TOKEN'
+        chat_id: -1001234567890  # ID админского чата
+        parse_mode: 'HTML'
+        message: |
+          🚨 <b>Алерт производительности</b>
+          
+          <b>Алерт:</b> {{ .GroupLabels.alertname }}
+          <b>Инстанс:</b> {{ .GroupLabels.instance }}
+          <b>Время:</b> {{ .StartsAt | since }}
+          
+          <b>Описание:</b>
+          {{ range .Alerts }}
+          • {{ .Annotations.summary }}
+          {{ end }}
+          
+          <b>Метрики:</b>
+          {{ range .Alerts }}
+          • {{ .Annotations.description }}
+          {{ end }}
+
+inhibit_rules:
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+templates:
+  - '/etc/alertmanager/template/*.tmpl'
+
+# Алерты производительности
+groups:
+  - name: performance_alerts
+    rules:
+      # Высокое время ответа бота
+      - alert: BotResponseTimeHigh
+        expr: avg_over_time(bot_latency_seconds_sum[5m]) > 2
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Бот отвечает слишком медленно"
+          description: "Среднее время ответа больше 2 секунд за последние 5 минут"
+          value: "{{ $value }}s"
+
+      # Критически высокое время ответа
+      - alert: BotResponseTimeCritical
+        expr: avg_over_time(bot_latency_seconds_sum[5m]) > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критически медленная работа бота"
+          description: "Среднее время ответа больше 5 секунд за последние 5 минут"
+          value: "{{ $value }}s"
+
+      # Высокая нагрузка на CPU
+      - alert: HighCPUUsage
+        expr: cpu_usage_percent > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Высокая нагрузка на CPU"
+          description: "Использование CPU превышает 80%"
+          value: "{{ $value }}%"
+
+      # Критическая нагрузка на CPU
+      - alert: CriticalCPUUsage
+        expr: cpu_usage_percent > 95
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критическая нагрузка на CPU"
+          description: "Использование CPU превышает 95%"
+          value: "{{ $value }}%"
+
+      # Высокое использование памяти
+      - alert: HighMemoryUsage
+        expr: memory_usage_bytes / 1024 / 1024 > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Высокое использование памяти"
+          description: "Использование памяти превышает 1GB"
+          value: "{{ $value }}MB"
+
+      # Критическое использование памяти
+      - alert: CriticalMemoryUsage
+        expr: memory_usage_bytes / 1024 / 1024 > 2000
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критическое использование памяти"
+          description: "Использование памяти превышает 2GB"
+          value: "{{ $value }}MB"
+
+      # Медленные запросы к БД
+      - alert: SlowDatabaseQueries
+        expr: rate(slow_queries_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Обнаружены медленные запросы к БД"
+          description: "Более 0.1 медленных запросов в секунду"
+          value: "{{ $value }} queries/sec"
+
+      # Много медленных запросов
+      - alert: ManySlowQueries
+        expr: rate(slow_queries_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критически много медленных запросов"
+          description: "Более 1 медленного запроса в секунду"
+          value: "{{ $value }} queries/sec"
+
+      # Низкий hit ratio кеша
+      - alert: LowCacheHitRatio
+        expr: cache_hit_ratio < 0.5
+        for: 10m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Низкий hit ratio кеша"
+          description: "Hit ratio кеша ниже 50%"
+          value: "{{ $value }}%"
+
+      # Очень низкий hit ratio кеша
+      - alert: VeryLowCacheHitRatio
+        expr: cache_hit_ratio < 0.2
+        for: 5m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критически низкий hit ratio кеша"
+          description: "Hit ratio кеша ниже 20%"
+          value: "{{ $value }}%"
+
+      # Высокая частота ошибок
+      - alert: HighErrorRate
+        expr: rate(bot_errors_total[5m]) > 0.1
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Высокая частота ошибок"
+          description: "Более 0.1 ошибок в секунду"
+          value: "{{ $value }} errors/sec"
+
+      # Критическая частота ошибок
+      - alert: CriticalErrorRate
+        expr: rate(bot_errors_total[5m]) > 1
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критическая частота ошибок"
+          description: "Более 1 ошибки в секунду"
+          value: "{{ $value }} errors/sec"
+
+      # Много открытых заявок
+      - alert: ManyOpenTickets
+        expr: bot_tickets_open > 50
+        for: 10m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Много открытых заявок"
+          description: "Более 50 открытых заявок"
+          value: "{{ $value }} tickets"
+
+      # Критически много заявок
+      - alert: CriticalOpenTickets
+        expr: bot_tickets_open > 100
+        for: 5m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критически много открытых заявок"
+          description: "Более 100 открытых заявок"
+          value: "{{ $value }} tickets"
+
+      # Высокая нагрузка на БД
+      - alert: HighDatabaseLoad
+        expr: rate(db_query_duration_seconds_count[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Высокая нагрузка на базу данных"
+          description: "Более 10 запросов в секунду"
+          value: "{{ $value }} queries/sec"
+
+      # Критическая нагрузка на БД
+      - alert: CriticalDatabaseLoad
+        expr: rate(db_query_duration_seconds_count[5m]) > 50
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критическая нагрузка на базу данных"
+          description: "Более 50 запросов в секунду"
+          value: "{{ $value }} queries/sec"
+
+      # Медленные запросы к БД
+      - alert: SlowDatabaseResponse
+        expr: avg_over_time(db_query_duration_seconds_sum[5m]) > 1
+        for: 5m
+        labels:
+          severity: warning
+          service: schoolbot
+        annotations:
+          summary: "Медленные запросы к базе данных"
+          description: "Среднее время запроса больше 1 секунды"
+          value: "{{ $value }}s"
+
+      # Критически медленные запросы
+      - alert: CriticalDatabaseResponse
+        expr: avg_over_time(db_query_duration_seconds_sum[5m]) > 3
+        for: 2m
+        labels:
+          severity: critical
+          service: schoolbot
+        annotations:
+          summary: "Критически медленные запросы к БД"
+          description: "Среднее время запроса больше 3 секунд"
+          value: "{{ $value }}s"
+
+  # Алерты для нагрузочного тестирования
+  - name: load_test_alerts
+    rules:
+      # Высокая частота запросов в нагрузочном тесте
+      - alert: HighLoadTestRate
+        expr: rate(load_test_requests_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: loadtest
+        annotations:
+          summary: "Высокая частота запросов в нагрузочном тесте"
+          description: "Более 100 запросов в секунду"
+          value: "{{ $value }} requests/sec"
+
+      # Ошибки в нагрузочном тесте
+      - alert: LoadTestErrors
+        expr: rate(load_test_errors_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: loadtest
+        annotations:
+          summary: "Ошибки в нагрузочном тесте"
+          description: "Более 5% ошибок"
+          value: "{{ $value }} errors/sec"
+
+  # Алерты для системных ресурсов
+  - name: system_alerts
+    rules:
+      # Недостаточно места на диске
+      - alert: LowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100) < 10
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Недостаточно места на диске"
+          description: "Свободного места меньше 10%"
+          value: "{{ $value }}%"
+
+      # Критически мало места на диске
+      - alert: CriticalDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} * 100) < 5
+        for: 2m
+        labels:
+          severity: critical
+          service: system
+        annotations:
+          summary: "Критически мало места на диске"
+          description: "Свободного места меньше 5%"
+          value: "{{ $value }}%"
+
+      # Высокая нагрузка на сеть
+      - alert: HighNetworkLoad
+        expr: rate(node_network_receive_bytes_total[5m]) + rate(node_network_transmit_bytes_total[5m]) > 1000000000
+        for: 5m
+        labels:
+          severity: warning
+          service: system
+        annotations:
+          summary: "Высокая нагрузка на сеть"
+          description: "Более 1GB трафика в секунду"
+          value: "{{ $value }} bytes/sec" 

@@ -234,6 +234,24 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Any:
         return user
 
 
+# ────────────────── Инициализация сервисов ──────────────────
+from app.middlewares.loading import LoadingMiddleware
+from app.services.command_service import init_command_service, setup_all_commands
+from app.services.feedback_service import init_feedback_service
+from app.services.notification_service import init_notification_services
+from app.services.onboarding_service import init_onboarding_service
+
+# Инициализация сервисов
+init_command_service(bot)
+init_onboarding_service(bot)
+init_feedback_service(bot)
+init_notification_services(bot)
+
+# Регистрация middleware
+dp.message.middleware(LoadingMiddleware(bot))
+dp.callback_query.middleware(LoadingMiddleware(bot))
+
+
 # ────────────────── /start & логин FSM ──────────────────
 @dp.message(Command("start"))
 async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
@@ -365,8 +383,6 @@ async def demo_switch(call: CallbackQuery, lang: str) -> None:
         await call.answer()
     else:
         await call.answer()
-        return
-    return
 
 
 # ────────────────── Подключение роутеров ──────────────────
@@ -389,6 +405,9 @@ dp.update.middleware(AuditMiddleware())
 async def main() -> None:
     """Главная функция"""
     await init_db()
+
+    # Устанавливаем команды при запуске
+    await setup_all_commands()
 
     # Start health check server
     from aiohttp import web

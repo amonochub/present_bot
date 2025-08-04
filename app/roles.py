@@ -1,5 +1,23 @@
 # app/roles.py
+from enum import Enum
+
 from app.utils.hash import hash_pwd
+
+
+class UserRole(Enum):
+    """Роли пользователей в системе"""
+
+    STUDENT = "student"
+    TEACHER = "teacher"
+    PARENT = "parent"
+    PSYCHOLOGIST = "psych"
+    ADMIN = "admin"
+    DIRECTOR = "director"
+    SUPER = "super"  # Демо-режим
+
+
+# Алиас для обратной совместимости
+Role = UserRole
 
 ROLES = {
     "teacher": "Учитель",

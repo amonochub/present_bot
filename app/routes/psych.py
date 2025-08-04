@@ -46,8 +46,6 @@ async def view_inbox(call: CallbackQuery) -> None:
             await call.answer()
         else:
             await call.answer()
-            return
-        return
     except Exception as e:
         logger.error(f"Ошибка при получении входящих обращений: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
@@ -123,8 +121,6 @@ async def view_stats(call: CallbackQuery) -> None:
             await call.answer()
         else:
             await call.answer()
-            return
-        return
     except Exception as e:
         logger.error(f"Ошибка при получении статистики: {e}")
         await call.answer("Произошла ошибка", show_alert=True)

@@ -2,6 +2,7 @@ from typing import Any
 
 from .admin import router as admin
 from .director import router as director
+from .docs import router as docs
 from .help import router as help_router
 from .intro import router as intro
 from .onboarding import router as onboarding
@@ -17,6 +18,7 @@ def include_all(dp: Any) -> None:
     """Include all routers in the dispatcher"""
     dp.include_router(intro)  # Подключаем первым для обработки /start
     dp.include_router(onboarding)  # Подключаем онбординг
+    dp.include_router(docs)  # Подключаем документы и новости
     dp.include_router(teacher)
     dp.include_router(admin)
     dp.include_router(director)
@@ -31,6 +33,7 @@ def include_all(dp: Any) -> None:
 __all__ = [
     "intro",
     "onboarding",
+    "docs",
     "teacher",
     "admin",
     "director",
