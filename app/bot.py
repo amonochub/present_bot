@@ -32,6 +32,7 @@ from app.i18n import t
 from app.keyboards.main_menu import menu
 from app.middlewares.audit import AuditMiddleware
 from app.middlewares.csrf import CSRFMiddleware
+from app.middlewares.loading import LoadingMiddleware
 from app.middlewares.locale import LocaleMiddleware
 from app.middlewares.metrics import MetricsMiddleware
 from app.middlewares.rate_limit import RateLimitMiddleware
@@ -39,6 +40,10 @@ from app.middlewares.sentry_context import SentryContext
 from app.middlewares.ux import FallbackMiddleware, UnknownCommandMiddleware
 from app.roles import DEMO_USERS, ROLES
 from app.routes import include_all
+from app.services.command_service import init_command_service, setup_all_commands
+from app.services.feedback_service import init_feedback_service
+from app.services.notification_service import init_notification_services
+from app.services.onboarding_service import init_onboarding_service
 from app.services.scheduler import kpi_loop
 from app.utils.csrf import issue_nonce
 
@@ -236,12 +241,6 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Any:
 
 
 # ────────────────── Инициализация сервисов ──────────────────
-from app.middlewares.loading import LoadingMiddleware
-from app.services.command_service import init_command_service, setup_all_commands
-from app.services.feedback_service import init_feedback_service
-from app.services.notification_service import init_notification_services
-from app.services.onboarding_service import init_onboarding_service
-
 # Инициализация сервисов
 init_command_service(bot)
 init_onboarding_service(bot)
