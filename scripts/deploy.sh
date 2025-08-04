@@ -95,7 +95,7 @@ scp "$ARCHIVE_NAME" "$SERVER_USER@$SERVER_HOST:/tmp/"
 
 # Подключаемся к серверу и разворачиваем
 echo -e "${GREEN}🔧 Развертывание на сервере...${NC}"
-ssh "$SERVER_USER@$SERVER_HOST" << EOF
+ssh "$SERVER_USER@$SERVER_HOST" << 'EOF'
 set -e
 
 echo "🔄 Начинаем развертывание на сервере..."
@@ -108,17 +108,30 @@ cd /srv/bots/present-bot
 
 # Останавливаем текущий бот
 echo "🛑 Останавливаем текущий бот..."
-docker-compose down || true
+if docker-compose down; then
+    echo "✅ Бот остановлен"
+else
+    echo "⚠️  Бот уже был остановлен или не запущен"
+fi
 
 # Создаем бэкап текущей версии
 echo "💾 Создаем бэкап..."
 if [ -d "app" ]; then
-    sudo tar -czf "backup-\$(date +%Y%m%d-%H%M%S).tar.gz" app/ scripts/ requirements.txt docker-compose.yml Dockerfile || true
+    if sudo tar -czf "backup-\$(date +%Y%m%d-%H%M%S).tar.gz" app/ scripts/ requirements.txt docker-compose.yml Dockerfile; then
+        echo "✅ Бэкап создан"
+    else
+        echo "⚠️  Ошибка при создании бэкапа, но продолжаем..."
+    fi
 fi
 
 # Распаковываем новый архив
 echo "📦 Распаковываем новый код..."
-sudo tar -xzf /tmp/$ARCHIVE_NAME
+if sudo tar -xzf /tmp/$ARCHIVE_NAME; then
+    echo "✅ Код распакован"
+else
+    echo "❌ Ошибка при распаковке кода"
+    exit 1
+fi
 
 # Устанавливаем правильные права
 echo "🔐 Устанавливаем права доступа..."
@@ -127,14 +140,28 @@ sudo chmod +x scripts/*.sh
 
 # Создаем общую сеть если её нет
 echo "🌐 Проверяем сетевые настройки..."
-docker network create shared-net || true
+if docker network create shared-net; then
+    echo "✅ Сеть shared-net создана"
+else
+    echo "⚠️  Сеть shared-net уже существует"
+fi
 
 # Собираем и запускаем бота
 echo "🔨 Собираем Docker образ..."
-docker-compose build --no-cache
+if docker-compose build --no-cache; then
+    echo "✅ Образ собран"
+else
+    echo "❌ Ошибка при сборке образа"
+    exit 1
+fi
 
 echo "🚀 Запускаем бота..."
-docker-compose up -d
+if docker-compose up -d; then
+    echo "✅ Бот запущен"
+else
+    echo "❌ Ошибка при запуске бота"
+    exit 1
+fi
 
 # Ждем запуска и проверяем статус
 echo "⏳ Ожидание запуска..."
@@ -150,7 +177,11 @@ if docker-compose ps | grep -q "Up"; then
     
     # Проверяем health check
     echo "🏥 Проверка здоровья:"
-    curl -f http://localhost:8080/health || echo "⚠️  Health check не отвечает"
+    if curl -f http://localhost:8080/health; then
+        echo "✅ Health check отвечает"
+    else
+        echo "⚠️  Health check не отвечает"
+    fi
     
 else
     echo "❌ Ошибка запуска бота"

@@ -421,7 +421,7 @@ async def main() -> None:
     await site.start()
 
     # Start KPI metrics loop
-    asyncio.create_task(kpi_loop())
+    kpi_task = asyncio.create_task(kpi_loop())
 
     # Graceful shutdown setup
     loop = asyncio.get_running_loop()
@@ -435,10 +435,25 @@ async def main() -> None:
 
     # Start bot polling
     polling = asyncio.create_task(dp.start_polling(bot, skip_updates=True))
-    await stop.wait()
-    polling.cancel()
-    await bot.session.close()
-    await engine.dispose()
+    
+    try:
+        await stop.wait()
+    finally:
+        # Graceful shutdown
+        print("🛑 Останавливаем бота...")
+        
+        # Cancel tasks
+        polling.cancel()
+        kpi_task.cancel()
+        
+        # Stop health server
+        await runner.cleanup()
+        
+        # Close connections
+        await bot.session.close()
+        await engine.dispose()
+        
+        print("✅ Бот остановлен")
 
 
 if __name__ == "__main__":

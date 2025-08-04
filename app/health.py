@@ -31,28 +31,42 @@ async def health_check(request: web.Request) -> web.Response:
     try:
         # Check database connection
         db_start = time.time()
-        async with AsyncSessionLocal() as session:
-            await session.execute(select(User).limit(1))
-            await session.commit()
-        db_time = time.time() - db_start
-        
-        health_data["database"] = {
-            "status": "connected",
-            "response_time": round(db_time * 1000, 2)  # ms
-        }
+        try:
+            async with AsyncSessionLocal() as session:
+                await session.execute(select(User).limit(1))
+                await session.commit()
+            db_time = time.time() - db_start
+            
+            health_data["database"] = {
+                "status": "connected",
+                "response_time": round(db_time * 1000, 2)  # ms
+            }
+        except Exception as db_error:
+            health_data["database"] = {
+                "status": "error",
+                "error": str(db_error),
+                "response_time": None
+            }
 
         # Check Redis connection
         redis_start = time.time()
-        redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
-        await redis_client.ping()
-        redis_time = time.time() - redis_start
-        
-        health_data["redis"] = {
-            "status": "connected", 
-            "response_time": round(redis_time * 1000, 2)  # ms
-        }
-        
-        await redis_client.close()
+        try:
+            redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
+            await redis_client.ping()
+            redis_time = time.time() - redis_start
+            
+            health_data["redis"] = {
+                "status": "connected", 
+                "response_time": round(redis_time * 1000, 2)  # ms
+            }
+            
+            await redis_client.close()
+        except Exception as redis_error:
+            health_data["redis"] = {
+                "status": "error",
+                "error": str(redis_error),
+                "response_time": None
+            }
 
         # Check environment variables
         health_data["environment_vars"] = {
@@ -95,25 +109,37 @@ async def health_check(request: web.Request) -> web.Response:
 
 async def detailed_health_check(request: web.Request) -> web.Response:
     """Detailed health check with more information"""
-    health_data = await health_check(request)
-    
-    # Add additional information for detailed check
-    detailed_data = health_data.data
-    if isinstance(detailed_data, dict):
-        detailed_data["detailed"] = {
-            "process_id": os.getpid(),
-            "python_version": f"{os.sys.version_info.major}.{os.sys.version_info.minor}.{os.sys.version_info.micro}",
-            "working_directory": os.getcwd(),
-            "environment_variables": {
-                "ENV": settings.ENV,
-                "DB_HOST": settings.DB_HOST,
-                "DB_PORT": settings.DB_PORT,
-                "DB_NAME": settings.DB_NAME,
-                "REDIS_DSN": settings.REDIS_DSN[:20] + "..." if len(settings.REDIS_DSN) > 20 else settings.REDIS_DSN,
+    try:
+        health_response = await health_check(request)
+        
+        # Add additional information for detailed check
+        if hasattr(health_response, 'body'):
+            import json
+            health_data = json.loads(health_response.body.decode())
+            
+            health_data["detailed"] = {
+                "process_id": os.getpid(),
+                "python_version": f"{os.sys.version_info.major}.{os.sys.version_info.minor}.{os.sys.version_info.micro}",
+                "working_directory": os.getcwd(),
+                "environment_variables": {
+                    "ENV": settings.ENV,
+                    "DB_HOST": settings.DB_HOST,
+                    "DB_PORT": settings.DB_PORT,
+                    "DB_NAME": settings.DB_NAME,
+                    "REDIS_DSN": settings.REDIS_DSN[:20] + "..." if len(settings.REDIS_DSN) > 20 else settings.REDIS_DSN,
+                }
             }
-        }
-    
-    return web.json_response(detailed_data, status=health_data.status)
+            
+            return web.json_response(health_data, status=health_response.status)
+        else:
+            return health_response
+            
+    except Exception as e:
+        return web.json_response({
+            "status": "error",
+            "error": f"Failed to get detailed health check: {str(e)}",
+            "timestamp": time.time()
+        }, status=500)
 
 
 async def init_health_app() -> web.Application:
@@ -129,4 +155,10 @@ async def init_health_app() -> web.Application:
 
 async def metrics(request: web.Request) -> web.Response:
     """Prometheus metrics endpoint"""
-    return web.Response(body=generate_latest(), content_type="text/plain; version=0.0.4")
+    try:
+        return web.Response(body=generate_latest(), content_type="text/plain; version=0.0.4")
+    except Exception as e:
+        return web.json_response({
+            "error": f"Failed to generate metrics: {str(e)}",
+            "timestamp": time.time()
+        }, status=500)
