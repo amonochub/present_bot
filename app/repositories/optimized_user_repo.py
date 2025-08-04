@@ -30,7 +30,7 @@ class OptimizedUserRepository:
 
         # Если нет в кеше, получаем из БД
         async with db_profiler.profile_query(
-            "get_user_by_tg_id", f"SELECT * FROM users WHERE tg_id = {tg_id}"
+            "get_user_by_tg_id", "SELECT * FROM users WHERE tg_id = ?"
         ):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(select(User).where(User.tg_id == tg_id))
@@ -61,13 +61,13 @@ class OptimizedUserRepository:
     async def get_users_by_role(role: UserRole, limit: int = 100) -> List[Dict[str, Any]]:
         """Получить пользователей по роли с кешированием"""
         async with db_profiler.profile_query(
-            "get_users_by_role", f"SELECT * FROM users WHERE role = '{role.value}' LIMIT {limit}"
+            "get_users_by_role", "SELECT * FROM users WHERE role = ? LIMIT ?"
         ):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(
                     select(User)
                     .where(User.role == role.value)
-                    .where(User.is_active == True)
+                    .where(User.is_active.is_(True))
                     .limit(limit)
                 )
                 users = result.scalars().all()
@@ -96,7 +96,7 @@ class OptimizedUserRepository:
         ):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(
-                    select(User.role, User.id).where(User.is_active == True)
+                    select(User.role, User.id).where(User.is_active.is_(True))
                 )
                 users = result.all()
 
@@ -165,7 +165,7 @@ class OptimizedUserRepository:
     async def delete_user(tg_id: int) -> bool:
         """Удалить пользователя с инвалидацией кеша"""
         async with db_profiler.profile_query(
-            "delete_user", f"DELETE FROM users WHERE tg_id = {tg_id}"
+            "delete_user", "DELETE FROM users WHERE tg_id = ?"
         ):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(delete(User).where(User.tg_id == tg_id))
@@ -182,11 +182,14 @@ class OptimizedUserRepository:
         query: str, role: Optional[UserRole] = None, limit: int = 50
     ) -> List[Dict[str, Any]]:
         """Поиск пользователей с оптимизированными запросами"""
-        search_query = f"SELECT * FROM users WHERE (username ILIKE '%{query}%' OR first_name ILIKE '%{query}%' OR last_name ILIKE '%{query}%')"
+        search_query = (
+            "SELECT * FROM users WHERE "
+            "(username ILIKE ? OR first_name ILIKE ? OR last_name ILIKE ?)"
+        )
 
         async with db_profiler.profile_query("search_users", search_query):
             async with AsyncSessionLocal() as session:
-                stmt = select(User).where(User.is_active == True)
+                stmt = select(User).where(User.is_active.is_(True))
 
                 # Добавляем поиск по тексту
                 stmt = stmt.where(
@@ -232,7 +235,9 @@ class OptimizedUserRepository:
                 total_users = len(total_result.scalars().all())
 
                 # Активные пользователи
-                active_result = await session.execute(select(User.id).where(User.is_active == True))
+                active_result = await session.execute(
+                    select(User.id).where(User.is_active.is_(True))
+                )
                 active_users = len(active_result.scalars().all())
 
                 # Статистика по ролям

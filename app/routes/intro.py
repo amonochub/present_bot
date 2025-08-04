@@ -65,6 +65,10 @@ async def send_intro_slide(msg: Message, idx: int, lang: str = "ru") -> None:
 @router.message(Command("start"))
 async def start_with_intro(msg: Message, state: FSMContext, lang: str = "ru") -> None:
     """Обработчик команды /start с проверкой онбординга"""
+    if not msg.from_user:
+        await msg.answer("Ошибка: не удалось определить пользователя")
+        return
+        
     user = await get_user(msg.from_user.id)
 
     if user and not user.seen_intro:

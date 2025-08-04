@@ -30,6 +30,10 @@ async def get_user_role(tg_id: int) -> Optional[str]:
 @router.message(Command("help"))
 async def help_command(message: Message) -> None:
     """Показывает контекстную справку в зависимости от роли пользователя"""
+    
+    if not message.from_user:
+        await message.answer("Ошибка: не удалось определить пользователя")
+        return
 
     user = await get_user(message.from_user.id)
 

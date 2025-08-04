@@ -226,7 +226,7 @@ async def handle_broadcast_message(message: Message, state: FSMContext) -> None:
             return
 
         # Отправляем рассылку
-        sent_count = await interaction_service.admin_broadcast(
+        await interaction_service.admin_broadcast(
             admin_id=message.from_user.id, message=broadcast_text
         )
 

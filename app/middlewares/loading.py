@@ -93,8 +93,8 @@ class LongOperationMiddleware(BaseMiddleware):
         # Показываем индикатор "бот печатает"
         await self.bot.send_chat_action(chat_id, "typing")
 
-        # Засекаем время начала
-        start_time = asyncio.get_event_loop().time()
+        # Засекаем время начала - используется в метрике  
+        _ = asyncio.get_event_loop().time()
 
         # Запускаем обработчик в отдельной задаче
         task: asyncio.Task[Any] = asyncio.create_task(handler(event, data))
