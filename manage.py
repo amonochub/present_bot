@@ -5,7 +5,7 @@ import subprocess
 import typer
 
 from alembic.config import main as alembic_main
-from app.bot import seed_demo
+# from app.bot import seed_demo  # Временно отключено
 from app.db.base import Base
 from app.db.session import engine
 

@@ -418,7 +418,7 @@ async def main() -> None:
     health_app = await init_health_app()
     runner = web.AppRunner(health_app)
     await runner.setup()
-    site = web.TCPSite(runner, "127.0.0.1", 8081)
+    site = web.TCPSite(runner, "0.0.0.0", 8080)
     await site.start()
 
     # Start KPI metrics loop
