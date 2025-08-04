@@ -69,9 +69,9 @@ def check_environment_variables() -> Tuple[bool, List[str]]:
     issues = []
     required_vars = [
         'TELEGRAM_TOKEN',
-        'POSTGRES_DB',
-        'POSTGRES_USER', 
-        'POSTGRES_PASSWORD'
+        'DB_NAME',
+        'DB_USER', 
+        'DB_PASS'
     ]
     
     # Проверяем .env файл
