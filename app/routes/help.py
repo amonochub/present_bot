@@ -7,7 +7,12 @@ from typing import Optional
 
 from aiogram import F, Router
 from aiogram.filters import Command
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 from sqlalchemy import select
 
 from app.db.session import AsyncSessionLocal
@@ -39,7 +44,12 @@ async def help_command(message: Message) -> None:
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text=t("help.help_start_button"), callback_data="help:start")]
+                [
+                    InlineKeyboardButton(
+                        text=t("help.help_start_button"),
+                        callback_data="help:start",
+                    )
+                ]
             ]
         )
 
@@ -194,102 +204,120 @@ def get_role_help_keyboard(role: UserRole) -> InlineKeyboardMarkup:
         UserRole.STUDENT: [
             [
                 InlineKeyboardButton(
-                    text=t("help.help_student_tasks"), callback_data="help:student:tasks"
+                    text=t("help.help_student_tasks"),
+                    callback_data="help:student:tasks",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_student_notes"), callback_data="help:student:notes"
+                    text=t("help.help_student_notes"),
+                    callback_data="help:student:notes",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_student_ask"), callback_data="help:student:ask"
+                    text=t("help.help_student_ask"),
+                    callback_data="help:student:ask",
                 )
             ],
         ],
         UserRole.TEACHER: [
             [
                 InlineKeyboardButton(
-                    text=t("help.help_teacher_notes"), callback_data="help:teacher:notes"
+                    text=t("help.help_teacher_notes"),
+                    callback_data="help:teacher:notes",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_teacher_tickets"), callback_data="help:teacher:tickets"
+                    text=t("help.help_teacher_tickets"),
+                    callback_data="help:teacher:tickets",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_teacher_students"), callback_data="help:teacher:students"
+                    text=t("help.help_teacher_students"),
+                    callback_data="help:teacher:students",
                 )
             ],
         ],
         UserRole.PARENT: [
             [
                 InlineKeyboardButton(
-                    text=t("help.help_parent_tasks"), callback_data="help:parent:tasks"
+                    text=t("help.help_parent_tasks"),
+                    callback_data="help:parent:tasks",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_parent_certs"), callback_data="help:parent:certs"
+                    text=t("help.help_parent_certs"),
+                    callback_data="help:parent:certs",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_parent_progress"), callback_data="help:parent:progress"
+                    text=t("help.help_parent_progress"),
+                    callback_data="help:parent:progress",
                 )
             ],
         ],
         UserRole.PSYCHOLOGIST: [
             [
                 InlineKeyboardButton(
-                    text=t("help.help_psych_inbox"), callback_data="help:psych:inbox"
+                    text=t("help.help_psych_inbox"),
+                    callback_data="help:psych:inbox",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_psych_requests"), callback_data="help:psych:requests"
+                    text=t("help.help_psych_requests"),
+                    callback_data="help:psych:requests",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_psych_schedule"), callback_data="help:psych:schedule"
+                    text=t("help.help_psych_schedule"),
+                    callback_data="help:psych:schedule",
                 )
             ],
         ],
         UserRole.ADMIN: [
             [
                 InlineKeyboardButton(
-                    text=t("help.help_admin_tickets"), callback_data="help:admin:tickets"
+                    text=t("help.help_admin_tickets"),
+                    callback_data="help:admin:tickets",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_admin_broadcast"), callback_data="help:admin:broadcast"
+                    text=t("help.help_admin_broadcast"),
+                    callback_data="help:admin:broadcast",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_admin_stats"), callback_data="help:admin:stats"
+                    text=t("help.help_admin_stats"),
+                    callback_data="help:admin:stats",
                 )
             ],
         ],
         UserRole.DIRECTOR: [
             [
                 InlineKeyboardButton(
-                    text=t("help.help_director_kpi"), callback_data="help:director:kpi"
+                    text=t("help.help_director_kpi"),
+                    callback_data="help:director:kpi",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_director_stats"), callback_data="help:director:stats"
+                    text=t("help.help_director_stats"),
+                    callback_data="help:director:stats",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=t("help.help_director_reports"), callback_data="help:director:reports"
+                    text=t("help.help_director_reports"),
+                    callback_data="help:director:reports",
                 )
             ],
         ],
@@ -297,7 +325,11 @@ def get_role_help_keyboard(role: UserRole) -> InlineKeyboardMarkup:
 
     keyboard = role_keyboards.get(role, [])
     keyboard.append(
-        [InlineKeyboardButton(text=t("help.help_main_menu_button"), callback_data="menu:main")]
+        [
+            InlineKeyboardButton(
+                text=t("help.help_main_menu_button"), callback_data="menu:main"
+            )
+        ]
     )
 
     return InlineKeyboardMarkup(inline_keyboard=keyboard)
@@ -311,16 +343,22 @@ async def handle_help_callback(callback: CallbackQuery) -> None:
 
     if data[1] == "start":
         # Возврат к началу
-        await callback.message.edit_text(t("help.help_start_message"), parse_mode="HTML")
+        await callback.message.edit_text(
+            t("help.help_start_message"), parse_mode="HTML"
+        )
     elif data[1] == "back":
         # Возврат к основной справке
         user = await get_user(callback.from_user.id)
         if user:
             help_text = get_role_help(user.role)
             keyboard = get_role_help_keyboard(user.role)
-            await callback.message.edit_text(help_text, reply_markup=keyboard, parse_mode="HTML")
+            await callback.message.edit_text(
+                help_text, reply_markup=keyboard, parse_mode="HTML"
+            )
         else:
-            await callback.message.edit_text(t("help.help_login_required"), parse_mode="HTML")
+            await callback.message.edit_text(
+                t("help.help_login_required"), parse_mode="HTML"
+            )
     else:
         # Показываем детальную справку по разделу
         role = data[1]
@@ -330,16 +368,24 @@ async def handle_help_callback(callback: CallbackQuery) -> None:
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text=t("help.help_back_button"), callback_data="help:back")],
                 [
                     InlineKeyboardButton(
-                        text=t("help.help_main_menu_button"), callback_data="menu:main"
+                        text=t("help.help_back_button"),
+                        callback_data="help:back",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text=t("help.help_main_menu_button"),
+                        callback_data="menu:main",
                     )
                 ],
             ]
         )
 
-        await callback.message.edit_text(detail_text, reply_markup=keyboard, parse_mode="HTML")
+        await callback.message.edit_text(
+            detail_text, reply_markup=keyboard, parse_mode="HTML"
+        )
 
     await callback.answer()
 
@@ -718,13 +764,15 @@ def get_detailed_help(role: str, section: str) -> str:
     }
 
     role_details = help_details.get(role, {})
-    section_text = role_details.get(section, f"📖 Детальная справка по разделу {section}")
+    section_text = role_details.get(
+        section, f"📖 Детальная справка по разделу {section}"
+    )
 
     return section_text.strip()
 
 
 # ─────────── Кнопка справки ───────────
-@router.callback_query(F.data == "help")
+@router.callback_query(F.data == "help")  # type: ignore[misc]
 async def help_button(call: CallbackQuery, lang: str) -> None:
     try:
         if call.from_user is None:
@@ -802,11 +850,15 @@ async def teacher_addnote_command(msg: Message, lang: str) -> None:
 
         # Парсим команду: /addnote Имя Текст
         if msg.text is None:
-            await msg.answer("Использование: /addnote Имя_ученика Текст_заметки")
+            await msg.answer(
+                "Использование: /addnote Имя_ученика Текст_заметки"
+            )
             return
         text = msg.text.replace("/addnote", "").strip()
         if not text:
-            await msg.answer("Использование: /addnote Имя_ученика Текст_заметки")
+            await msg.answer(
+                "Использование: /addnote Имя_ученика Текст_заметки"
+            )
             return
 
         # Здесь должна быть логика добавления заметки

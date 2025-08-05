@@ -39,7 +39,11 @@ async def kpi_cmd(msg: Message) -> None:
             return
 
         user = await me(msg.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["director", "super"]
+        ):
             await msg.answer("Команда доступна только директору.")
             return
 
@@ -65,11 +69,15 @@ async def kpi_cmd(msg: Message) -> None:
 
 
 # ─────────── KPI ───────────
-@router.callback_query(F.data == "stub")
+@router.callback_query(F.data == "stub")  # type: ignore[misc]
 async def view_kpi(call: CallbackQuery) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["director", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -87,7 +95,9 @@ async def view_kpi(call: CallbackQuery) -> None:
         )
 
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(kpi_text, reply_markup=menu("director", "ru"))
+            await call.message.edit_text(
+                kpi_text, reply_markup=menu("director", "ru")
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении KPI: {e}")
@@ -95,11 +105,15 @@ async def view_kpi(call: CallbackQuery) -> None:
 
 
 # ─────────── Задачи ───────────
-@router.callback_query(F.data == "director_tasks")
+@router.callback_query(F.data == "director_tasks")  # type: ignore[misc]
 async def view_tasks(call: CallbackQuery) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["director", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -107,39 +121,50 @@ async def view_tasks(call: CallbackQuery) -> None:
         if not tasks:
             txt = "📋 <b>Задачи директора</b>\n\nНет активных задач"
         else:
-            ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
+            ico = {
+                Status.open: "🟡",
+                Status.in_progress: "🔵",
+                Status.done: "🟢",
+            }
             txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
-                f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
                 f"📝 {t.description}\n"
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks
             )
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
+            await call.message.edit_text(
+                txt, reply_markup=menu("director", "ru")
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении задач: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.callback_query(F.data == "director_add_task")
+@router.callback_query(F.data == "director_add_task")  # type: ignore[misc]
 async def start_add_task(call: CallbackQuery, state: Any) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["director", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["director", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
         await state.set_state(AddTask.waiting_title)
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text("📋 <b>Добавление задачи</b>\n\nВведите название задачи:")
+            await call.message.edit_text(
+                "📋 <b>Добавление задачи</b>\n\nВведите название задачи:"
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале добавления задачи: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.message(AddTask.waiting_title, F.text)
+@router.message(AddTask.waiting_title, F.text)  # type: ignore[misc]
 async def task_title(msg: Message, state: Any) -> None:
     try:
         if msg.text is None:
@@ -147,7 +172,9 @@ async def task_title(msg: Message, state: Any) -> None:
             return
         title = msg.text.strip()
         if len(title) > 200:
-            await msg.answer("Название задачи слишком длинное (максимум 200 символов)")
+            await msg.answer(
+                "Название задачи слишком длинное (максимум 200 символов)"
+            )
             return
 
         if not title:
@@ -163,7 +190,7 @@ async def task_title(msg: Message, state: Any) -> None:
         await state.clear()
 
 
-@router.message(AddTask.waiting_description, F.text)
+@router.message(AddTask.waiting_description, F.text)  # type: ignore[misc]
 async def task_description(msg: Message, state: Any) -> None:
     try:
         if msg.text is None:
@@ -171,7 +198,9 @@ async def task_description(msg: Message, state: Any) -> None:
             return
         description = msg.text.strip()
         if len(description) > 1000:
-            await msg.answer("Описание задачи слишком длинное (максимум 1000 символов)")
+            await msg.answer(
+                "Описание задачи слишком длинное (максимум 1000 символов)"
+            )
             return
 
         if not description:
@@ -180,14 +209,16 @@ async def task_description(msg: Message, state: Any) -> None:
 
         await state.update_data(description=description)
         await state.set_state(AddTask.waiting_deadline)
-        await msg.answer("Введите дедлайн в формате ДД.ММ.ГГГГ (или напишите «Нет»):")
+        await msg.answer(
+            "Введите дедлайн в формате ДД.ММ.ГГГГ (или напишите «Нет»):"
+        )
     except Exception as e:
         logger.error(f"Ошибка при обработке описания задачи: {e}")
         await msg.answer("Произошла ошибка")
         await state.clear()
 
 
-@router.message(AddTask.waiting_deadline, F.text)
+@router.message(AddTask.waiting_deadline, F.text)  # type: ignore[misc]
 async def task_deadline(msg: Message, state: Any) -> None:
     try:
         if msg.text is None:
@@ -203,7 +234,9 @@ async def task_deadline(msg: Message, state: Any) -> None:
 
                 deadline = datetime.strptime(deadline_text, "%d.%m.%Y").date()
             except ValueError:
-                await msg.answer("Пожалуйста, введите дату в формате ДД.ММ.ГГГГ или напишите «Нет»")
+                await msg.answer(
+                    "Пожалуйста, введите дату в формате ДД.ММ.ГГГГ или напишите «Нет»"
+                )
                 return
 
         data = await state.get_data()
@@ -226,7 +259,9 @@ async def task_deadline(msg: Message, state: Any) -> None:
         )
 
         await state.clear()
-        await msg.answer("✅ Задача создана!", reply_markup=menu("director", "ru"))
+        await msg.answer(
+            "✅ Задача создана!", reply_markup=menu("director", "ru")
+        )
     except Exception as e:
         logger.error(f"Ошибка при создании задачи: {e}")
         await msg.answer("Произошла ошибка при создании задачи")
@@ -245,22 +280,31 @@ async def change_task_status(call: CallbackQuery) -> None:
             await call.answer("Ошибка данных", show_alert=True)
             return
         task_id = int(call.data.split("_")[-1])
-        status = Status.done if call.data.startswith("task_done") else Status.in_progress
+        status = (
+            Status.done
+            if call.data.startswith("task_done")
+            else Status.in_progress
+        )
 
         success = await task_repo.set_status(task_id, status)
         if success:
             await call.answer("Статус обновлен", show_alert=True)
             # Обновляем список задач
             tasks = await task_repo.list_open()
-            ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
+            ico = {
+                Status.open: "🟡",
+                Status.in_progress: "🔵",
+                Status.done: "🟢",
+            }
             txt = "📋 <b>Задачи директора</b>\n\n" + "\n".join(
-                f"{ico.get(t.status, '🟡')} <b>#{t.id}</b> — {t.title}\n"  # type: ignore
                 f"📝 {t.description}\n"
                 f"⏰ Дедлайн: {t.deadline.strftime('%d.%m.%Y') if t.deadline else 'Не установлен'}"
                 for t in tasks
             )
             if call.message is not None and hasattr(call.message, "edit_text"):
-                await call.message.edit_text(txt, reply_markup=menu("director", "ru"))
+                await call.message.edit_text(
+                    txt, reply_markup=menu("director", "ru")
+                )
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
     except Exception as e:

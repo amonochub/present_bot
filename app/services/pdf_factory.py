@@ -5,7 +5,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
 
-def make_certificate(cert_type: str, child_name: str = "Иванов Иван") -> BytesIO:
+def make_certificate(
+    cert_type: str, child_name: str = "Иванов Иван"
+) -> BytesIO:
     """
     cert_type: 'school' | 'family'.
     Возвращает BytesIO с PDF-файлом.

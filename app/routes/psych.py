@@ -23,12 +23,14 @@ async def get_user_role(tg_id: int) -> Any:
 
 
 # ─────────── Входящие обращения ───────────
-@router.callback_query(F.data == "psych_inbox")
+@router.callback_query(F.data == "psych_inbox")  # type: ignore[misc]
 async def view_inbox(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["psych", "super"]:
-            await call.answer("Эта функция доступна только психологу", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только психологу", show_alert=True
+            )
             return
 
         requests = await psych_repo.list_open()
@@ -56,7 +58,9 @@ async def mark_request_done(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["psych", "super"]:
-            await call.answer("Эта функция доступна только психологу", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только психологу", show_alert=True
+            )
             return
 
         if call.data is None:
@@ -66,7 +70,9 @@ async def mark_request_done(call: CallbackQuery) -> None:
 
         success = await psych_repo.mark_done(request_id)
         if success:
-            await call.answer("Обращение отмечено как обработанное", show_alert=True)
+            await call.answer(
+                "Обращение отмечено как обработанное", show_alert=True
+            )
             # Обновляем список обращений
             requests = await psych_repo.list_open()
             if not requests:
@@ -79,22 +85,28 @@ async def mark_request_done(call: CallbackQuery) -> None:
                     for r in requests
                 )
             if call.message is not None and hasattr(call.message, "edit_text"):
-                await call.message.edit_text(txt, reply_markup=menu("psych", "ru"))
+                await call.message.edit_text(
+                    txt, reply_markup=menu("psych", "ru")
+                )
             return
         else:
-            await call.answer("Ошибка при обработке обращения", show_alert=True)
+            await call.answer(
+                "Ошибка при обработке обращения", show_alert=True
+            )
     except Exception as e:
         logger.error(f"Ошибка при отметке обращения как обработанного: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
 
 
 # ─────────── Статистика ───────────
-@router.callback_query(F.data == "psych_stats")
+@router.callback_query(F.data == "psych_stats")  # type: ignore[misc]
 async def view_stats(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["psych", "super"]:
-            await call.answer("Эта функция доступна только психологу", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только психологу", show_alert=True
+            )
             return
 
         # Получаем статистику обращений
@@ -117,7 +129,9 @@ async def view_stats(call: CallbackQuery) -> None:
         )
 
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(stats_text, reply_markup=menu("psych", "ru"))
+            await call.message.edit_text(
+                stats_text, reply_markup=menu("psych", "ru")
+            )
             await call.answer()
         else:
             await call.answer()

@@ -30,7 +30,10 @@ async def kpi_loop() -> None:
                 overdue = await s.scalar(
                     select(func.count())
                     .select_from(Task)
-                    .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
+                    .where(
+                        Task.status == TaskStatus.PENDING,
+                        Task.deadline < date.today(),
+                    )
                 )
 
             # Обновляем метрики Prometheus

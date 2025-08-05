@@ -6,7 +6,12 @@ import asyncio
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from app.i18n import t
 from app.repositories.user_repo import create_user, get_user, update_user_intro
@@ -20,7 +25,9 @@ class OnboardingService:
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def start_onboarding(self, message: Message, state: FSMContext) -> None:
+    async def start_onboarding(
+        self, message: Message, state: FSMContext
+    ) -> None:
         """Начинает процесс онбординга для нового пользователя"""
 
         # Показываем индикатор "бот печатает"
@@ -46,12 +53,16 @@ class OnboardingService:
         welcome_text = t("onboarding.welcome", "ru")
         keyboard = self._get_role_selection_keyboard()
 
-        await message.answer(welcome_text, reply_markup=keyboard, parse_mode="HTML")
+        await message.answer(
+            welcome_text, reply_markup=keyboard, parse_mode="HTML"
+        )
 
         # Устанавливаем состояние онбординга
         await state.set_state("onboarding:role_selection")
 
-    async def handle_role_selection(self, callback: CallbackQuery, state: FSMContext) -> None:
+    async def handle_role_selection(
+        self, callback: CallbackQuery, state: FSMContext
+    ) -> None:
         """Обрабатывает выбор роли пользователем"""
 
         # Показываем индикатор "бот печатает"
@@ -68,7 +79,9 @@ class OnboardingService:
 
             # Устанавливаем команды для новой роли
             if command_service:
-                await command_service.setup_role_commands(callback.from_user.id, role, "ru")
+                await command_service.setup_role_commands(
+                    callback.from_user.id, role, "ru"
+                )
 
         # Показываем подтверждение выбора роли
         confirmation_text = t("onboarding.role_confirmation", "ru")
@@ -78,12 +91,14 @@ class OnboardingService:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="✅ Подтвердить", callback_data="onboarding:confirm_role"
+                        text="✅ Подтвердить",
+                        callback_data="onboarding:confirm_role",
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        text="🔄 Выбрать другую", callback_data="onboarding:change_role"
+                        text="🔄 Выбрать другую",
+                        callback_data="onboarding:change_role",
                     )
                 ],
             ]
@@ -97,7 +112,9 @@ class OnboardingService:
 
         await callback.answer()
 
-    async def confirm_role(self, callback: CallbackQuery, state: FSMContext) -> None:
+    async def confirm_role(
+        self, callback: CallbackQuery, state: FSMContext
+    ) -> None:
         """Подтверждает выбор роли и завершает онбординг"""
 
         # Показываем индикатор "бот печатает"
@@ -128,11 +145,15 @@ class OnboardingService:
 
         keyboard = menu(user.role, "ru")
 
-        await callback.message.edit_text(final_text, reply_markup=keyboard, parse_mode="HTML")
+        await callback.message.edit_text(
+            final_text, reply_markup=keyboard, parse_mode="HTML"
+        )
 
         await callback.answer()
 
-    async def change_role(self, callback: CallbackQuery, state: FSMContext) -> None:
+    async def change_role(
+        self, callback: CallbackQuery, state: FSMContext
+    ) -> None:
         """Возвращает к выбору роли"""
 
         # Показываем индикатор "бот печатает"
@@ -141,7 +162,9 @@ class OnboardingService:
         welcome_text = t("onboarding.welcome", "ru")
         keyboard = self._get_role_selection_keyboard()
 
-        await callback.message.edit_text(welcome_text, reply_markup=keyboard, parse_mode="HTML")
+        await callback.message.edit_text(
+            welcome_text, reply_markup=keyboard, parse_mode="HTML"
+        )
 
         await callback.answer()
 
@@ -159,7 +182,13 @@ class OnboardingService:
 
         keyboard = []
         for role_name, callback_data in roles:
-            keyboard.append([InlineKeyboardButton(text=role_name, callback_data=callback_data)])
+            keyboard.append(
+                [
+                    InlineKeyboardButton(
+                        text=role_name, callback_data=callback_data
+                    )
+                ]
+            )
 
         return InlineKeyboardMarkup(inline_keyboard=keyboard)
 

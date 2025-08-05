@@ -23,12 +23,14 @@ async def get_user_role(tg_id: int) -> Any:
 
 
 # ─────────── Задания ребенка ───────────
-@router.callback_query(F.data == "parent_tasks")
+@router.callback_query(F.data == "parent_tasks")  # type: ignore[misc]
 async def view_child_tasks(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
-            await call.answer("Эта функция доступна только родителям", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только родителям", show_alert=True
+            )
             return
 
         tasks = await task_repo.list_open()
@@ -46,7 +48,9 @@ async def view_child_tasks(call: CallbackQuery) -> None:
                 txt += f"\n... и еще {len(tasks) - 3} заданий"
 
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(txt, reply_markup=menu("parent", "ru"))
+            await call.message.edit_text(
+                txt, reply_markup=menu("parent", "ru")
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заданий ребенка: {e}")
@@ -54,12 +58,14 @@ async def view_child_tasks(call: CallbackQuery) -> None:
 
 
 # ─────────── Справки ───────────
-@router.callback_query(F.data == "parent_cert")
+@router.callback_query(F.data == "parent_cert")  # type: ignore[misc]
 async def request_certificate(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
-            await call.answer("Эта функция доступна только родителям", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только родителям", show_alert=True
+            )
             return
 
         if call.message is not None and hasattr(call.message, "edit_text"):
@@ -73,12 +79,14 @@ async def request_certificate(call: CallbackQuery) -> None:
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.callback_query(F.data == "cert_attendance")
+@router.callback_query(F.data == "cert_attendance")  # type: ignore[misc]
 async def generate_attendance_cert(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
-            await call.answer("Эта функция доступна только родителям", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только родителям", show_alert=True
+            )
             return
 
         # Генерируем справку о посещаемости
@@ -87,10 +95,14 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
             child_name="Иванов Иван",
         )
 
-        if call.message is not None and hasattr(call.message, "answer_document"):
+        if call.message is not None and hasattr(
+            call.message, "answer_document"
+        ):
             # Конвертируем BytesIO в InputFile
             pdf_data.seek(0)
-            input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
+            input_file = BufferedInputFile(
+                pdf_data.getvalue(), filename="certificate.pdf"
+            )
             await call.message.answer_document(
                 document=input_file,
                 caption="📄 Справка о посещаемости\n\n"
@@ -100,15 +112,19 @@ async def generate_attendance_cert(call: CallbackQuery) -> None:
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при генерации справки о посещаемости: {e}")
-        await call.answer("Произошла ошибка при генерации справки", show_alert=True)
+        await call.answer(
+            "Произошла ошибка при генерации справки", show_alert=True
+        )
 
 
-@router.callback_query(F.data == "cert_progress")
+@router.callback_query(F.data == "cert_progress")  # type: ignore[misc]
 async def generate_progress_cert(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
-            await call.answer("Эта функция доступна только родителям", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только родителям", show_alert=True
+            )
             return
 
         # Генерируем справку об успеваемости
@@ -117,10 +133,14 @@ async def generate_progress_cert(call: CallbackQuery) -> None:
             child_name="Иванов Иван",
         )
 
-        if call.message is not None and hasattr(call.message, "answer_document"):
+        if call.message is not None and hasattr(
+            call.message, "answer_document"
+        ):
             # Конвертируем BytesIO в InputFile
             pdf_data.seek(0)
-            input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
+            input_file = BufferedInputFile(
+                pdf_data.getvalue(), filename="certificate.pdf"
+            )
             await call.message.answer_document(
                 document=input_file,
                 caption="📄 Справка об успеваемости\n\n"
@@ -130,15 +150,19 @@ async def generate_progress_cert(call: CallbackQuery) -> None:
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при генерации справки об успеваемости: {e}")
-        await call.answer("Произошла ошибка при генерации справки", show_alert=True)
+        await call.answer(
+            "Произошла ошибка при генерации справки", show_alert=True
+        )
 
 
-@router.callback_query(F.data == "cert_behavior")
+@router.callback_query(F.data == "cert_behavior")  # type: ignore[misc]
 async def generate_behavior_cert(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["parent", "super"]:
-            await call.answer("Эта функция доступна только родителям", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только родителям", show_alert=True
+            )
             return
 
         # Генерируем справку о поведении
@@ -147,10 +171,14 @@ async def generate_behavior_cert(call: CallbackQuery) -> None:
             child_name="Иванов Иван",
         )
 
-        if call.message is not None and hasattr(call.message, "answer_document"):
+        if call.message is not None and hasattr(
+            call.message, "answer_document"
+        ):
             # Конвертируем BytesIO в InputFile
             pdf_data.seek(0)
-            input_file = BufferedInputFile(pdf_data.getvalue(), filename="certificate.pdf")
+            input_file = BufferedInputFile(
+                pdf_data.getvalue(), filename="certificate.pdf"
+            )
             await call.message.answer_document(
                 document=input_file,
                 caption="📄 Справка о поведении\n\n"
@@ -160,4 +188,6 @@ async def generate_behavior_cert(call: CallbackQuery) -> None:
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при генерации справки о поведении: {e}")
-        await call.answer("Произошла ошибка при генерации справки", show_alert=True)
+        await call.answer(
+            "Произошла ошибка при генерации справки", show_alert=True
+        )

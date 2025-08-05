@@ -4,8 +4,9 @@
 
 import json
 import logging
+from collections.abc import Callable
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 import redis.asyncio as redis
 from aiocache import cached
@@ -35,18 +36,21 @@ class CacheService:
     """Сервис для работы с кешем"""
 
     @staticmethod
-    async def get_user(tg_id: int) -> Optional[Dict[str, Any]]:
+    async def get_user(tg_id: int) -> dict[str, Any] | None:
         """Получить пользователя из кеша или БД"""
         cache_key = f"user:{tg_id}"
 
         # Пробуем получить из кеша
         cached_user = await redis_client.get(cache_key)
         if cached_user:
-            return json.loads(cached_user)
+            user_data = json.loads(cached_user)
+            return dict(user_data) if user_data else None
 
         # Если нет в кеше, получаем из БД
         async with AsyncSessionLocal() as session:
-            result = await session.execute(select(User).where(User.tg_id == tg_id))
+            result = await session.execute(
+                select(User).where(User.tg_id == tg_id)
+            )
             user = result.scalar_one_or_none()
 
             if user:
@@ -58,12 +62,22 @@ class CacheService:
                     "last_name": user.last_name,
                     "role": user.role,
                     "is_active": user.is_active,
-                    "created_at": user.created_at.isoformat() if user.created_at else None,
-                    "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+                    "created_at": (
+                        user.created_at.isoformat()
+                        if user.created_at
+                        else None
+                    ),
+                    "updated_at": (
+                        user.updated_at.isoformat()
+                        if user.updated_at
+                        else None
+                    ),
                 }
 
                 # Сохраняем в кеш
-                await redis_client.setex(cache_key, USER_CACHE_TTL, json.dumps(user_data))
+                await redis_client.setex(
+                    cache_key, USER_CACHE_TTL, json.dumps(user_data)
+                )
 
                 return user_data
 
@@ -76,8 +90,8 @@ class CacheService:
         await redis_client.delete(cache_key)
 
     @staticmethod
-    @cached(ttl=SCHEDULE_CACHE_TTL)
-    async def get_school_schedule(school_id: int) -> List[Dict[str, Any]]:
+    @cached(ttl=SCHEDULE_CACHE_TTL)  # type: ignore[misc]
+    async def get_school_schedule(school_id: int) -> list[dict[str, Any]]:
         """Получить расписание школы (кешируется)"""
         # Здесь будет логика получения расписания
         # Пока возвращаем заглушку
@@ -86,29 +100,43 @@ class CacheService:
                 "id": 1,
                 "day": "monday",
                 "lessons": [
-                    {"time": "09:00", "subject": "Математика", "teacher": "Иванова А.П."},
-                    {"time": "10:00", "subject": "Русский язык", "teacher": "Петрова М.И."},
+                    {
+                        "time": "09:00",
+                        "subject": "Математика",
+                        "teacher": "Иванова А.П.",
+                    },
+                    {
+                        "time": "10:00",
+                        "subject": "Русский язык",
+                        "teacher": "Петрова М.И.",
+                    },
                 ],
             }
         ]
 
     @staticmethod
-    @cached(ttl=STATS_CACHE_TTL)
-    async def get_system_stats() -> Dict[str, Any]:
+    @cached(ttl=STATS_CACHE_TTL)  # type: ignore[misc]
+    async def get_system_stats() -> dict[str, Any]:
         """Получить статистику системы (кешируется)"""
         async with AsyncSessionLocal() as session:
             # Подсчет пользователей по ролям
             users_by_role = {}
             for role in UserRole:
-                result = await session.execute(select(User).where(User.role == role.value))
+                result = await session.execute(
+                    select(User).where(User.role == role.value)
+                )
                 users_by_role[role.value] = len(result.scalars().all())
 
             # Подсчет активных заявок
-            result = await session.execute(select(Ticket).where(Ticket.status == "open"))
+            result = await session.execute(
+                select(Ticket).where(Ticket.status == "open")
+            )
             open_tickets = len(result.scalars().all())
 
             # Подсчет активных задач
-            result = await session.execute(select(Task).where(Task.status == "pending"))
+            result = await session.execute(
+                select(Task).where(Task.status == "pending")
+            )
             pending_tasks = len(result.scalars().all())
 
             return {
@@ -119,14 +147,17 @@ class CacheService:
             }
 
     @staticmethod
-    async def get_user_notes(tg_id: int, limit: int = 10) -> List[Dict[str, Any]]:
+    async def get_user_notes(
+        tg_id: int, limit: int = 10
+    ) -> list[dict[str, Any]]:
         """Получить заметки пользователя с кешированием"""
         cache_key = f"user_notes:{tg_id}:{limit}"
 
         # Пробуем получить из кеша
         cached_notes = await redis_client.get(cache_key)
         if cached_notes:
-            return json.loads(cached_notes)
+            notes_data = json.loads(cached_notes)
+            return list(notes_data) if notes_data else []
 
         # Если нет в кеше, получаем из БД
         async with AsyncSessionLocal() as session:
@@ -143,7 +174,11 @@ class CacheService:
                     "id": note.id,
                     "student_name": note.student_name,
                     "text": note.text,
-                    "created_at": note.created_at.isoformat() if note.created_at else None,
+                    "created_at": (
+                        note.created_at.isoformat()
+                        if note.created_at
+                        else None
+                    ),
                 }
                 for note in notes
             ]
@@ -162,14 +197,15 @@ class CacheService:
             await redis_client.delete(*keys)
 
     @staticmethod
-    async def get_frequently_accessed_data() -> Dict[str, Any]:
+    async def get_frequently_accessed_data() -> dict[str, Any]:
         """Получить часто запрашиваемые данные"""
         cache_key = "frequent_data"
 
         # Пробуем получить из кеша
         cached_data = await redis_client.get(cache_key)
         if cached_data:
-            return json.loads(cached_data)
+            data = json.loads(cached_data)
+            return dict(data) if data else {}
 
         # Если нет в кеше, собираем данные
         async with AsyncSessionLocal() as session:
@@ -177,7 +213,12 @@ class CacheService:
             data = {
                 "roles": [role.value for role in UserRole],
                 "task_priorities": ["low", "medium", "high", "urgent"],
-                "ticket_statuses": ["open", "in_progress", "resolved", "closed"],
+                "ticket_statuses": [
+                    "open",
+                    "in_progress",
+                    "resolved",
+                    "closed",
+                ],
                 "cached_at": datetime.now().isoformat(),
             }
 
@@ -193,7 +234,7 @@ class CacheService:
         logger.info("Все кеши очищены")
 
     @staticmethod
-    async def get_cache_stats() -> Dict[str, Any]:
+    async def get_cache_stats() -> dict[str, Any]:
         """Получить статистику кеша"""
         info = await redis_client.info()
         keys = await redis_client.dbsize()
@@ -222,7 +263,12 @@ def cache_result(ttl: int = CACHE_TTL):
             # Пробуем получить из кеша
             cached_result = await redis_client.get(cache_key)
             if cached_result:
-                return json.loads(cached_result)
+                result_data = json.loads(cached_result)
+                return (
+                    dict(result_data)
+                    if isinstance(result_data, dict)
+                    else result_data
+                )
 
             # Выполняем функцию
             result = await func(*args, **kwargs)
@@ -239,12 +285,12 @@ def cache_result(ttl: int = CACHE_TTL):
 
 # Примеры использования кеширования в репозиториях
 @cache_result(ttl=300)
-async def get_user_by_tg_id_cached(tg_id: int) -> Optional[Dict[str, Any]]:
+async def get_user_by_tg_id_cached(tg_id: int) -> dict[str, Any] | None:
     """Получить пользователя с кешированием"""
     return await cache_service.get_user(tg_id)
 
 
 @cache_result(ttl=900)
-async def get_system_statistics_cached() -> Dict[str, Any]:
+async def get_system_statistics_cached() -> dict[str, Any]:
     """Получить статистику системы с кешированием"""
     return await cache_service.get_system_stats()

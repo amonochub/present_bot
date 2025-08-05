@@ -4,7 +4,12 @@
 
 from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from app.config import settings
 from app.repositories.ticket_repo import create_ticket
@@ -17,7 +22,9 @@ class FeedbackService:
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    async def start_feedback(self, message: Message, state: FSMContext) -> None:
+    async def start_feedback(
+        self, message: Message, state: FSMContext
+    ) -> None:
         """Начинает процесс отправки обратной связи"""
 
         # Показываем индикатор "бот печатает"
@@ -40,23 +47,45 @@ class FeedbackService:
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="📝 Отзыв", callback_data="feedback:type:review")],
-                [InlineKeyboardButton(text="🐛 Ошибка", callback_data="feedback:type:bug")],
                 [
                     InlineKeyboardButton(
-                        text="💡 Предложение", callback_data="feedback:type:suggestion"
+                        text="📝 Отзыв", callback_data="feedback:type:review"
                     )
                 ],
-                [InlineKeyboardButton(text="❓ Вопрос", callback_data="feedback:type:question")],
-                [InlineKeyboardButton(text="🔙 Назад", callback_data="feedback:cancel")],
+                [
+                    InlineKeyboardButton(
+                        text="🐛 Ошибка", callback_data="feedback:type:bug"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="💡 Предложение",
+                        callback_data="feedback:type:suggestion",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="❓ Вопрос",
+                        callback_data="feedback:type:question",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="🔙 Назад", callback_data="feedback:cancel"
+                    )
+                ],
             ]
         )
 
-        await message.answer(feedback_text, reply_markup=keyboard, parse_mode="HTML")
+        await message.answer(
+            feedback_text, reply_markup=keyboard, parse_mode="HTML"
+        )
 
         await state.set_state("feedback:type_selection")
 
-    async def handle_feedback_type(self, callback: CallbackQuery, state: FSMContext) -> None:
+    async def handle_feedback_type(
+        self, callback: CallbackQuery, state: FSMContext
+    ) -> None:
         """Обрабатывает выбор типа обратной связи"""
 
         # Показываем индикатор "бот печатает"
@@ -79,18 +108,26 @@ class FeedbackService:
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="🔙 Отмена", callback_data="feedback:cancel")]
+                [
+                    InlineKeyboardButton(
+                        text="🔙 Отмена", callback_data="feedback:cancel"
+                    )
+                ]
             ]
         )
 
         await callback.message.edit_text(
-            f"{instruction}\n\n✍️ Введите ваш текст:", reply_markup=keyboard, parse_mode="HTML"
+            f"{instruction}\n\n✍️ Введите ваш текст:",
+            reply_markup=keyboard,
+            parse_mode="HTML",
         )
 
         await state.set_state("feedback:text_input")
         await callback.answer()
 
-    async def handle_feedback_text(self, message: Message, state: FSMContext) -> None:
+    async def handle_feedback_text(
+        self, message: Message, state: FSMContext
+    ) -> None:
         """Обрабатывает текст обратной связи"""
 
         # Показываем индикатор "бот печатает"
@@ -135,11 +172,17 @@ class FeedbackService:
 
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="🏠 Главное меню", callback_data="menu:main")]
+                [
+                    InlineKeyboardButton(
+                        text="🏠 Главное меню", callback_data="menu:main"
+                    )
+                ]
             ]
         )
 
-        await message.answer(confirmation_text, reply_markup=keyboard, parse_mode="HTML")
+        await message.answer(
+            confirmation_text, reply_markup=keyboard, parse_mode="HTML"
+        )
 
         # Очищаем состояние
         await state.clear()
@@ -147,7 +190,9 @@ class FeedbackService:
         # Отправляем уведомление администраторам
         await self._notify_admins(ticket, user)
 
-    async def cancel_feedback(self, callback: CallbackQuery, state: FSMContext) -> None:
+    async def cancel_feedback(
+        self, callback: CallbackQuery, state: FSMContext
+    ) -> None:
         """Отменяет процесс отправки обратной связи"""
 
         # Показываем индикатор "бот печатает"
@@ -170,7 +215,9 @@ class FeedbackService:
         if not settings.ADMIN_IDS:
             return
 
-        admin_ids = [int(admin_id.strip()) for admin_id in settings.ADMIN_IDS.split(",")]
+        admin_ids = [
+            int(admin_id.strip()) for admin_id in settings.ADMIN_IDS.split(",")
+        ]
 
         notification_text = f"""
 📬 Новая обратная связь
@@ -184,7 +231,9 @@ class FeedbackService:
 
         for admin_id in admin_ids:
             try:
-                await self.bot.send_message(admin_id, notification_text, parse_mode="HTML")
+                await self.bot.send_message(
+                    admin_id, notification_text, parse_mode="HTML"
+                )
             except Exception as e:
                 # Логируем ошибку, но не прерываем процесс
                 print(f"Ошибка отправки уведомления админу {admin_id}: {e}")

@@ -33,7 +33,9 @@ class OptimizedUserRepository:
             "get_user_by_tg_id", f"SELECT * FROM users WHERE tg_id = {tg_id}"
         ):
             async with AsyncSessionLocal() as session:
-                result = await session.execute(select(User).where(User.tg_id == tg_id))
+                result = await session.execute(
+                    select(User).where(User.tg_id == tg_id)
+                )
                 user = result.scalar_one_or_none()
 
                 if user:
@@ -45,8 +47,16 @@ class OptimizedUserRepository:
                         "last_name": user.last_name,
                         "role": user.role,
                         "is_active": user.is_active,
-                        "created_at": user.created_at.isoformat() if user.created_at else None,
-                        "updated_at": user.updated_at.isoformat() if user.updated_at else None,
+                        "created_at": (
+                            user.created_at.isoformat()
+                            if user.created_at
+                            else None
+                        ),
+                        "updated_at": (
+                            user.updated_at.isoformat()
+                            if user.updated_at
+                            else None
+                        ),
                     }
 
                     # Сохраняем в кеш
@@ -58,10 +68,13 @@ class OptimizedUserRepository:
     @staticmethod
     @monitor_performance("get_users_by_role")
     @cache_result(ttl=300)  # Кешируем на 5 минут
-    async def get_users_by_role(role: UserRole, limit: int = 100) -> List[Dict[str, Any]]:
+    async def get_users_by_role(
+        role: UserRole, limit: int = 100
+    ) -> List[Dict[str, Any]]:
         """Получить пользователей по роли с кешированием"""
         async with db_profiler.profile_query(
-            "get_users_by_role", f"SELECT * FROM users WHERE role = '{role.value}' LIMIT {limit}"
+            "get_users_by_role",
+            f"SELECT * FROM users WHERE role = '{role.value}' LIMIT {limit}",
         ):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(
@@ -102,7 +115,9 @@ class OptimizedUserRepository:
 
                 counts = {}
                 for role in UserRole:
-                    counts[role.value] = len([u for u in users if u[0] == role.value])
+                    counts[role.value] = len(
+                        [u for u in users if u[0] == role.value]
+                    )
 
                 return counts
 
@@ -110,7 +125,9 @@ class OptimizedUserRepository:
     @monitor_performance("create_user")
     async def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
         """Создать пользователя с инвалидацией кеша"""
-        async with db_profiler.profile_query("create_user", "INSERT INTO users"):
+        async with db_profiler.profile_query(
+            "create_user", "INSERT INTO users"
+        ):
             async with AsyncSessionLocal() as session:
                 user = User(**user_data)
                 session.add(user)
@@ -133,12 +150,19 @@ class OptimizedUserRepository:
 
     @staticmethod
     @monitor_performance("update_user")
-    async def update_user(tg_id: int, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    async def update_user(
+        tg_id: int, update_data: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
         """Обновить пользователя с инвалидацией кеша"""
-        async with db_profiler.profile_query("update_user", f"UPDATE users WHERE tg_id = {tg_id}"):
+        async with db_profiler.profile_query(
+            "update_user", f"UPDATE users WHERE tg_id = {tg_id}"
+        ):
             async with AsyncSessionLocal() as session:
                 result = await session.execute(
-                    update(User).where(User.tg_id == tg_id).values(**update_data).returning(User)
+                    update(User)
+                    .where(User.tg_id == tg_id)
+                    .values(**update_data)
+                    .returning(User)
                 )
                 user = result.scalar_one_or_none()
 
@@ -168,7 +192,9 @@ class OptimizedUserRepository:
             "delete_user", f"DELETE FROM users WHERE tg_id = {tg_id}"
         ):
             async with AsyncSessionLocal() as session:
-                result = await session.execute(delete(User).where(User.tg_id == tg_id))
+                result = await session.execute(
+                    delete(User).where(User.tg_id == tg_id)
+                )
                 await session.commit()
 
                 # Инвалидируем кеш
@@ -232,13 +258,17 @@ class OptimizedUserRepository:
                 total_users = len(total_result.scalars().all())
 
                 # Активные пользователи
-                active_result = await session.execute(select(User.id).where(User.is_active == True))
+                active_result = await session.execute(
+                    select(User.id).where(User.is_active == True)
+                )
                 active_users = len(active_result.scalars().all())
 
                 # Статистика по ролям
                 role_stats = {}
                 for role in UserRole:
-                    result = await session.execute(select(User.id).where(User.role == role.value))
+                    result = await session.execute(
+                        select(User.id).where(User.role == role.value)
+                    )
                     role_stats[role.value] = len(result.scalars().all())
 
                 # Новые пользователи за последние 7 дней
@@ -282,7 +312,13 @@ class OptimizedUserRepository:
                     result = await session.execute(
                         update(User)
                         .where(User.tg_id == tg_id)
-                        .values(**{k: v for k, v in update_data.items() if k != "tg_id"})
+                        .values(
+                            **{
+                                k: v
+                                for k, v in update_data.items()
+                                if k != "tg_id"
+                            }
+                        )
                     )
 
                     if result.rowcount > 0:
@@ -308,7 +344,9 @@ async def get_user(tg_id: int) -> Optional[Dict[str, Any]]:
     return await optimized_user_repo.get_user_by_tg_id(tg_id)
 
 
-async def get_users_by_role(role: UserRole, limit: int = 100) -> List[Dict[str, Any]]:
+async def get_users_by_role(
+    role: UserRole, limit: int = 100
+) -> List[Dict[str, Any]]:
     """Получить пользователей по роли (обертка для обратной совместимости)"""
     return await optimized_user_repo.get_users_by_role(role, limit)
 
@@ -318,6 +356,8 @@ async def create_user(user_data: Dict[str, Any]) -> Dict[str, Any]:
     return await optimized_user_repo.create_user(user_data)
 
 
-async def update_user(tg_id: int, update_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+async def update_user(
+    tg_id: int, update_data: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
     """Обновить пользователя (обертка для обратной совместимости)"""
     return await optimized_user_repo.update_user(tg_id, update_data)

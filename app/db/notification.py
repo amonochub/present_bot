@@ -1,6 +1,14 @@
 import enum
 
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Column,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base, TimestampMixin
@@ -33,17 +41,19 @@ class Notification(Base, TimestampMixin):
     __tablename__ = "notifications"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
-    type = Column(Enum(NotificationType), nullable=False)  # type: ignore
+    user_id = Column(
+        Integer, ForeignKey("users.id"), nullable=False, index=True
+    )
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    status = Column(Enum(NotificationStatus), default=NotificationStatus.PENDING, nullable=False)  # type: ignore
     scheduled_at = Column(DateTime, nullable=True)  # Когда отправить
     sent_at = Column(DateTime, nullable=True)  # Когда было отправлено
     read_at = Column(DateTime, nullable=True)  # Когда было прочитано
 
     # Дополнительные данные (JSON)
-    notification_metadata = Column(String, nullable=True)  # Дополнительные данные
+    notification_metadata = Column(
+        String, nullable=True
+    )  # Дополнительные данные
 
     # Связи
     user = relationship("User", back_populates="notifications")

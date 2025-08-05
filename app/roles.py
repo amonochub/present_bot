@@ -49,5 +49,12 @@ DEMO_USERS = (
     + _make("student", 10, "student", "student")
     + _make("parent", 10, "parent", "parent")
     + _make("psy", 5, "psy", "psych")
-    + [{"login": "demo01", "password": hash_pwd("demo"), "role": "super", "theme": "light"}]  # ← FIXED
+    + [
+        {
+            "login": "demo01",
+            "password": hash_pwd("demo"),
+            "role": "super",
+            "theme": "light",
+        }
+    ]  # ← FIXED
 )

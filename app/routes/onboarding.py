@@ -36,23 +36,31 @@ async def start_command(message: Message, state: FSMContext) -> None:
         # Показываем обычное меню для существующих пользователей
         from app.keyboards.main_menu import menu
 
-        await message.answer(welcome_message, reply_markup=menu(user.role, "ru"))
+        await message.answer(
+            welcome_message, reply_markup=menu(user.role, "ru")
+        )
 
 
 @router.callback_query(F.data.startswith("onboarding:role:"))
-async def handle_role_selection(callback: CallbackQuery, state: FSMContext) -> None:
+async def handle_role_selection(
+    callback: CallbackQuery, state: FSMContext
+) -> None:
     """Обработчик выбора роли в онбординге"""
     await onboarding_service.handle_role_selection(callback, state)
 
 
-@router.callback_query(F.data == "onboarding:confirm_role")
-async def confirm_role_selection(callback: CallbackQuery, state: FSMContext) -> None:
+@router.callback_query(F.data == "onboarding:confirm_role")  # type: ignore[misc]
+async def confirm_role_selection(
+    callback: CallbackQuery, state: FSMContext
+) -> None:
     """Обработчик подтверждения выбора роли"""
     await onboarding_service.confirm_role(callback, state)
 
 
-@router.callback_query(F.data == "onboarding:change_role")
-async def change_role_selection(callback: CallbackQuery, state: FSMContext) -> None:
+@router.callback_query(F.data == "onboarding:change_role")  # type: ignore[misc]
+async def change_role_selection(
+    callback: CallbackQuery, state: FSMContext
+) -> None:
     """Обработчик изменения выбора роли"""
     await onboarding_service.change_role(callback, state)
 
@@ -64,18 +72,20 @@ async def feedback_command(message: Message, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data.startswith("feedback:type:"))
-async def handle_feedback_type(callback: CallbackQuery, state: FSMContext) -> None:
+async def handle_feedback_type(
+    callback: CallbackQuery, state: FSMContext
+) -> None:
     """Обработчик выбора типа обратной связи"""
     await feedback_service.handle_feedback_type(callback, state)
 
 
-@router.callback_query(F.data == "feedback:cancel")
+@router.callback_query(F.data == "feedback:cancel")  # type: ignore[misc]
 async def cancel_feedback(callback: CallbackQuery, state: FSMContext) -> None:
     """Обработчик отмены обратной связи"""
     await feedback_service.cancel_feedback(callback, state)
 
 
-@router.message(F.text)
+@router.message(F.text)  # type: ignore[misc]
 async def handle_feedback_text(message: Message, state: FSMContext) -> None:
     """Обработчик текста обратной связи"""
     current_state = await state.get_state()

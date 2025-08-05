@@ -21,7 +21,9 @@ class RateLimitMiddleware(BaseMiddleware):
         if isinstance(event, Message):
             if event.from_user is None:
                 return await handler(event, data)
-            res = await hit(f"rl:{event.from_user.id}", self.limit, self.window)
+            res = await hit(
+                f"rl:{event.from_user.id}", self.limit, self.window
+            )
             if not res.allowed:
                 lang = data.get("lang", "ru")
                 await event.answer(t("common.rate_limited", lang))

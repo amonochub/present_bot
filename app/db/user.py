@@ -29,7 +29,9 @@ class User(Base, TimestampMixin):
 
     # UX настройки
     theme = Column(String, default="light")  # 'light' | 'dark'
-    seen_intro = Column(Boolean, default=False, nullable=False)  # Прошел ли онбординг
+    seen_intro = Column(
+        Boolean, default=False, nullable=False
+    )  # Прошел ли онбординг
 
     # Настройки уведомлений
     notifications_enabled = Column(Boolean, default=True, nullable=False)
@@ -37,7 +39,9 @@ class User(Base, TimestampMixin):
 
     # Связи
     notes = relationship("Note", back_populates="teacher")
-    tasks = relationship("Task", foreign_keys="Task.author_id", back_populates="author")
+    tasks = relationship(
+        "Task", foreign_keys="Task.author_id", back_populates="author"
+    )
     broadcasts = relationship("Broadcast", back_populates="author")
     notifications = relationship("Notification", back_populates="user")
 

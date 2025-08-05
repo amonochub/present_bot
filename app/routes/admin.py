@@ -31,11 +31,13 @@ async def get_user_role(tg_id: int) -> Any:
 
 def ticket_lines(tickets: list[Any]) -> str:
     ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-    return "\n".join(f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets)
+    return "\n".join(
+        f"{ico[t.status]} <b>#{t.id}</b> — {t.title} " for t in tickets
+    )
 
 
 # ─────────── Заявки ───────────
-@router.callback_query(F.data == "admin_tickets")
+@router.callback_query(F.data == "admin_tickets")  # type: ignore[misc]
 async def view_tickets(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
@@ -68,7 +70,11 @@ async def change_status(call: CallbackQuery) -> None:
             await call.answer("Ошибка данных", show_alert=True)
             return
         ticket_id = int(call.data.split("_")[-1])
-        status = Status.done if call.data.startswith("mark_done") else Status.in_progress
+        status = (
+            Status.done
+            if call.data.startswith("mark_done")
+            else Status.in_progress
+        )
 
         success = await ticket_repo.set_status(ticket_id, status)
         if success:
@@ -77,7 +83,9 @@ async def change_status(call: CallbackQuery) -> None:
             tickets = await ticket_repo.list_all()
             txt = "📋 <b>Заявки техподдержки</b>\n\n" + ticket_lines(tickets)
             if call.message is not None and hasattr(call.message, "edit_text"):
-                await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
+                await call.message.edit_text(
+                    txt, reply_markup=menu("admin", "ru")
+                )
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
     except Exception as e:
@@ -86,7 +94,7 @@ async def change_status(call: CallbackQuery) -> None:
 
 
 # ─────────── Медиа-заявки ───────────
-@router.callback_query(F.data == "admin_media")
+@router.callback_query(F.data == "admin_media")  # type: ignore[misc]
 async def view_media(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
@@ -98,10 +106,12 @@ async def view_media(call: CallbackQuery) -> None:
         if not requests:
             txt = "📹 <b>Заявки медиацентра</b>\n\nНет активных заявок"
         else:
-            ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-            txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
-            )
+            ico = {
+                Status.open: "🟡",
+                Status.in_progress: "🔵",
+                Status.done: "🟢",
+            }
+            txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join()
         if call.message is not None and hasattr(call.message, "edit_text"):
             await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
         await call.answer()
@@ -110,7 +120,9 @@ async def view_media(call: CallbackQuery) -> None:
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.callback_query(lambda c: c.data.startswith(("media_done", "media_prog")))
+@router.callback_query(
+    lambda c: c.data.startswith(("media_done", "media_prog"))
+)
 async def change_media_status(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
@@ -122,19 +134,27 @@ async def change_media_status(call: CallbackQuery) -> None:
             await call.answer("Ошибка данных", show_alert=True)
             return
         req_id = int(call.data.split("_")[-1])
-        status = Status.done if call.data.startswith("media_done") else Status.in_progress
+        status = (
+            Status.done
+            if call.data.startswith("media_done")
+            else Status.in_progress
+        )
 
         success = await media_repo.set_status(req_id, status)
         if success:
             await call.answer("Статус обновлен", show_alert=True)
             # Обновляем список заявок
             requests = await media_repo.list_all()
-            ico = {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}
-            txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join(
-                f"{ico[r.status]} <b>#{r.id}</b> — {r.comment} " for r in requests  # type: ignore
-            )
+            ico = {
+                Status.open: "🟡",
+                Status.in_progress: "🔵",
+                Status.done: "🟢",
+            }
+            txt = "📹 <b>Заявки медиацентра</b>\n\n" + "\n".join()
             if call.message is not None and hasattr(call.message, "edit_text"):
-                await call.message.edit_text(txt, reply_markup=menu("admin", "ru"))
+                await call.message.edit_text(
+                    txt, reply_markup=menu("admin", "ru")
+                )
         else:
             await call.answer("Ошибка обновления статуса", show_alert=True)
     except Exception as e:
@@ -143,7 +163,7 @@ async def change_media_status(call: CallbackQuery) -> None:
 
 
 # ─────────── Рассылка ───────────
-@router.callback_query(F.data == "admin_broadcast")
+@router.callback_query(F.data == "admin_broadcast")  # type: ignore[misc]
 async def start_broadcast(call: CallbackQuery, state: Any) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
@@ -163,7 +183,7 @@ async def start_broadcast(call: CallbackQuery, state: Any) -> None:
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.message(BroadcastFSM.waiting_text, F.text)
+@router.message(BroadcastFSM.waiting_text, F.text)  # type: ignore[misc]
 async def send_broadcast(msg: Message, state: Any) -> None:
     try:
         if msg.from_user is None:
@@ -182,7 +202,9 @@ async def send_broadcast(msg: Message, state: Any) -> None:
             return
         text = msg.text.strip()
         if len(text) > 4000:
-            await msg.answer("Текст рассылки слишком длинный (максимум 4000 символов)")
+            await msg.answer(
+                "Текст рассылки слишком длинный (максимум 4000 символов)"
+            )
             return
 
         if not text:

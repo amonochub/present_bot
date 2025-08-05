@@ -28,12 +28,16 @@ class NotificationService:
         for user in users:
             try:
                 await self.bot.send_message(
-                    user.telegram_id, message.format(**kwargs), parse_mode="HTML"
+                    user.telegram_id,
+                    message.format(**kwargs),
+                    parse_mode="HTML",
                 )
                 sent_count += 1
                 await asyncio.sleep(0.1)  # Задержка между отправками
             except Exception as e:
-                print(f"Ошибка отправки уведомления пользователю {user.telegram_id}: {e}")
+                print(
+                    f"Ошибка отправки уведомления пользователю {user.telegram_id}: {e}"
+                )
 
         return sent_count
 
@@ -102,7 +106,9 @@ class InteractionService:
         confirm_message = t("student.psy_request_confirm", "ru")
         await self.bot.send_message(student_id, confirm_message)
 
-    async def teacher_to_support(self, teacher_id: int, room: str, description: str) -> None:
+    async def teacher_to_support(
+        self, teacher_id: int, room: str, description: str
+    ) -> None:
         """Учитель обращается в техподдержку"""
         teacher = await get_user(teacher_id)
         if not teacher:
@@ -130,10 +136,14 @@ class InteractionService:
         await self.notification_service.notify_admins(support_message)
 
         # Подтверждение учителю
-        confirm_message = t("teacher.support_request_confirm", "ru").format(time="16:00")
+        confirm_message = t("teacher.support_request_confirm", "ru").format(
+            time="16:00"
+        )
         await self.bot.send_message(teacher_id, confirm_message)
 
-    async def teacher_to_director(self, teacher_id: int, classroom: str, measures: str) -> None:
+    async def teacher_to_director(
+        self, teacher_id: int, classroom: str, measures: str
+    ) -> None:
         """Учитель сообщает директору об инциденте"""
         teacher = await get_user(teacher_id)
         if not teacher:
@@ -142,7 +152,9 @@ class InteractionService:
         # Создаём тикет
         ticket_data = {
             "title": f"Инцидент в {classroom}",
-            "description": t("teacher.incident_report", "ru").format(classroom=classroom),
+            "description": t("teacher.incident_report", "ru").format(
+                classroom=classroom
+            ),
             "author_id": teacher.id,
             "status": "open",
             "type": "incident_report",
@@ -162,18 +174,22 @@ class InteractionService:
         thank_message = t("teacher.incident_teacher_thank", "ru")
         await self.bot.send_message(teacher_id, thank_message)
 
-    async def psychologist_to_parent(self, parent_id: int, child_name: str) -> None:
+    async def psychologist_to_parent(
+        self, parent_id: int, child_name: str
+    ) -> None:
         """Психолог запрашивает согласие родителя"""
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=t("parent.consent_button_yes", "ru"), callback_data="consent_yes"
+                        text=t("parent.consent_button_yes", "ru"),
+                        callback_data="consent_yes",
                     )
                 ],
                 [
                     InlineKeyboardButton(
-                        text=t("parent.consent_button_no", "ru"), callback_data="consent_no"
+                        text=t("parent.consent_button_no", "ru"),
+                        callback_data="consent_no",
                     )
                 ],
             ]
@@ -187,7 +203,11 @@ class InteractionService:
     ) -> int:
         """Администратор делает массовую рассылку"""
         if target_roles is None:
-            target_roles = [UserRole.STUDENT, UserRole.TEACHER, UserRole.PARENT]
+            target_roles = [
+                UserRole.STUDENT,
+                UserRole.TEACHER,
+                UserRole.PARENT,
+            ]
 
         total_sent = 0
         for role in target_roles:
@@ -195,12 +215,16 @@ class InteractionService:
             total_sent += sent
 
         # Подтверждение администратору
-        confirm_message = t("admin.broadcast_sent", "ru").format(count=total_sent)
+        confirm_message = t("admin.broadcast_sent", "ru").format(
+            count=total_sent
+        )
         await self.bot.send_message(admin_id, confirm_message)
 
         return total_sent
 
-    async def admin_event_announcement(self, admin_id: int, date: str, time: str) -> None:
+    async def admin_event_announcement(
+        self, admin_id: int, date: str, time: str
+    ) -> None:
         """Администратор объявляет событие"""
         message = t("admin.event_announce", "ru").format(date=date, time=time)
 
@@ -208,20 +232,27 @@ class InteractionService:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text=t("admin.confirm_presence", "ru"), callback_data="confirm_event"
+                        text=t("admin.confirm_presence", "ru"),
+                        callback_data="confirm_event",
                     )
                 ]
             ]
         )
 
         # Отправляем всем родителям
-        await self.notification_service.notify_parents(message, reply_markup=keyboard)
+        await self.notification_service.notify_parents(
+            message, reply_markup=keyboard
+        )
 
         # Подтверждение администратору
-        confirm_message = t("admin.broadcast_sent", "ru").format(count="все родители")
+        confirm_message = t("admin.broadcast_sent", "ru").format(
+            count="все родители"
+        )
         await self.bot.send_message(admin_id, confirm_message)
 
-    async def support_to_teacher(self, teacher_id: int, ticket_id: int, description: str) -> None:
+    async def support_to_teacher(
+        self, teacher_id: int, ticket_id: int, description: str
+    ) -> None:
         """Техподдержка отвечает учителю"""
         message = t("support.request_processed", "ru").format(
             ticket_id=ticket_id, description=description

@@ -15,13 +15,18 @@ class CSRFMiddleware(BaseMiddleware):
             try:
                 nonce, real_data = event.data.split(":", 1)
             except ValueError:  # нет токена
-                await event.answer("⛔️ Истекла сессия, войдите заново.", show_alert=True)
+                await event.answer(
+                    "⛔️ Истекла сессия, войдите заново.", show_alert=True
+                )
                 return
             if event.message is None:
                 await event.answer("⛔️ Ошибка сообщения.", show_alert=True)
                 return
             ok = await check_nonce(
-                data["dp"].storage, event.message.chat.id, event.from_user.id, nonce
+                data["dp"].storage,
+                event.message.chat.id,
+                event.from_user.id,
+                nonce,
             )
             if not ok:
                 await event.answer("⚠️ Неверный токен.", show_alert=True)

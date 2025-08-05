@@ -16,8 +16,12 @@ async def issue_nonce(storage: Any, chat_id: int, user_id: int) -> str:
     return nonce
 
 
-async def check_nonce(storage: Any, chat_id: int, user_id: int, nonce: str) -> bool:
-    data = await storage.get_data(StorageKey(bot_id=0, chat_id=chat_id, user_id=user_id))
+async def check_nonce(
+    storage: Any, chat_id: int, user_id: int, nonce: str
+) -> bool:
+    data = await storage.get_data(
+        StorageKey(bot_id=0, chat_id=chat_id, user_id=user_id)
+    )
     return bool(nonce and data.get(CSRF_KEY) == nonce)
 
 

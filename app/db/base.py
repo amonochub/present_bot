@@ -6,16 +6,18 @@ from sqlalchemy.sql import func
 
 if TYPE_CHECKING:
     from sqlalchemy.orm import DeclarativeBase
-
-    Base = DeclarativeBase
 else:
-    Base = declarative_base()
+    from sqlalchemy.orm import DeclarativeBase
+
+Base: type[DeclarativeBase] = declarative_base()
 
 
 class TimestampMixin:
     """Миксин для добавления временных меток"""
 
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at = Column(
         DateTime(timezone=True),
         server_default=func.now(),

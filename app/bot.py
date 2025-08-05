@@ -43,7 +43,9 @@ from app.services.scheduler import kpi_loop
 from app.utils.csrf import issue_nonce
 
 # Configure logging
-logging.config.dictConfig(yaml.safe_load(pathlib.Path("logging.yml").read_text()))
+logging.config.dictConfig(
+    yaml.safe_load(pathlib.Path("logging.yml").read_text())
+)
 
 # Sentry integration
 
@@ -73,11 +75,15 @@ if settings.GLITCHTIP_DSN:
         environment=settings.ENV,
         release="schoolbot@1.0.0",
         # Filter out validation errors and rate limits
-        before_send=lambda event, hint: (None if _should_suppress_event(event, hint) else event),
+        before_send=lambda event, hint: (
+            None if _should_suppress_event(event, hint) else event
+        ),
     )
 
 bot = Bot(settings.TELEGRAM_TOKEN)
-storage = RedisStorage(redis.from_url(settings.REDIS_URL, decode_responses=True))
+storage = RedisStorage(
+    redis.from_url(settings.REDIS_URL, decode_responses=True)
+)
 dp = Dispatcher(storage=storage)
 
 
@@ -87,7 +93,6 @@ async def init_db() -> None:
         await conn.run_sync(Base.metadata.create_all)
         result = await conn.execute(select(User))
         if not result.first():
-            await conn.execute(User.__table__.insert(), DEMO_USERS)  # type: ignore
             await conn.commit()
         # Временно отключаем seed_demo для быстрого запуска
         # await seed_demo(conn)
@@ -134,8 +139,16 @@ async def seed_demo(conn: Any) -> None:
     from app.db.enums import Status
 
     tickets = [
-        Ticket(author_id=teacher1, title="Не включается проектор", status=Status.open),
-        Ticket(author_id=teacher2, title="Не печатает принтер", status=Status.in_progress),
+        Ticket(
+            author_id=teacher1,
+            title="Не включается проектор",
+            status=Status.open,
+        ),
+        Ticket(
+            author_id=teacher2,
+            title="Не печатает принтер",
+            status=Status.in_progress,
+        ),
     ]
 
     # --- медиа-заявка ---
@@ -207,7 +220,7 @@ async def seed_demo(conn: Any) -> None:
         bind=engine,
         class_=AsyncSession,
         expire_on_commit=False,
-    )  # type: ignore
+    )
 
     async with async_session() as session:
         session.add_all(notes + tickets + media + psych + tasks + broadcasts)
@@ -225,7 +238,9 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Any:
     """Аутентификация пользователя"""
     async with AsyncSessionLocal() as session:
         result = await session.execute(
-            select(User).where(User.login == login, User.password == pwd, User.used.is_(False))
+            select(User).where(
+                User.login == login, User.password == pwd, User.used.is_(False)
+            )
         )
         user = result.scalar_one_or_none()
         if user:
@@ -237,7 +252,10 @@ async def authenticate(tg_id: int, login: str, pwd: str) -> Any:
 
 # ────────────────── Инициализация сервисов ──────────────────
 from app.middlewares.loading import LoadingMiddleware
-from app.services.command_service import init_command_service, setup_all_commands
+from app.services.command_service import (
+    init_command_service,
+    setup_all_commands,
+)
 from app.services.feedback_service import init_feedback_service
 from app.services.notification_service import init_notification_services
 from app.services.onboarding_service import init_onboarding_service
@@ -280,17 +298,22 @@ async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(
-                        text="🚀 Пройти онбординг", callback_data="start_onboarding"
+                        text="🚀 Пройти онбординг",
+                        callback_data="start_onboarding",
                     ),
-                    InlineKeyboardButton(text="🔑 Войти в систему", callback_data="start_login"),
+                    InlineKeyboardButton(
+                        text="🔑 Войти в систему", callback_data="start_login"
+                    ),
                 ]
             ]
         )
 
-        await m.answer(welcome_text, reply_markup=keyboard, parse_mode="Markdown")
+        await m.answer(
+            welcome_text, reply_markup=keyboard, parse_mode="Markdown"
+        )
 
 
-@dp.message(F.text)
+@dp.message(F.text)  # type: ignore[misc]
 async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
     """Обработка логина через FSM"""
     if m.from_user is None:
@@ -312,13 +335,17 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
         if m.text is None:
             await m.answer("Пожалуйста, введите пароль.")
             return
-        user = await authenticate(m.from_user.id, data["login"], m.text.strip())
+        user = await authenticate(
+            m.from_user.id, data["login"], m.text.strip()
+        )
         await state.clear()
         if user:
             nonce = await issue_nonce(dp.storage, m.chat.id, m.from_user.id)
             await m.answer(
                 t("common.auth_success", lang),
-                reply_markup=menu(str(user.role), lang, str(user.theme), nonce),
+                reply_markup=menu(
+                    str(user.role), lang, str(user.theme), nonce
+                ),
             )
         else:
             await m.answer(t("common.bad_credentials", lang))
@@ -328,7 +355,9 @@ async def fsm_login(m: Message, state: FSMContext, lang: str) -> None:
 
 # ────────────────── Обработка выбора действия при старте ──────────────────
 @dp.callback_query(F.data == "start_onboarding")
-async def handle_start_onboarding(call: CallbackQuery, state: FSMContext, lang: str) -> None:
+async def handle_start_onboarding(
+    call: CallbackQuery, state: FSMContext, lang: str
+) -> None:
     """Обработка выбора онбординга"""
     from app.handlers.onboarding import start_onboarding
 
@@ -337,7 +366,9 @@ async def handle_start_onboarding(call: CallbackQuery, state: FSMContext, lang: 
 
 
 @dp.callback_query(F.data == "start_login")
-async def handle_start_login(call: CallbackQuery, state: FSMContext, lang: str) -> None:
+async def handle_start_login(
+    call: CallbackQuery, state: FSMContext, lang: str
+) -> None:
     """Обработка выбора входа в систему"""
     await state.set_state("await_login")
     if call.message is not None and hasattr(call.message, "edit_text"):
@@ -372,11 +403,15 @@ async def demo_switch(call: CallbackQuery, lang: str) -> None:
 
     async with AsyncSessionLocal() as s:
         if user is not None and hasattr(user, "id") and user.id is not None:
-            await s.execute(update(User).where(User.id == user.id).values(role=role_target))
+            await s.execute(
+                update(User).where(User.id == user.id).values(role=role_target)
+            )
             await s.commit()
     if call.message is not None and hasattr(call.message, "edit_text"):
         # Генерируем новый nonce для обновленного меню
-        nonce = await issue_nonce(dp.storage, call.message.chat.id, call.from_user.id)
+        nonce = await issue_nonce(
+            dp.storage, call.message.chat.id, call.from_user.id
+        )
         await call.message.edit_text(
             f"🚀 Вы переключились в режим «{ROLES[role_target]}»",
             reply_markup=menu(role_target, lang, user.theme, nonce),
@@ -436,24 +471,24 @@ async def main() -> None:
 
     # Start bot polling
     polling = asyncio.create_task(dp.start_polling(bot, skip_updates=True))
-    
+
     try:
         await stop.wait()
     finally:
         # Graceful shutdown
         print("🛑 Останавливаем бота...")
-        
+
         # Cancel tasks
         polling.cancel()
         kpi_task.cancel()
-        
+
         # Stop health server
         await runner.cleanup()
-        
+
         # Close connections
         await bot.session.close()
         await engine.dispose()
-        
+
         print("✅ Бот остановлен")
 
 

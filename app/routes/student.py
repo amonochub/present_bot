@@ -22,12 +22,14 @@ async def get_user_role(tg_id: int) -> Any:
 
 
 # ─────────── Задания ───────────
-@router.callback_query(F.data == "stu_tasks")
+@router.callback_query(F.data == "stu_tasks")  # type: ignore[misc]
 async def view_tasks(call: CallbackQuery) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["student", "super"]:
-            await call.answer("Эта функция доступна только ученикам", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только ученикам", show_alert=True
+            )
             return
 
         tasks = await task_repo.list_open()
@@ -45,7 +47,9 @@ async def view_tasks(call: CallbackQuery) -> None:
                 txt += f"\n... и еще {len(tasks) - 5} заданий"
 
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(txt, reply_markup=menu("student", "ru"))
+            await call.message.edit_text(
+                txt, reply_markup=menu("student", "ru")
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заданий: {e}")
@@ -53,12 +57,14 @@ async def view_tasks(call: CallbackQuery) -> None:
 
 
 # ─────────── Помощь психолога ───────────
-@router.callback_query(F.data == "stu_help")
+@router.callback_query(F.data == "stu_help")  # type: ignore[misc]
 async def ask_help(call: CallbackQuery, lang: str) -> None:
     try:
         user_role = await get_user_role(call.from_user.id)
         if user_role not in ["student", "super"]:
-            await call.answer("Эта функция доступна только ученикам", show_alert=True)
+            await call.answer(
+                "Эта функция доступна только ученикам", show_alert=True
+            )
             return
 
         if call.message is not None and hasattr(call.message, "edit_text"):
@@ -96,7 +102,9 @@ async def receive_help(msg: Message, lang: str) -> None:
             return
         else:
             if msg.text is None:
-                await msg.answer("Пожалуйста, напишите ваш вопрос или проблему.")
+                await msg.answer(
+                    "Пожалуйста, напишите ваш вопрос или проблему."
+                )
                 return
             text = msg.text.strip()
 
@@ -105,7 +113,9 @@ async def receive_help(msg: Message, lang: str) -> None:
             return
 
         if len(text) > 2000:
-            await msg.answer("Сообщение слишком длинное (максимум 2000 символов)")
+            await msg.answer(
+                "Сообщение слишком длинное (максимум 2000 символов)"
+            )
             return
 
         # Создаем обращение к психологу
@@ -119,4 +129,6 @@ async def receive_help(msg: Message, lang: str) -> None:
         )
     except Exception as e:
         logger.error(f"Ошибка при создании обращения к психологу: {e}")
-        await msg.answer("Произошла ошибка при отправке обращения. Попробуйте позже.")
+        await msg.answer(
+            "Произошла ошибка при отправке обращения. Попробуйте позже."
+        )

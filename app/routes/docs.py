@@ -55,15 +55,30 @@ async def show_docs(message: Message) -> None:
 
         # Проверяем доступ к документам
         if not user:
-            await message.answer("❌ Для доступа к документам необходимо войти в систему")
+            await message.answer(
+                "❌ Для доступа к документам необходимо войти в систему"
+            )
             return
 
         # Создаем клавиатуру с документами
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Психологическая помощь", callback_data="doc_standard")],
-                [InlineKeyboardButton(text="Оплата труда", callback_data="doc_pay")],
-                [InlineKeyboardButton(text="Службы помощи", callback_data="doc_help")],
+                [
+                    InlineKeyboardButton(
+                        text="Психологическая помощь",
+                        callback_data="doc_standard",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Оплата труда", callback_data="doc_pay"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Службы помощи", callback_data="doc_help"
+                    )
+                ],
             ]
         )
 
@@ -122,34 +137,65 @@ async def send_doc_link(callback: CallbackQuery) -> None:
             # Создаем клавиатуру с кнопками
             kb = InlineKeyboardMarkup(
                 inline_keyboard=[
-                    [InlineKeyboardButton(text="📄 Открыть документ", url=doc_info["url"])],
-                    [InlineKeyboardButton(text="📎 Скачать", url=doc_info["file_url"])],
-                    [InlineKeyboardButton(text="🔙 Назад к списку", callback_data="docs_back")],
+                    [
+                        InlineKeyboardButton(
+                            text="📄 Открыть документ", url=doc_info["url"]
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="📎 Скачать", url=doc_info["file_url"]
+                        )
+                    ],
+                    [
+                        InlineKeyboardButton(
+                            text="🔙 Назад к списку", callback_data="docs_back"
+                        )
+                    ],
                 ]
             )
 
             if callback.message and hasattr(callback.message, "edit_text"):
-                await callback.message.edit_text(text, reply_markup=kb, parse_mode="HTML")
+                await callback.message.edit_text(
+                    text, reply_markup=kb, parse_mode="HTML"
+                )
         else:
             if callback.message and hasattr(callback.message, "answer"):
-                await callback.message.answer(get_localized_text("docs.unknown_doc"))
+                await callback.message.answer(
+                    get_localized_text("docs.unknown_doc")
+                )
 
         await callback.answer()
 
     except Exception as e:
         logger.error(f"Ошибка при отправке документа: {e}", exc_info=True)
-        await callback.answer("⚠️ Произошла ошибка при загрузке документа", show_alert=True)
+        await callback.answer(
+            "⚠️ Произошла ошибка при загрузке документа", show_alert=True
+        )
 
 
-@router.callback_query(F.data == "docs_back")
+@router.callback_query(F.data == "docs_back")  # type: ignore[misc]
 async def back_to_docs_list(callback: CallbackQuery) -> None:
     """Вернуться к списку документов"""
     try:
         kb = InlineKeyboardMarkup(
             inline_keyboard=[
-                [InlineKeyboardButton(text="Психологическая помощь", callback_data="doc_standard")],
-                [InlineKeyboardButton(text="Оплата труда", callback_data="doc_pay")],
-                [InlineKeyboardButton(text="Службы помощи", callback_data="doc_help")],
+                [
+                    InlineKeyboardButton(
+                        text="Психологическая помощь",
+                        callback_data="doc_standard",
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Оплата труда", callback_data="doc_pay"
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text="Службы помощи", callback_data="doc_help"
+                    )
+                ],
             ]
         )
 
@@ -166,7 +212,9 @@ async def back_to_docs_list(callback: CallbackQuery) -> None:
         await callback.answer()
 
     except Exception as e:
-        logger.error(f"Ошибка при возврате к списку документов: {e}", exc_info=True)
+        logger.error(
+            f"Ошибка при возврате к списку документов: {e}", exc_info=True
+        )
         await callback.answer("⚠️ Произошла ошибка", show_alert=True)
 
 
@@ -178,14 +226,18 @@ async def show_news(message: Message) -> None:
 
         # Проверяем доступ к новостям
         if not user:
-            await message.answer("❌ Для доступа к новостям необходимо войти в систему")
+            await message.answer(
+                "❌ Для доступа к новостям необходимо войти в систему"
+            )
             return
 
         # Получаем новости с улучшенным парсером согласно Context7
         news_cards = await get_news_cards(limit=5)
 
         if not news_cards:
-            await message.answer("📰 Новости временно недоступны. Попробуйте позже.")
+            await message.answer(
+                "📰 Новости временно недоступны. Попробуйте позже."
+            )
             return
 
         # Отправляем каждую новость отдельным сообщением
@@ -200,7 +252,8 @@ async def show_news(message: Message) -> None:
                 inline_keyboard=[
                     [
                         InlineKeyboardButton(
-                            text=get_localized_text("news.card_more"), url=item["url"]
+                            text=get_localized_text("news.card_more"),
+                            url=item["url"],
                         )
                     ]
                 ]
@@ -209,7 +262,9 @@ async def show_news(message: Message) -> None:
             await message.answer(text, reply_markup=kb)
 
         # Добавляем информацию о количестве новостей
-        await message.answer(f"📰 Показано {len(news_cards)} последних новостей")
+        await message.answer(
+            f"📰 Показано {len(news_cards)} последних новостей"
+        )
 
     except Exception as e:
         logger.error(f"Ошибка при показе новостей: {e}", exc_info=True)
@@ -239,11 +294,15 @@ async def admin_announce(message: Message) -> None:
 
         # Формируем официальное сообщение с улучшенной локализацией согласно Context7
         url = "https://www.mos.ru/donm/"
-        msg = get_localized_text("admin.announcement", announcement=announcement_text, url=url)
+        msg = get_localized_text(
+            "admin.announcement", announcement=announcement_text, url=url
+        )
 
         # Здесь должна быть логика рассылки всем пользователям
         # Пока просто отправляем в чат
-        await message.answer(f"📢 **ОФИЦИАЛЬНОЕ ОБЪЯВЛЕНИЕ**\n\n{msg}", parse_mode="HTML")
+        await message.answer(
+            f"📢 **ОФИЦИАЛЬНОЕ ОБЪЯВЛЕНИЕ**\n\n{msg}", parse_mode="HTML"
+        )
 
         await message.answer("✅ Объявление отправлено")
 

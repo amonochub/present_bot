@@ -7,8 +7,12 @@ from app.db.enums import Status
 class PsychRequest(Base):
     __tablename__ = "psych_requests"
     id = Column(Integer, primary_key=True)
-    from_id = Column(Integer)  # Telegram-ID автора (анонимный, хранится лишь ID)
-    content_id = Column(String, nullable=True)  # file_id голосового / None если текст
+    from_id = Column(
+        Integer
+    )  # Telegram-ID автора (анонимный, хранится лишь ID)
+    content_id = Column(
+        String, nullable=True
+    )  # file_id голосового / None если текст
     text = Column(String, nullable=True)  # текст обращения (если не voice)
     status = Column(Enum(Status), default=Status.open, nullable=False)  # type: ignore # open / done
     created_at = Column(DateTime, server_default=func.now())

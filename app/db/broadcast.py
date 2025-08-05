@@ -1,4 +1,12 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    func,
+)
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base
@@ -13,7 +21,9 @@ class Broadcast(Base):
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     title = Column(String(255), nullable=False)
     message = Column(Text, nullable=False)
-    target_role = Column(String(50), nullable=False)  # "teacher", "student", etc.
+    target_role = Column(
+        String(50), nullable=False
+    )  # "teacher", "student", etc.
     status = Column(String(50), default="sent")  # "draft", "sent", "delivered"
     sent_at = Column(DateTime, server_default=func.now())
 

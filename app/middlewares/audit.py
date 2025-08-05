@@ -40,7 +40,9 @@ class AuditMiddleware(BaseMiddleware):
         try:
             if hasattr(event, "from_user") and event.from_user:
                 async with AsyncSessionLocal() as s:
-                    user = await s.scalar(select(User).where(User.tg_id == event.from_user.id))
+                    user = await s.scalar(
+                        select(User).where(User.tg_id == event.from_user.id)
+                    )
                     if user:
                         return {
                             "user_id": user.id,
@@ -59,11 +61,15 @@ class AuditMiddleware(BaseMiddleware):
                             "last_name": event.from_user.last_name,
                         }
         except Exception as e:
-            logger.error(f"Ошибка при получении информации о пользователе: {e}")
+            logger.error(
+                f"Ошибка при получении информации о пользователе: {e}"
+            )
             return {"error": str(e)}
         return {"error": "unknown"}
 
-    async def _log_action(self, event: TelegramObject, user_info: dict[str, Any]) -> None:
+    async def _log_action(
+        self, event: TelegramObject, user_info: dict[str, Any]
+    ) -> None:
         """Логировать действие пользователя"""
         try:
             action_type = self._get_action_type(event)
@@ -99,7 +105,8 @@ class AuditMiddleware(BaseMiddleware):
             if event.data is not None and event.data.startswith("switch_"):
                 return "role_change"
             elif event.data is not None and (
-                event.data.startswith("admin_") or event.data.startswith("teacher_")
+                event.data.startswith("admin_")
+                or event.data.startswith("teacher_")
             ):
                 return "menu_access"
             else:
@@ -112,9 +119,13 @@ class AuditMiddleware(BaseMiddleware):
         if isinstance(event, Message):
             if event.text is not None:
                 # Ограничиваем длину для безопасности
-                return event.text[:100] + ("..." if len(event.text) > 100 else "")
+                return event.text[:100] + (
+                    "..." if len(event.text) > 100 else ""
+                )
         elif isinstance(event, CallbackQuery):
             if event.data is not None:
-                return event.data[:50] + ("..." if len(event.data) > 50 else "")
+                return event.data[:50] + (
+                    "..." if len(event.data) > 50 else ""
+                )
 
         return "no_data"

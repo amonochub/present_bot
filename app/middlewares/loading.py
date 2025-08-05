@@ -106,7 +106,9 @@ class LongOperationMiddleware(BaseMiddleware):
         except asyncio.TimeoutError:
             # Если операция занимает больше порогового времени, показываем промежуточное сообщение
             if isinstance(event, Message):
-                await event.answer("⏳ Выполняется запрос, это может занять до 10 секунд...")
+                await event.answer(
+                    "⏳ Выполняется запрос, это может занять до 10 секунд..."
+                )
             elif isinstance(event, CallbackQuery):
                 await event.answer("⏳ Обрабатываем запрос...")
 

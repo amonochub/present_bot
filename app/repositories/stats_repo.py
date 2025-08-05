@@ -14,25 +14,38 @@ async def kpi_summary() -> Dict[str, Any]:
     try:
         async with AsyncSessionLocal() as s:
             # всего заметок
-            notes_total = await s.scalar(select(func.count()).select_from(Note))
+            notes_total = await s.scalar(
+                select(func.count()).select_from(Note)
+            )
 
             # заявки IT
-            tickets_total = await s.scalar(select(func.count()).select_from(Ticket))
+            tickets_total = await s.scalar(
+                select(func.count()).select_from(Ticket)
+            )
             tickets_done = await s.scalar(
-                select(func.count()).select_from(Ticket).where(Ticket.status == "done")
+                select(func.count())
+                .select_from(Ticket)
+                .where(Ticket.status == "done")
             )
 
             # поручения директора
-            tasks_total = await s.scalar(select(func.count()).select_from(Task))
+            tasks_total = await s.scalar(
+                select(func.count()).select_from(Task)
+            )
             tasks_done = await s.scalar(
-                select(func.count()).select_from(Task).where(Task.status == TaskStatus.COMPLETED)
+                select(func.count())
+                .select_from(Task)
+                .where(Task.status == TaskStatus.COMPLETED)
             )
 
             # просроченные поручения
             overdue = await s.scalar(
                 select(func.count())
                 .select_from(Task)
-                .where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
+                .where(
+                    Task.status == TaskStatus.PENDING,
+                    Task.deadline < date.today(),
+                )
             )
 
         return dict(

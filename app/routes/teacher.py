@@ -40,11 +40,15 @@ async def me(tg_id: int) -> Any:
 
 
 # 1. список заметок
-@router.callback_query(F.data == "teacher_notes")
+@router.callback_query(F.data == "teacher_notes")  # type: ignore[misc]
 async def teacher_notes(call: CallbackQuery, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -59,7 +63,9 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
                 f"• <i>{n.student_name}</i> — {n.text} " for n in notes
             )
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text(txt, reply_markup=menu("teacher", lang))
+            await call.message.edit_text(
+                txt, reply_markup=menu("teacher", lang)
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при получении заметок: {e}")
@@ -67,11 +73,15 @@ async def teacher_notes(call: CallbackQuery, lang: str) -> None:
 
 
 # 2. кнопка «➕ Добавить заметку»
-@router.callback_query(F.data == "teacher_add")
+@router.callback_query(F.data == "teacher_add")  # type: ignore[misc]
 async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -85,7 +95,7 @@ async def start_add(call: CallbackQuery, state: Any, lang: str) -> None:
 
 
 # 3. приём строки, сохранение
-@router.message(AddNote.waiting_text, F.text)
+@router.message(AddNote.waiting_text, F.text)  # type: ignore[misc]
 async def save_note(msg: Message, state: Any, lang: str) -> None:
     try:
         if msg.from_user is None:
@@ -94,7 +104,11 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
             return
 
         user = await me(msg.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
@@ -114,7 +128,9 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
         student = " ".join(student.split())  # Очищаем от лишних пробелов
 
         if len(text) > 1000:
-            await msg.answer("Текст заметки слишком длинный (максимум 1000 символов)")
+            await msg.answer(
+                "Текст заметки слишком длинный (максимум 1000 символов)"
+            )
             return
 
         if not text.strip():
@@ -123,7 +139,9 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
 
         await note_repo.create_note(user.id, student, text)
         await state.clear()
-        await msg.answer(t("teacher.note_added", lang), reply_markup=menu("teacher", lang))
+        await msg.answer(
+            t("teacher.note_added", lang), reply_markup=menu("teacher", lang)
+        )
     except Exception as e:
         logger.error(f"Ошибка при сохранении заметки: {e}")
         await msg.answer(t("common.error_generic", lang))
@@ -131,11 +149,15 @@ async def save_note(msg: Message, state: Any, lang: str) -> None:
 
 
 # ─────────── Заявки IT ───────────
-@router.callback_query(F.data == "teacher_ticket")
+@router.callback_query(F.data == "teacher_ticket")  # type: ignore[misc]
 async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
@@ -148,7 +170,7 @@ async def start_ticket(call: CallbackQuery, state: Any, lang: str) -> None:
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.message(AddTicket.waiting_title, F.text)
+@router.message(AddTicket.waiting_title, F.text)  # type: ignore[misc]
 async def ticket_title(msg: Message, state: Any, lang: str) -> None:
     try:
         if msg.text is None:
@@ -156,7 +178,9 @@ async def ticket_title(msg: Message, state: Any, lang: str) -> None:
             return
         title = msg.text.strip()
         if len(title) > 200:
-            await msg.answer("Описание заявки слишком длинное (максимум 200 символов)")
+            await msg.answer(
+                "Описание заявки слишком длинное (максимум 200 символов)"
+            )
             return
 
         if not title:
@@ -165,14 +189,16 @@ async def ticket_title(msg: Message, state: Any, lang: str) -> None:
 
         await state.update_data(title=title)
         await state.set_state(AddTicket.waiting_file)
-        await msg.answer("Прикрепите фото/файл (опционально) или напишите «Пропустить»:")
+        await msg.answer(
+            "Прикрепите фото/файл (опционально) или напишите «Пропустить»:"
+        )
     except Exception as e:
         logger.error(f"Ошибка при обработке описания заявки: {e}")
         await msg.answer(t("common.error_generic", lang))
         await state.clear()
 
 
-@router.message(AddTicket.waiting_file, lambda m: m.document or m.photo or m.text)
+@router.message(AddTicket.waiting_file, lambda m: m.document or m.photo or m.text)  # type: ignore[misc]
 async def ticket_file(msg: Message, state: Any, lang: str) -> None:
     try:
         data = await state.get_data()
@@ -185,7 +211,9 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
         elif msg.document:
             file_id = msg.document.file_id
         else:
-            await msg.answer("Пожалуйста, прикрепите файл или напишите «Пропустить»")
+            await msg.answer(
+                "Пожалуйста, прикрепите файл или напишите «Пропустить»"
+            )
             return
 
         if msg.from_user is None:
@@ -194,12 +222,18 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
             return
 
         user = await me(msg.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
 
-        ticket = await ticket_repo.create_ticket(user.id, data["title"], file_id)
+        ticket = await ticket_repo.create_ticket(
+            user.id, data["title"], file_id
+        )
         await state.clear()
         await msg.answer(
             t("teacher.ticket_created", lang).format(ticket_id=ticket.id),
@@ -212,24 +246,30 @@ async def ticket_file(msg: Message, state: Any, lang: str) -> None:
 
 
 # ─────────── Медиа-заявки ───────────
-@router.callback_query(F.data == "teacher_media")
+@router.callback_query(F.data == "teacher_media")  # type: ignore[misc]
 async def media_start(call: CallbackQuery, state: Any, lang: str) -> None:
     try:
         user = await me(call.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await call.answer("Доступ запрещен", show_alert=True)
             return
 
         await state.set_state(MediaFSM.waiting_date)
         if call.message is not None and hasattr(call.message, "edit_text"):
-            await call.message.edit_text("Введите дату мероприятия (например, 25.12.2024):")
+            await call.message.edit_text(
+                "Введите дату мероприятия (например, 25.12.2024):"
+            )
         await call.answer()
     except Exception as e:
         logger.error(f"Ошибка при начале создания медиа-заявки: {e}")
         await call.answer("Произошла ошибка", show_alert=True)
 
 
-@router.message(MediaFSM.waiting_date, F.text)
+@router.message(MediaFSM.waiting_date, F.text)  # type: ignore[misc]
 async def media_date(msg: Message, state: Any) -> None:
     try:
         if msg.text is None:
@@ -252,7 +292,7 @@ async def media_date(msg: Message, state: Any) -> None:
         await state.clear()
 
 
-@router.message(MediaFSM.waiting_file, lambda m: m.photo or m.document)
+@router.message(MediaFSM.waiting_file, lambda m: m.photo or m.document)  # type: ignore[misc]
 async def media_file(msg: Message, state: Any) -> None:
     try:
         file_id = None
@@ -270,7 +310,7 @@ async def media_file(msg: Message, state: Any) -> None:
         await state.clear()
 
 
-@router.message(MediaFSM.waiting_text, F.text)
+@router.message(MediaFSM.waiting_text, F.text)  # type: ignore[misc]
 async def media_finish(msg: Message, state: Any, lang: str) -> None:
     try:
         data = await state.get_data()
@@ -280,7 +320,11 @@ async def media_finish(msg: Message, state: Any, lang: str) -> None:
             return
 
         user = await me(msg.from_user.id)
-        if not user or not hasattr(user, "role") or user.role not in ["teacher", "super"]:
+        if (
+            not user
+            or not hasattr(user, "role")
+            or user.role not in ["teacher", "super"]
+        ):
             await msg.answer("Доступ запрещен")
             await state.clear()
             return
@@ -290,12 +334,18 @@ async def media_finish(msg: Message, state: Any, lang: str) -> None:
             return
         comment = msg.text.strip()
         if len(comment) > 500:
-            await msg.answer("Комментарий слишком длинный (максимум 500 символов)")
+            await msg.answer(
+                "Комментарий слишком длинный (максимум 500 символов)"
+            )
             return
 
-        await media_repo.create(user.id, data["date"], comment, data["file_id"])
+        await media_repo.create(
+            user.id, data["date"], comment, data["file_id"]
+        )
         await state.clear()
-        await msg.answer("✅ Медиа-заявка создана!", reply_markup=menu("teacher", lang))
+        await msg.answer(
+            "✅ Медиа-заявка создана!", reply_markup=menu("teacher", lang)
+        )
     except Exception as e:
         logger.error(f"Ошибка при создании медиа-заявки: {e}")
         await msg.answer("Произошла ошибка")

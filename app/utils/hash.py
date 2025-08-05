@@ -2,8 +2,10 @@ import bcrypt
 
 
 def hash_pwd(pwd: str) -> str:
-    return bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
+    hashed = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt())
+    return str(hashed.decode())
 
 
 def check_pwd(pwd: str, hashed: str) -> bool:
-    return bcrypt.checkpw(pwd.encode(), hashed.encode())
+    result = bcrypt.checkpw(pwd.encode(), hashed.encode())
+    return bool(result)

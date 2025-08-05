@@ -30,7 +30,9 @@ class RateLimiter:
         now = time.time()
         # Очищаем старые запросы
         self.requests[key] = [
-            req_time for req_time in self.requests[key] if now - req_time < self.window
+            req_time
+            for req_time in self.requests[key]
+            if now - req_time < self.window
         ]
 
         if len(self.requests[key]) >= self.max_requests:
@@ -44,7 +46,9 @@ class RateLimiter:
         now = time.time()
         # Очищаем старые запросы
         self.requests[key] = [
-            req_time for req_time in self.requests[key] if now - req_time < self.window
+            req_time
+            for req_time in self.requests[key]
+            if now - req_time < self.window
         ]
 
         return RateLimitInfo(
@@ -71,7 +75,9 @@ class NewsParser:
         from requests.adapters import HTTPAdapter
         from urllib3.util import Retry
 
-        retries = Retry(total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+        retries = Retry(
+            total=3, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504]
+        )
         self.session.mount("https://", HTTPAdapter(max_retries=retries))
 
         # Кэширование согласно Context7
@@ -102,10 +108,12 @@ class NewsParser:
         try:
             from app.services.cache_service import redis_client
             import json
-            
+
             cached_data = await redis_client.get(cache_key)
             if cached_data:
-                self.logger.info(f"Возвращаем новости из Redis кэша: {len(json.loads(cached_data))}")
+                self.logger.info(
+                    f"Возвращаем новости из Redis кэша: {len(json.loads(cached_data))}"
+                )
                 return json.loads(cached_data)
         except Exception as e:
             self.logger.warning(f"Redis кэш недоступен: {e}")
@@ -117,7 +125,9 @@ class NewsParser:
         if cache_key_local in self._cache:
             cached_data, cached_time = self._cache[cache_key_local]
             if now - cached_time < self._cache_ttl:
-                self.logger.info(f"Возвращаем кэшированные новости из локального кэша: {len(cached_data)}")
+                self.logger.info(
+                    f"Возвращаем кэшированные новости из локального кэша: {len(cached_data)}"
+                )
                 return cached_data
 
         try:
@@ -126,14 +136,20 @@ class NewsParser:
             response.raise_for_status()  # Проверка HTTP статуса согласно Context7
 
             # Оптимизированный парсинг с SoupStrainer согласно Context7
-            strainer = SoupStrainer("div", class_=lambda x: x and "news" in x.lower())
-            soup = BeautifulSoup(response.text, "html.parser", parse_only=strainer)
+            strainer = SoupStrainer(
+                "div", class_=lambda x: x and "news" in x.lower()
+            )
+            soup = BeautifulSoup(
+                response.text, "html.parser", parse_only=strainer
+            )
 
             news_cards = self._parse_news_cards(soup, limit)
 
             # Сохраняем в Redis кэш (если доступен)
             try:
-                await redis_client.setex(cache_key, 300, json.dumps(news_cards))  # 5 минут TTL
+                await redis_client.setex(
+                    cache_key, 300, json.dumps(news_cards)
+                )  # 5 минут TTL
                 self.logger.info(f"Новости сохранены в Redis кэш")
             except Exception as e:
                 self.logger.warning(f"Не удалось сохранить в Redis кэш: {e}")
@@ -147,7 +163,10 @@ class NewsParser:
             self.logger.error(f"Ошибка HTTP запроса: {e}")
             return self._get_fallback_news()
         except Exception as e:
-            self.logger.error(f"Неожиданная ошибка при получении новостей: {e}", exc_info=True)
+            self.logger.error(
+                f"Неожиданная ошибка при получении новостей: {e}",
+                exc_info=True,
+            )
             return self._get_fallback_news()
 
     async def get_news_response(self, limit: int = 5) -> NewsResponse:
@@ -175,7 +194,9 @@ class NewsParser:
         except Exception as e:
             self.logger.error(f"Ошибка при создании NewsResponse: {e}")
             # Возвращаем пустой ответ с ошибкой
-            return NewsResponse(news=[], total_count=0, cached=False, timestamp=datetime.now())
+            return NewsResponse(
+                news=[], total_count=0, cached=False, timestamp=datetime.now()
+            )
 
     def get_cache_info(self) -> CacheInfo:
         """Получить информацию о кэше"""
@@ -203,12 +224,19 @@ class NewsParser:
         """Получить информацию о rate limiting"""
         return self.rate_limiter.get_rate_limit_info("news_parser")
 
-    def _parse_news_cards(self, soup: BeautifulSoup, limit: int) -> List[Dict[str, Any]]:
+    def _parse_news_cards(
+        self, soup: BeautifulSoup, limit: int
+    ) -> List[Dict[str, Any]]:
         """Оптимизированный парсинг новостей согласно Context7"""
         news_cards = []
 
         # Пробуем разные селекторы для адаптивности
-        selectors = ["div.news-card", "div.news-item", "article.news-card", "div.news-list__item"]
+        selectors = [
+            "div.news-card",
+            "div.news-item",
+            "article.news-card",
+            "div.news-list__item",
+        ]
 
         cards: List[Any] = []
         for selector in selectors:
@@ -218,7 +246,9 @@ class NewsParser:
 
         if not cards:
             # Fallback - ищем любые карточки с новостями
-            cards = soup.find_all("div", class_=lambda x: x and "news" in x.lower())
+            cards = soup.find_all(
+                "div", class_=lambda x: x and "news" in x.lower()
+            )
 
         for card in cards[:limit]:
             try:
@@ -256,7 +286,12 @@ class NewsParser:
 
     def _extract_date(self, card: Any) -> str:
         """Извлечь дату из карточки"""
-        date_selectors = [".news-card__date", ".news-item__date", ".news-date", ".date"]
+        date_selectors = [
+            ".news-card__date",
+            ".news-item__date",
+            ".news-date",
+            ".date",
+        ]
 
         for selector in date_selectors:
             found = card.select_one(selector)

@@ -44,7 +44,9 @@ EMOJI = {
 
 # Кнопка возврата в главное меню
 def get_back_btn(nonce: str = "") -> InlineKeyboardButton:
-    return InlineKeyboardButton(text="◀️ Главное меню", callback_data=f"{nonce}:back_to_main")
+    return InlineKeyboardButton(
+        text="◀️ Главное меню", callback_data=f"{nonce}:back_to_main"
+    )
 
 
 def menu(
@@ -55,16 +57,30 @@ def menu(
     if role == "super":  # Демо-учётка → меню переключения ролей
         kb = [
             [
-                InlineKeyboardButton(text="👩‍🏫 Учитель", callback_data=f"{nonce}:switch_teacher"),
-                InlineKeyboardButton(text="🏛 Админ", callback_data=f"{nonce}:switch_admin"),
+                InlineKeyboardButton(
+                    text="👩‍🏫 Учитель",
+                    callback_data=f"{nonce}:switch_teacher",
+                ),
+                InlineKeyboardButton(
+                    text="🏛 Админ", callback_data=f"{nonce}:switch_admin"
+                ),
             ],
             [
-                InlineKeyboardButton(text="📈 Директор", callback_data=f"{nonce}:switch_director"),
-                InlineKeyboardButton(text="👪 Родитель", callback_data=f"{nonce}:switch_parent"),
+                InlineKeyboardButton(
+                    text="📈 Директор",
+                    callback_data=f"{nonce}:switch_director",
+                ),
+                InlineKeyboardButton(
+                    text="👪 Родитель", callback_data=f"{nonce}:switch_parent"
+                ),
             ],
             [
-                InlineKeyboardButton(text="👨‍🎓 Ученик", callback_data=f"{nonce}:switch_student"),
-                InlineKeyboardButton(text="🧑‍⚕️ Психолог", callback_data=f"{nonce}:switch_psych"),
+                InlineKeyboardButton(
+                    text="👨‍🎓 Ученик", callback_data=f"{nonce}:switch_student"
+                ),
+                InlineKeyboardButton(
+                    text="🧑‍⚕️ Психолог", callback_data=f"{nonce}:switch_psych"
+                ),
             ],
         ]
         return InlineKeyboardMarkup(inline_keyboard=kb)
@@ -159,8 +175,16 @@ def menu(
 
     if role == "director":
         kb = [
-            [InlineKeyboardButton(text=f"{e['stub']} KPI", callback_data=f"{nonce}:stub")],
-            [InlineKeyboardButton(text="⏱ Поручения", callback_data=f"{nonce}:director_tasks")],
+            [
+                InlineKeyboardButton(
+                    text=f"{e['stub']} KPI", callback_data=f"{nonce}:stub"
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    text="⏱ Поручения", callback_data=f"{nonce}:director_tasks"
+                )
+            ],
             [
                 InlineKeyboardButton(
                     text="🔙 Вернуться к демо-меню",
@@ -174,12 +198,14 @@ def menu(
         kb = [
             [
                 InlineKeyboardButton(
-                    text=f"{e['stu_tasks']} Задания", callback_data=f"{nonce}:stu_tasks"
+                    text=f"{e['stu_tasks']} Задания",
+                    callback_data=f"{nonce}:stu_tasks",
                 )
             ],
             [
                 InlineKeyboardButton(
-                    text=f"{e['stu_help']} Психолог", callback_data=f"{nonce}:stu_help"
+                    text=f"{e['stu_help']} Психолог",
+                    callback_data=f"{nonce}:stu_help",
                 )
             ],
             [
@@ -215,6 +241,12 @@ def menu(
     ]
 
     # Добавляем кнопку переключения темы во все меню
-    kb.append([InlineKeyboardButton(text=f"{e['theme']} Тема", callback_data="switch_theme")])
+    kb.append(
+        [
+            InlineKeyboardButton(
+                text=f"{e['theme']} Тема", callback_data="switch_theme"
+            )
+        ]
+    )
 
     return InlineKeyboardMarkup(inline_keyboard=kb)

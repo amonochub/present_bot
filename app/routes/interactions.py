@@ -28,12 +28,16 @@ async def student_psy_request(message: Message, state: FSMContext) -> None:
     # Запрашиваем тему обращения
     await state.set_state("psy_request:theme")
     await message.answer(
-        "🧑‍⚕️ Обращение к психологу\n\n" "Опишите кратко тему вашего обращения:", parse_mode="HTML"
+        "🧑‍⚕️ Обращение к психологу\n\n"
+        "Опишите кратко тему вашего обращения:",
+        parse_mode="HTML",
     )
 
 
-@router.message(F.text)
-async def handle_psy_request_theme(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_psy_request_theme(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает тему обращения к психологу"""
     current_state = await state.get_state()
 
@@ -41,7 +45,9 @@ async def handle_psy_request_theme(message: Message, state: FSMContext) -> None:
         theme = message.text.strip()
 
         if len(theme) > 200:
-            await message.answer("⚠️ Тема слишком длинная. Сократите до 200 символов.")
+            await message.answer(
+                "⚠️ Тема слишком длинная. Сократите до 200 символов."
+            )
             return
 
         # Сохраняем тему
@@ -49,11 +55,15 @@ async def handle_psy_request_theme(message: Message, state: FSMContext) -> None:
 
         # Запрашиваем класс
         await state.set_state("psy_request:classroom")
-        await message.answer("📚 Укажите ваш класс (например: 8А, 10Б):", parse_mode="HTML")
+        await message.answer(
+            "📚 Укажите ваш класс (например: 8А, 10Б):", parse_mode="HTML"
+        )
 
 
-@router.message(F.text)
-async def handle_psy_request_classroom(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_psy_request_classroom(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает класс для обращения к психологу"""
     current_state = await state.get_state()
 
@@ -73,7 +83,8 @@ async def handle_psy_request_classroom(message: Message, state: FSMContext) -> N
         await state.clear()
 
         await message.answer(
-            "✅ Ваше обращение отправлено психологу.\n" "Ожидайте ответа в ближайшее время.",
+            "✅ Ваше обращение отправлено психологу.\n"
+            "Ожидайте ответа в ближайшее время.",
             parse_mode="HTML",
         )
 
@@ -91,12 +102,15 @@ async def teacher_support_request(message: Message, state: FSMContext) -> None:
     # Запрашиваем номер кабинета
     await state.set_state("support_request:room")
     await message.answer(
-        "🛠 Обращение в техподдержку\n\n" "Укажите номер кабинета:", parse_mode="HTML"
+        "🛠 Обращение в техподдержку\n\n" "Укажите номер кабинета:",
+        parse_mode="HTML",
     )
 
 
-@router.message(F.text)
-async def handle_support_request_room(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_support_request_room(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает номер кабинета для заявки в техподдержку"""
     current_state = await state.get_state()
 
@@ -108,11 +122,15 @@ async def handle_support_request_room(message: Message, state: FSMContext) -> No
 
         # Запрашиваем описание проблемы
         await state.set_state("support_request:description")
-        await message.answer("📝 Опишите проблему подробно:", parse_mode="HTML")
+        await message.answer(
+            "📝 Опишите проблему подробно:", parse_mode="HTML"
+        )
 
 
-@router.message(F.text)
-async def handle_support_request_description(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_support_request_description(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает описание проблемы для заявки в техподдержку"""
     current_state = await state.get_state()
 
@@ -120,7 +138,9 @@ async def handle_support_request_description(message: Message, state: FSMContext
         description = message.text.strip()
 
         if len(description) > 500:
-            await message.answer("⚠️ Описание слишком длинное. Сократите до 500 символов.")
+            await message.answer(
+                "⚠️ Описание слишком длинное. Сократите до 500 символов."
+            )
             return
 
         # Получаем сохранённый номер кабинета
@@ -149,12 +169,16 @@ async def teacher_incident_report(message: Message, state: FSMContext) -> None:
     # Запрашиваем класс
     await state.set_state("incident_report:classroom")
     await message.answer(
-        "🚨 Сообщение об инциденте\n\n" "Укажите класс, где произошёл инцидент:", parse_mode="HTML"
+        "🚨 Сообщение об инциденте\n\n"
+        "Укажите класс, где произошёл инцидент:",
+        parse_mode="HTML",
     )
 
 
-@router.message(F.text)
-async def handle_incident_report_classroom(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_incident_report_classroom(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает класс для сообщения об инциденте"""
     current_state = await state.get_state()
 
@@ -167,12 +191,15 @@ async def handle_incident_report_classroom(message: Message, state: FSMContext) 
         # Запрашиваем принятые меры
         await state.set_state("incident_report:measures")
         await message.answer(
-            "📋 Опишите принятые меры (беседа, уведомление родителей и т.д.):", parse_mode="HTML"
+            "📋 Опишите принятые меры (беседа, уведомление родителей и т.д.):",
+            parse_mode="HTML",
         )
 
 
-@router.message(F.text)
-async def handle_incident_report_measures(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_incident_report_measures(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает принятые меры для сообщения об инциденте"""
     current_state = await state.get_state()
 
@@ -180,7 +207,9 @@ async def handle_incident_report_measures(message: Message, state: FSMContext) -
         measures = message.text.strip()
 
         if len(measures) > 300:
-            await message.answer("⚠️ Описание слишком длинное. Сократите до 300 символов.")
+            await message.answer(
+                "⚠️ Описание слишком длинное. Сократите до 300 символов."
+            )
             return
 
         # Получаем сохранённый класс
@@ -189,7 +218,9 @@ async def handle_incident_report_measures(message: Message, state: FSMContext) -
 
         # Отправляем сообщение директору
         await interaction_service.teacher_to_director(
-            teacher_id=message.from_user.id, classroom=classroom, measures=measures
+            teacher_id=message.from_user.id,
+            classroom=classroom,
+            measures=measures,
         )
 
         # Очищаем состояние
@@ -209,12 +240,15 @@ async def admin_broadcast(message: Message, state: FSMContext) -> None:
     # Запрашиваем текст рассылки
     await state.set_state("broadcast:message")
     await message.answer(
-        "📢 Массовая рассылка\n\n" "Введите текст сообщения для рассылки:", parse_mode="HTML"
+        "📢 Массовая рассылка\n\n" "Введите текст сообщения для рассылки:",
+        parse_mode="HTML",
     )
 
 
-@router.message(F.text)
-async def handle_broadcast_message(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_broadcast_message(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает текст для массовой рассылки"""
     current_state = await state.get_state()
 
@@ -222,7 +256,9 @@ async def handle_broadcast_message(message: Message, state: FSMContext) -> None:
         broadcast_text = message.text.strip()
 
         if len(broadcast_text) > 1000:
-            await message.answer("⚠️ Текст слишком длинный. Сократите до 1000 символов.")
+            await message.answer(
+                "⚠️ Текст слишком длинный. Сократите до 1000 символов."
+            )
             return
 
         # Отправляем рассылку
@@ -236,7 +272,9 @@ async def handle_broadcast_message(message: Message, state: FSMContext) -> None:
 
 # === АДМИНИСТРАТОР → ОБЪЯВЛЕНИЕ СОБЫТИЯ ===
 @router.message(Command("event"))
-async def admin_event_announcement(message: Message, state: FSMContext) -> None:
+async def admin_event_announcement(
+    message: Message, state: FSMContext
+) -> None:
     """Администратор объявляет событие"""
     user = await get_user(message.from_user.id)
 
@@ -247,13 +285,16 @@ async def admin_event_announcement(message: Message, state: FSMContext) -> None:
     # Запрашиваем дату события
     await state.set_state("event_announcement:date")
     await message.answer(
-        "📅 Объявление события\n\n" "Укажите дату события (например: 15 сентября):",
+        "📅 Объявление события\n\n"
+        "Укажите дату события (например: 15 сентября):",
         parse_mode="HTML",
     )
 
 
-@router.message(F.text)
-async def handle_event_announcement_date(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_event_announcement_date(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает дату для объявления события"""
     current_state = await state.get_state()
 
@@ -265,11 +306,15 @@ async def handle_event_announcement_date(message: Message, state: FSMContext) ->
 
         # Запрашиваем время
         await state.set_state("event_announcement:time")
-        await message.answer("🕐 Укажите время события (например: 18:30):", parse_mode="HTML")
+        await message.answer(
+            "🕐 Укажите время события (например: 18:30):", parse_mode="HTML"
+        )
 
 
-@router.message(F.text)
-async def handle_event_announcement_time(message: Message, state: FSMContext) -> None:
+@router.message(F.text)  # type: ignore[misc]
+async def handle_event_announcement_time(
+    message: Message, state: FSMContext
+) -> None:
     """Обрабатывает время для объявления события"""
     current_state = await state.get_state()
 
@@ -290,22 +335,26 @@ async def handle_event_announcement_time(message: Message, state: FSMContext) ->
 
 
 # === ОБРАБОТКА КНОПОК СОГЛАСИЯ ===
-@router.callback_query(F.data == "consent_yes")
+@router.callback_query(F.data == "consent_yes")  # type: ignore[misc]
 async def handle_consent_yes(callback: CallbackQuery) -> None:
     """Обрабатывает согласие родителя"""
-    await callback.answer(t("psychologist.parent_consent_ok", "ru"), show_alert=True)
+    await callback.answer(
+        t("psychologist.parent_consent_ok", "ru"), show_alert=True
+    )
 
     # Здесь можно добавить логику для назначения консультации
     # await interaction_service.psychologist_to_student(...)
 
 
-@router.callback_query(F.data == "consent_no")
+@router.callback_query(F.data == "consent_no")  # type: ignore[misc]
 async def handle_consent_no(callback: CallbackQuery) -> None:
     """Обрабатывает отказ родителя"""
-    await callback.answer(t("psychologist.parent_consent_no", "ru"), show_alert=True)
+    await callback.answer(
+        t("psychologist.parent_consent_no", "ru"), show_alert=True
+    )
 
 
-@router.callback_query(F.data == "confirm_event")
+@router.callback_query(F.data == "confirm_event")  # type: ignore[misc]
 async def handle_confirm_event(callback: CallbackQuery) -> None:
     """Обрабатывает подтверждение присутствия на событии"""
     await callback.answer(t("admin.event_confirm", "ru"), show_alert=True)

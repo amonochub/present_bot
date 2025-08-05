@@ -26,7 +26,9 @@ async def list_notes(teacher_id: int) -> List[Note]:
     try:
         async with AsyncSessionLocal() as s:
             result = await s.scalars(
-                select(Note).where(Note.teacher_id == teacher_id).order_by(Note.created_at.desc())
+                select(Note)
+                .where(Note.teacher_id == teacher_id)
+                .order_by(Note.created_at.desc())
             )
             return list(result)
     except Exception as e:

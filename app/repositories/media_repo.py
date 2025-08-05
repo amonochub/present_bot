@@ -8,7 +8,9 @@ from app.db.media_request import MediaRequest
 from app.db.session import AsyncSessionLocal
 
 
-async def create(author_id: int, event_date: date, comment: str, file_id: str) -> None:
+async def create(
+    author_id: int, event_date: date, comment: str, file_id: str
+) -> None:
     async with AsyncSessionLocal() as s:
         s.add(
             MediaRequest(
@@ -23,7 +25,9 @@ async def create(author_id: int, event_date: date, comment: str, file_id: str) -
 
 async def list_all() -> List[MediaRequest]:
     async with AsyncSessionLocal() as s:
-        rows = await s.scalars(select(MediaRequest).order_by(MediaRequest.created_at.desc()))
+        rows = await s.scalars(
+            select(MediaRequest).order_by(MediaRequest.created_at.desc())
+        )
         return list(rows)
 
 
@@ -31,7 +35,9 @@ async def set_status(req_id: int, status: Status) -> bool:
     try:
         async with AsyncSessionLocal() as s:
             await s.execute(
-                update(MediaRequest).where(MediaRequest.id == req_id).values(status=status)
+                update(MediaRequest)
+                .where(MediaRequest.id == req_id)
+                .values(status=status)
             )
             await s.commit()
             return True

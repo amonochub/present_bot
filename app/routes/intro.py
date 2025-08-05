@@ -1,7 +1,12 @@
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from aiogram.types import (
+    CallbackQuery,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    Message,
+)
 
 from app.i18n import t
 from app.keyboards.main_menu import menu
@@ -52,18 +57,30 @@ async def send_intro_slide(msg: Message, idx: int, lang: str = "ru") -> None:
     # Формируем клавиатуру с кнопками навигации
     keyboard = []
     if idx > 0:
-        keyboard.append([InlineKeyboardButton(text="◀️ Назад", callback_data="intro_prev")])
+        keyboard.append(
+            [InlineKeyboardButton(text="◀️ Назад", callback_data="intro_prev")]
+        )
     if idx < len(INTRO_SLIDES) - 1:
-        keyboard.append([InlineKeyboardButton(text="➡️ Дальше", callback_data="intro_next")])
+        keyboard.append(
+            [InlineKeyboardButton(text="➡️ Дальше", callback_data="intro_next")]
+        )
     else:
-        keyboard.append([InlineKeyboardButton(text="🚀 Готово!", callback_data="intro_done")])
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    text="🚀 Готово!", callback_data="intro_done"
+                )
+            ]
+        )
 
     reply_markup = InlineKeyboardMarkup(inline_keyboard=keyboard)
     await msg.answer(text, parse_mode="HTML", reply_markup=reply_markup)
 
 
 @router.message(Command("start"))
-async def start_with_intro(msg: Message, state: FSMContext, lang: str = "ru") -> None:
+async def start_with_intro(
+    msg: Message, state: FSMContext, lang: str = "ru"
+) -> None:
     """Обработчик команды /start с проверкой онбординга"""
     user = await get_user(msg.from_user.id)
 
@@ -75,11 +92,15 @@ async def start_with_intro(msg: Message, state: FSMContext, lang: str = "ru") ->
     else:
         # Показываем обычное меню
         if user:
-            await msg.answer(t("common.welcome", lang), reply_markup=menu(user.role, lang))
+            await msg.answer(
+                t("common.welcome", lang), reply_markup=menu(user.role, lang)
+            )
 
 
-@router.callback_query(F.data == "intro_next")
-async def intro_next(callback: CallbackQuery, state: FSMContext, lang: str = "ru") -> None:
+@router.callback_query(F.data == "intro_next")  # type: ignore[misc]
+async def intro_next(
+    callback: CallbackQuery, state: FSMContext, lang: str = "ru"
+) -> None:
     """Следующий слайд онбординга"""
     data = await state.get_data()
     idx = data.get("idx", 0)
@@ -94,8 +115,10 @@ async def intro_next(callback: CallbackQuery, state: FSMContext, lang: str = "ru
     await callback.answer()
 
 
-@router.callback_query(F.data == "intro_prev")
-async def intro_prev(callback: CallbackQuery, state: FSMContext, lang: str = "ru") -> None:
+@router.callback_query(F.data == "intro_prev")  # type: ignore[misc]
+async def intro_prev(
+    callback: CallbackQuery, state: FSMContext, lang: str = "ru"
+) -> None:
     """Предыдущий слайд онбординга"""
     data = await state.get_data()
     idx = data.get("idx", 0)
@@ -110,8 +133,10 @@ async def intro_prev(callback: CallbackQuery, state: FSMContext, lang: str = "ru
     await callback.answer()
 
 
-@router.callback_query(F.data == "intro_done")
-async def intro_done(callback: CallbackQuery, state: FSMContext, lang: str = "ru") -> None:
+@router.callback_query(F.data == "intro_done")  # type: ignore[misc]
+async def intro_done(
+    callback: CallbackQuery, state: FSMContext, lang: str = "ru"
+) -> None:
     """Завершение онбординга"""
     # Обновляем статус пользователя
     await update_user_intro(callback.from_user.id, True)

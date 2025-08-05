@@ -12,7 +12,9 @@ from prometheus_client import Counter, Gauge, Histogram
 # Метрики
 REQUESTS_TOTAL = Counter("bot_requests_total", "Total number of requests")
 ERRORS_TOTAL = Counter("bot_errors_total", "Total number of errors")
-LATENCY_SECONDS = Histogram("bot_latency_seconds", "Request latency in seconds")
+LATENCY_SECONDS = Histogram(
+    "bot_latency_seconds", "Request latency in seconds"
+)
 TICKETS_OPEN = Gauge("bot_tickets_open", "Number of open tickets")
 
 # KPI метрики для поручений директора

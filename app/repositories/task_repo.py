@@ -8,7 +8,9 @@ from app.db.session import AsyncSessionLocal
 from app.db.task import Task, TaskStatus
 
 
-async def create_task(title: str, description: str, deadline: date | None, author_id: int) -> Task:
+async def create_task(
+    title: str, description: str, deadline: date | None, author_id: int
+) -> Task:
     """Создать новую задачу"""
     async with AsyncSessionLocal() as s:
         task = Task(
@@ -27,7 +29,9 @@ async def create_task(title: str, description: str, deadline: date | None, autho
 async def list_open() -> List[Task]:
     """Получить список открытых поручений"""
     async with AsyncSessionLocal() as s:
-        result = await s.execute(select(Task).where(Task.status == TaskStatus.PENDING))
+        result = await s.execute(
+            select(Task).where(Task.status == TaskStatus.PENDING)
+        )
         tasks = result.scalars().all()
         return list(tasks)
 
@@ -43,7 +47,9 @@ async def set_status(task_id: int, status: Status) -> bool:
                 Status.done: TaskStatus.COMPLETED,
             }
             await s.execute(
-                update(Task).where(Task.id == task_id).values(status=task_status_map[status])
+                update(Task)
+                .where(Task.id == task_id)
+                .values(status=task_status_map[status])
             )
             await s.commit()
             return True
@@ -55,6 +61,8 @@ async def get_overdue_count() -> int:
     """Получить количество просроченных поручений"""
     async with AsyncSessionLocal() as s:
         result = await s.scalar(
-            select(Task).where(Task.status == TaskStatus.PENDING, Task.deadline < date.today())
+            select(Task).where(
+                Task.status == TaskStatus.PENDING, Task.deadline < date.today()
+            )
         )
         return result or 0

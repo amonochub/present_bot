@@ -1,6 +1,15 @@
 import enum
 
-from sqlalchemy import Column, Date, DateTime, Enum, ForeignKey, Integer, String, Text
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+)
 from sqlalchemy.orm import relationship
 
 from app.db.base import Base, TimestampMixin
@@ -32,16 +41,18 @@ class Task(Base, TimestampMixin):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=False)
-    status = Column(Enum(TaskStatus), default=TaskStatus.PENDING, nullable=False)  # type: ignore
-    priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM, nullable=False)  # type: ignore
     due_date = Column(DateTime, nullable=True)
     deadline = Column(Date, nullable=True)  # Дедлайн для KPI
     author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     assigned_to_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
     # Связи
-    author = relationship("User", foreign_keys=[author_id], back_populates="tasks")
+    author = relationship(
+        "User", foreign_keys=[author_id], back_populates="tasks"
+    )
     assigned_to = relationship("User", foreign_keys=[assigned_to_id])
 
     def __repr__(self) -> str:
-        return f"<Task(id={self.id}, title='{self.title}', status={self.status})>"
+        return (
+            f"<Task(id={self.id}, title='{self.title}', status={self.status})>"
+        )

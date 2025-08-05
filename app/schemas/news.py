@@ -11,12 +11,14 @@ from pydantic import BaseModel, Field, HttpUrl, field_validator
 class NewsCard(BaseModel):
     """Модель карточки новости с валидацией"""
 
-    title: str = Field(..., min_length=5, max_length=200, description="Заголовок новости")
+    title: str = Field(
+        ..., min_length=5, max_length=200, description="Заголовок новости"
+    )
     date: str = Field(..., description="Дата новости")
     desc: str = Field(..., description="Описание новости")
     url: HttpUrl = Field(..., description="URL новости")
 
-    @field_validator("title")
+    @field_validator("title")  # type: ignore[misc]
     @classmethod
     def validate_title(cls, v: str) -> str:
         """Валидация заголовка"""
@@ -24,7 +26,7 @@ class NewsCard(BaseModel):
             raise ValueError("Заголовок не может быть пустым")
         return v.strip()
 
-    @field_validator("date")
+    @field_validator("date")  # type: ignore[misc]
     @classmethod
     def validate_date(cls, v: str) -> str:
         """Валидация даты"""
@@ -32,7 +34,7 @@ class NewsCard(BaseModel):
             return "Не указана"
         return v.strip()
 
-    @field_validator("desc")
+    @field_validator("desc")  # type: ignore[misc]
     @classmethod
     def validate_desc(cls, v: str) -> str:
         """Валидация описания"""
@@ -40,7 +42,7 @@ class NewsCard(BaseModel):
             return "Описание недоступно"
         return v.strip()
 
-    @field_validator("url")
+    @field_validator("url")  # type: ignore[misc]
     @classmethod
     def validate_url_domain(cls, v: HttpUrl) -> HttpUrl:
         """Валидация домена URL"""
@@ -54,16 +56,22 @@ class NewsResponse(BaseModel):
     """Модель ответа с новостями"""
 
     news: List[NewsCard] = Field(..., description="Список новостей")
-    total_count: int = Field(..., ge=0, description="Общее количество новостей")
+    total_count: int = Field(
+        ..., ge=0, description="Общее количество новостей"
+    )
     cached: bool = Field(default=False, description="Флаг кэширования")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Время получения")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Время получения"
+    )
 
 
 class NewsRequest(BaseModel):
     """Модель запроса новостей"""
 
     limit: int = Field(default=5, ge=1, le=20, description="Лимит новостей")
-    force_refresh: bool = Field(default=False, description="Принудительное обновление")
+    force_refresh: bool = Field(
+        default=False, description="Принудительное обновление"
+    )
 
 
 class NewsError(BaseModel):
@@ -71,7 +79,9 @@ class NewsError(BaseModel):
 
     error: str = Field(..., description="Описание ошибки")
     code: str = Field(..., description="Код ошибки")
-    timestamp: datetime = Field(default_factory=datetime.now, description="Время ошибки")
+    timestamp: datetime = Field(
+        default_factory=datetime.now, description="Время ошибки"
+    )
     details: Optional[str] = Field(None, description="Детали ошибки")
 
 
@@ -80,8 +90,12 @@ class RateLimitInfo(BaseModel):
 
     key: str = Field(..., description="Ключ rate limiting")
     requests_count: int = Field(..., ge=0, description="Количество запросов")
-    max_requests: int = Field(..., ge=1, description="Максимальное количество запросов")
-    window_seconds: int = Field(..., ge=1, description="Окно времени в секундах")
+    max_requests: int = Field(
+        ..., ge=1, description="Максимальное количество запросов"
+    )
+    window_seconds: int = Field(
+        ..., ge=1, description="Окно времени в секундах"
+    )
     can_request: bool = Field(..., description="Можно ли выполнить запрос")
 
 

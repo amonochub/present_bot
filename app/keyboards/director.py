@@ -17,11 +17,15 @@ def tasks_board(tasks: list[Any], lang: str = "ru") -> InlineKeyboardMarkup:
         for task in tasks
     ]
     # Добавляем кнопку "Назад"
-    rows.append([InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_main")])
+    rows.append(
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_main")]
+    )
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def add_back(rows: list[list[InlineKeyboardButton]]) -> InlineKeyboardMarkup:
     """Добавить кнопку "Назад" к существующим рядам"""
-    rows.append([InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_main")])
+    rows.append(
+        [InlineKeyboardButton(text="◀️ Назад", callback_data="back_to_main")]
+    )
     return InlineKeyboardMarkup(inline_keyboard=rows)

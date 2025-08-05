@@ -12,6 +12,8 @@ async def enrich_scope(update: Any, user: Any) -> None:
     """
     with push_scope() as scope:
         scope.set_tag("role", user.role)
-        scope.set_tag("chat_id", update.chat.id if hasattr(update, "chat") else "n/a")
+        scope.set_tag(
+            "chat_id", update.chat.id if hasattr(update, "chat") else "n/a"
+        )
         if hasattr(update, "data"):
             scope.set_extra("callback_data", update.data[:100])

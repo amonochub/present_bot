@@ -1,4 +1,4 @@
-from typing import Any, List
+from typing import Any
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,7 +32,7 @@ class Settings(BaseSettings):
         env_file=".env", case_sensitive=True, env_file_encoding="utf-8"
     )
 
-    @field_validator("TELEGRAM_TOKEN")
+    @field_validator("TELEGRAM_TOKEN")  # type: ignore[misc]
     @classmethod
     def validate_telegram_token(cls, v: str) -> str:
         """Валидация формата Telegram токена"""
@@ -40,10 +40,12 @@ class Settings(BaseSettings):
             raise ValueError("Telegram token cannot be empty")
         # Временно ослабляем требования для быстрого запуска
         if v == "your_telegram_token_here":
-            raise ValueError("Please replace 'your_telegram_token_here' with your actual token")
+            raise ValueError(
+                "Please replace 'your_telegram_token_here' with your actual token"
+            )
         return v
 
-    @field_validator("DB_PASS")
+    @field_validator("DB_PASS")  # type: ignore[misc]
     @classmethod
     def validate_db_password(cls, v: str) -> str:
         """Валидация сложности пароля базы данных"""
@@ -52,7 +54,7 @@ class Settings(BaseSettings):
             raise ValueError("Database password cannot be empty")
         return v
 
-    @field_validator("DB_PORT")
+    @field_validator("DB_PORT")  # type: ignore[misc]
     @classmethod
     def validate_db_port(cls, v: int) -> int:
         """Валидация порта базы данных"""
@@ -60,7 +62,7 @@ class Settings(BaseSettings):
             raise ValueError("Database port must be between 1 and 65535")
         return v
 
-    @field_validator("KEEP_DAYS")
+    @field_validator("KEEP_DAYS")  # type: ignore[misc]
     @classmethod
     def validate_keep_days(cls, v: int) -> int:
         """Валидация количества дней хранения"""
@@ -73,13 +75,15 @@ class Settings(BaseSettings):
         # Parse ADMIN_IDS from comma-separated string
         if self.ADMIN_IDS:
             self._admin_ids_list = [
-                int(id.strip()) for id in self.ADMIN_IDS.split(",") if id.strip().isdigit()
+                int(id.strip())
+                for id in self.ADMIN_IDS.split(",")
+                if id.strip().isdigit()
             ]
         else:
             self._admin_ids_list = []
 
     @property
-    def ADMIN_IDS_LIST(self) -> List[int]:
+    def ADMIN_IDS_LIST(self) -> list[int]:
         """Get parsed admin IDs as list"""
         return self._admin_ids_list
 

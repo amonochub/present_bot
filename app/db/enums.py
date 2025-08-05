@@ -11,4 +11,6 @@ class Status(str, enum.Enum):
 
 def ico(status: Status) -> str:
     """Возвращает иконку для статуса"""
-    return {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}[status]
+    return {Status.open: "🟡", Status.in_progress: "🔵", Status.done: "🟢"}[
+        status
+    ]

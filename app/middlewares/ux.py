@@ -41,7 +41,11 @@ class FallbackMiddleware(BaseMiddleware):
         event: TelegramObject,
         data: dict[str, Any],
     ) -> Any:
-        if isinstance(event, Message) and event.text and event.text.startswith("/"):
+        if (
+            isinstance(event, Message)
+            and event.text
+            and event.text.startswith("/")
+        ):
             # Проверяем, что это не известная команда
             known_commands = [
                 "/start",

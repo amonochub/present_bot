@@ -1,4 +1,13 @@
-from sqlalchemy import Column, Date, DateTime, Enum, ForeignKey, Integer, String, func
+from sqlalchemy import (
+    Column,
+    Date,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    func,
+)
 
 from app.db.base import Base
 from app.db.enums import Status

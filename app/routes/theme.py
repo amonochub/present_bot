@@ -27,7 +27,9 @@ async def toggle_theme(uid: int) -> str:
             return "light"  # дефолт для неавторизованных
 
         new = "dark" if user.theme == "light" else "light"
-        await s.execute(update(User).where(User.id == user.id).values(theme=new))
+        await s.execute(
+            update(User).where(User.id == user.id).values(theme=new)
+        )
         await s.commit()
         return new
 
@@ -51,7 +53,7 @@ async def cmd_theme(msg: Message, lang: str) -> None:
         await msg.answer(t("common.theme_switched", lang))
 
 
-@router.callback_query(lambda c: c.data == "switch_theme")
+@router.callback_query(lambda c: c.data == "switch_theme")  # type: ignore[misc]
 async def cb_theme(call: CallbackQuery, lang: str) -> None:
     """Кнопка переключения темы"""
     if call.from_user is None:

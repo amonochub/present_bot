@@ -17,7 +17,9 @@ from prometheus_client import Counter, Gauge, Histogram
 logger = logging.getLogger(__name__)
 
 # Метрики производительности
-DB_QUERY_DURATION = Histogram("db_query_duration_seconds", "Database query duration")
+DB_QUERY_DURATION = Histogram(
+    "db_query_duration_seconds", "Database query duration"
+)
 CACHE_HIT_RATIO = Gauge("cache_hit_ratio", "Cache hit ratio")
 MEMORY_USAGE = Gauge("memory_usage_bytes", "Memory usage in bytes")
 CPU_USAGE = Gauge("cpu_usage_percent", "CPU usage percentage")
@@ -48,7 +50,9 @@ class PerformanceMonitor:
         self.max_history_size = 1000
 
     @asynccontextmanager
-    async def monitor_function(self, function_name: str) -> AsyncGenerator[None, None]:
+    async def monitor_function(
+        self, function_name: str
+    ) -> AsyncGenerator[None, None]:
         """Контекстный менеджер для мониторинга функции"""
         start_time = time.time()
         memory_before = psutil.Process().memory_info().rss
@@ -88,7 +92,9 @@ class PerformanceMonitor:
 
         # Ограничиваем размер истории
         if len(self.metrics_history) > self.max_history_size:
-            self.metrics_history = self.metrics_history[-self.max_history_size :]
+            self.metrics_history = self.metrics_history[
+                -self.max_history_size :
+            ]
 
         # Обновляем Prometheus метрики
         MEMORY_USAGE.set(metrics.memory_after)
@@ -98,18 +104,24 @@ class PerformanceMonitor:
         if metrics.execution_time > self.slow_threshold:
             SLOW_QUERIES.inc()
             logger.warning(
-                f"Медленная функция {metrics.function_name}: " f"{metrics.execution_time:.2f}s"
+                f"Медленная функция {metrics.function_name}: "
+                f"{metrics.execution_time:.2f}s"
             )
 
         # Проверяем ошибки
         if not metrics.success:
             ERROR_RATE.inc()
-            logger.error(f"Ошибка в функции {metrics.function_name}: " f"{metrics.error_message}")
+            logger.error(
+                f"Ошибка в функции {metrics.function_name}: "
+                f"{metrics.error_message}"
+            )
 
     def get_performance_report(self, hours: int = 24) -> Dict[str, Any]:
         """Получить отчет о производительности за указанный период"""
         cutoff_time = datetime.now() - timedelta(hours=hours)
-        recent_metrics = [m for m in self.metrics_history if m.timestamp > cutoff_time]
+        recent_metrics = [
+            m for m in self.metrics_history if m.timestamp > cutoff_time
+        ]
 
         if not recent_metrics:
             return {"error": "Нет данных за указанный период"}
@@ -136,7 +148,9 @@ class PerformanceMonitor:
         error_rate = (total_calls - successful_calls) / total_calls * 100
 
         # Медленные функции
-        slow_functions = [m for m in recent_metrics if m.execution_time > self.slow_threshold]
+        slow_functions = [
+            m for m in recent_metrics if m.execution_time > self.slow_threshold
+        ]
 
         return {
             "period_hours": hours,
@@ -152,7 +166,10 @@ class PerformanceMonitor:
                 "average_mb": avg_memory_usage / 1024 / 1024,
                 "maximum_mb": max_memory_usage / 1024 / 1024,
             },
-            "cpu_usage": {"average_percent": avg_cpu_usage, "maximum_percent": max_cpu_usage},
+            "cpu_usage": {
+                "average_percent": avg_cpu_usage,
+                "maximum_percent": max_cpu_usage,
+            },
             "slow_functions_count": len(slow_functions),
             "slow_functions": [
                 {
@@ -174,7 +191,10 @@ class PerformanceMonitor:
                 "vms_mb": process.memory_info().vms / 1024 / 1024,
                 "percent": process.memory_percent(),
             },
-            "cpu": {"percent": process.cpu_percent(), "count": psutil.cpu_count()},
+            "cpu": {
+                "percent": process.cpu_percent(),
+                "count": psutil.cpu_count(),
+            },
             "disk": {
                 "usage_percent": psutil.disk_usage("/").percent,
                 "free_gb": psutil.disk_usage("/").free / 1024 / 1024 / 1024,
@@ -246,7 +266,9 @@ class DatabaseProfiler:
         self.slow_queries: List[Dict[str, Any]] = []
 
     @asynccontextmanager
-    async def profile_query(self, query_name: str, sql: str) -> AsyncGenerator[None, None]:
+    async def profile_query(
+        self, query_name: str, sql: str
+    ) -> AsyncGenerator[None, None]:
         """Профилировать выполнение SQL запроса"""
         start_time = time.time()
 
@@ -270,7 +292,9 @@ class DatabaseProfiler:
                     }
                 )
 
-                logger.warning(f"Медленный запрос {query_name}: {execution_time:.2f}s")
+                logger.warning(
+                    f"Медленный запрос {query_name}: {execution_time:.2f}s"
+                )
 
     def get_query_stats(self) -> Dict[str, Any]:
         """Получить статистику запросов"""
@@ -283,7 +307,9 @@ class DatabaseProfiler:
             "max_time": max(self.query_times),
             "min_time": min(self.query_times),
             "slow_queries_count": len(self.slow_queries),
-            "slow_queries": self.slow_queries[-10:],  # последние 10 медленных запросов
+            "slow_queries": self.slow_queries[
+                -10:
+            ],  # последние 10 медленных запросов
         }
 
 
@@ -338,7 +364,9 @@ async def get_performance_summary() -> Dict[str, Any]:
     """Получить сводку производительности"""
     return {
         "system_resources": performance_monitor.get_system_resources(),
-        "performance_report": performance_monitor.get_performance_report(hours=1),
+        "performance_report": performance_monitor.get_performance_report(
+            hours=1
+        ),
         "database_stats": db_profiler.get_query_stats(),
         "cache_stats": cache_profiler.get_stats(),
     }
