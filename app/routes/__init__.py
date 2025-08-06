@@ -16,8 +16,8 @@ from .tour import router as tour
 
 def include_all(dp: Any) -> None:
     """Include all routers in the dispatcher"""
-    dp.include_router(intro)  # Подключаем первым для обработки /start
-    dp.include_router(onboarding)  # Подключаем онбординг
+    dp.include_router(onboarding)  # Подключаем онбординг первым для /start
+    dp.include_router(intro)  # Интро-слайды
     dp.include_router(docs)  # Подключаем документы и новости
     dp.include_router(teacher)
     dp.include_router(admin)

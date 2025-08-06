@@ -1,5 +1,4 @@
 from aiogram import F, Router
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import (
     CallbackQuery,
@@ -77,24 +76,7 @@ async def send_intro_slide(msg: Message, idx: int, lang: str = "ru") -> None:
     await msg.answer(text, parse_mode="HTML", reply_markup=reply_markup)
 
 
-@router.message(Command("start"))
-async def start_with_intro(
-    msg: Message, state: FSMContext, lang: str = "ru"
-) -> None:
-    """Обработчик команды /start с проверкой онбординга"""
-    user = await get_user(msg.from_user.id)
-
-    if user and not user.seen_intro:
-        # Показываем онбординг
-        await state.set_state("IntroFSM:idx")
-        await state.update_data(idx=0)
-        await send_intro_slide(msg, 0, lang)
-    else:
-        # Показываем обычное меню
-        if user:
-            await msg.answer(
-                t("common.welcome", lang), reply_markup=menu(user.role, lang)
-            )
+# Обработчик /start перенесен в onboarding.py для избежания конфликтов
 
 
 @router.callback_query(F.data == "intro_next")  # type: ignore[misc]

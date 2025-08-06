@@ -13,9 +13,13 @@ router = Router()
 @router.message(Command("start"))
 async def start_command(message: Message, state: FSMContext) -> None:
     """Обработчик команды /start с онбордингом"""
+    if message.from_user is None:
+        await message.answer("Ошибка: пользователь не найден.")
+        return
+        
     user = await get_user(message.from_user.id)
 
-    if not user or not user.seen_intro:
+    if not user.seen_intro:
         # Показываем онбординг для новых пользователей
         await onboarding_service.start_onboarding(message, state)
     else:

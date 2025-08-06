@@ -10,7 +10,6 @@ import redis.asyncio as redis
 import sentry_sdk
 import yaml
 from aiogram import Bot, Dispatcher, F
-from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.storage.redis import RedisStorage
 from aiogram.types import CallbackQuery, Message
@@ -271,46 +270,7 @@ dp.message.middleware(LoadingMiddleware(bot))
 dp.callback_query.middleware(LoadingMiddleware(bot))
 
 
-# ────────────────── /start & логин FSM ──────────────────
-@dp.message(Command("start"))
-async def cmd_start(m: Message, state: FSMContext, lang: str) -> None:
-    if m.from_user is None:
-        await m.answer("Ошибка: пользователь не найден.")
-        return
-
-    user = await get_user(m.from_user.id)
-    if user:
-        await m.answer(
-            f"Вы уже авторизованы как <b>{ROLES[str(user.role)]}</b>",
-            reply_markup=menu(str(user.role), lang, str(user.theme)),
-        )
-    else:
-        # Предлагаем онбординг для новых пользователей
-        welcome_text = (
-            "🎓 **Добро пожаловать в SchoolBot!**\n\n"
-            "Это образовательная платформа для всех участников учебного процесса.\n\n"
-            "Выберите, что хотите сделать:"
-        )
-
-        from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
-
-        keyboard = InlineKeyboardMarkup(
-            inline_keyboard=[
-                [
-                    InlineKeyboardButton(
-                        text="🚀 Пройти онбординг",
-                        callback_data="start_onboarding",
-                    ),
-                    InlineKeyboardButton(
-                        text="🔑 Войти в систему", callback_data="start_login"
-                    ),
-                ]
-            ]
-        )
-
-        await m.answer(
-            welcome_text, reply_markup=keyboard, parse_mode="Markdown"
-        )
+# ────────────────── /start перенесен в onboarding.py ──────────────────
 
 
 @dp.message(F.text)  # type: ignore[misc]

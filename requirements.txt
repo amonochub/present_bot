@@ -8,14 +8,17 @@ python-dotenv>=1.0.0
 pydantic>=2.7.2
 pydantic-settings>=2.0.0
 
+# Мониторинг
+prometheus_client>=0.19.0
+
+# Безопасность  
+bcrypt>=4.0.0
+
 # Тестирование
 pytest>=8.2.0
 pytest-asyncio>=0.21.0
 pytest-aiogram==0.1.0
 pytest-cov>=4.1.0
-
-# Безопасность
-bcrypt>=4.0.0
 
 # Типизация и линтинг
 mypy==1.10.0

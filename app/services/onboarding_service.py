@@ -14,7 +14,7 @@ from aiogram.types import (
 )
 
 from app.i18n import t
-from app.repositories.user_repo import create_user, get_user, update_user_intro
+from app.repositories.user_repo import get_user, update_user_intro
 from app.roles import UserRole
 from app.services.command_service import command_service
 
@@ -37,17 +37,8 @@ class OnboardingService:
         await asyncio.sleep(0.5)
 
         # Проверяем, существует ли пользователь
-        user = await get_user(message.from_user.id)
-
-        if not user:
-            # Создаём нового пользователя
-            user = await create_user(
-                telegram_id=message.from_user.id,
-                username=message.from_user.username,
-                first_name=message.from_user.first_name,
-                last_name=message.from_user.last_name,
-                role=UserRole.STUDENT,  # Роль по умолчанию
-            )
+        # Функция get_user всегда создает пользователя, если его нет
+        # Поэтому пользователь всегда будет существовать после первого вызова
 
         # Показываем приветственное сообщение
         welcome_text = t("onboarding.welcome", "ru")
@@ -201,3 +192,7 @@ def init_onboarding_service(bot: Bot) -> None:
     """Инициализирует глобальный сервис онбординга"""
     global onboarding_service
     onboarding_service = OnboardingService(bot)
+
+
+# Глобальная переменная для доступа к сервису
+onboarding_service: OnboardingService | None = None
