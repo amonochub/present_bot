@@ -28,6 +28,18 @@ class Settings(BaseSettings):
     # App settings
     KEEP_DAYS: int = 14
 
+    # Security settings
+    MAX_FILE_SIZE: int = 10 * 1024 * 1024  # 10MB
+    ALLOWED_EXTENSIONS: str = "pdf,doc,docx,jpg,jpeg,png,txt"
+    RATE_LIMIT_PER_MINUTE: int = 60
+    SESSION_TIMEOUT: int = 3600  # 1 hour
+    
+    # Performance settings
+    CONNECTION_POOL_SIZE: int = 20
+    MAX_OVERFLOW: int = 30
+    POOL_TIMEOUT: int = 30
+    POOL_RECYCLE: int = 3600
+
     model_config = SettingsConfigDict(
         env_file=".env", case_sensitive=True, env_file_encoding="utf-8"
     )

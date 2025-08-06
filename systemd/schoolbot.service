@@ -1,0 +1,50 @@
+[Unit]
+Description=SchoolBot - Telegram Bot for School Management
+Documentation=https://github.com/amonochub/present_bot
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+Type=notify
+Restart=always
+RestartSec=10
+User=schoolbot
+Group=schoolbot
+WorkingDirectory=/opt/schoolbot
+Environment=ENV=prod
+
+# Pre-start actions
+ExecStartPre=/usr/bin/docker compose down --remove-orphans
+ExecStartPre=/usr/bin/docker compose pull
+
+# Main start command
+ExecStart=/usr/bin/docker compose up --no-deps --remove-orphans
+
+# Stop command
+ExecStop=/usr/bin/docker compose down --timeout 30
+
+# Reload command
+ExecReload=/usr/bin/docker compose restart
+
+# Health checks
+HealthCheck=curl -f http://localhost:8080/health || exit 1
+
+# Security settings
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/schoolbot /var/log/schoolbot /var/backups/schoolbot
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+MemoryMax=2G
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=schoolbot
+
+[Install]
+WantedBy=multi-user.target
